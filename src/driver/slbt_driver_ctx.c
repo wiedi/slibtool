@@ -127,6 +127,29 @@ int slbt_get_driver_ctx(
 				case TAG_VERSION:
 					cctx.drvflags |= SLBT_DRIVER_VERSION;
 					break;
+
+				case TAG_MODE:
+					if (!strcmp("clean",entry->arg))
+						cctx.mode = SLBT_MODE_CLEAN;
+
+					else if (!strcmp("compile",entry->arg))
+						cctx.mode = SLBT_MODE_COMPILE;
+
+					else if (!strcmp("execute",entry->arg))
+						cctx.mode = SLBT_MODE_EXECUTE;
+
+					else if (!strcmp("finish",entry->arg))
+						cctx.mode = SLBT_MODE_FINISH;
+
+					else if (!strcmp("install",entry->arg))
+						cctx.mode = SLBT_MODE_INSTALL;
+
+					else if (!strcmp("link",entry->arg))
+						cctx.mode = SLBT_MODE_LINK;
+
+					else if (!strcmp("uninstall",entry->arg))
+						cctx.mode = SLBT_MODE_UNINSTALL;
+					break;
 			}
 		} else
 			nunits++;

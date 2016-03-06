@@ -59,6 +59,7 @@ struct slbt_common_ctx {
 	uint64_t			drvflags;
 	uint64_t			actflags;
 	uint64_t			fmtflags;
+	enum slbt_mode			mode;
 };
 
 struct slbt_driver_ctx {
