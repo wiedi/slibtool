@@ -13,7 +13,18 @@ extern const struct argv_option slbt_default_options[];
 
 enum app_tags {
 	TAG_HELP,
+	TAG_HELP_ALL,
 	TAG_VERSION,
+	TAG_CONFIG,
+	TAG_DEBUG,
+	TAG_DRY_RUN,
+	TAG_FEATURES,
+	TAG_MODE,
+	TAG_WARNINGS,
+	TAG_DEPS,
+	TAG_SILENT,
+	TAG_TAG,
+	TAG_VERBOSE,
 };
 
 struct slbt_driver_ctx_impl {
