@@ -190,6 +190,9 @@ int slbt_get_driver_ctx(
 					cctx.drvflags |= SLBT_DRIVER_DEPS;
 					break;
 
+				case TAG_SILENT:
+					cctx.drvflags |= SLBT_DRIVER_SILENT;
+					break;
 			}
 		} else
 			nunits++;
