@@ -48,6 +48,12 @@ enum slbt_mode {
 	SLBT_MODE_UNINSTALL,
 };
 
+enum slbt_tag {
+	SLBT_TAG_UNKNOWN,
+	SLBT_TAG_CC,
+	SLBT_TAG_CXX,
+};
+
 /* unit action flags */
 
 struct slbt_input {
@@ -60,6 +66,7 @@ struct slbt_common_ctx {
 	uint64_t			actflags;
 	uint64_t			fmtflags;
 	enum slbt_mode			mode;
+	enum slbt_tag			tag;
 };
 
 struct slbt_driver_ctx {

@@ -154,6 +154,14 @@ int slbt_get_driver_ctx(
 				case TAG_DRY_RUN:
 					cctx.drvflags |= SLBT_DRIVER_DRY_RUN;
 					break;
+
+				case TAG_TAG:
+					if (!strcmp("CC",entry->arg))
+						cctx.tag = SLBT_TAG_CC;
+
+					else if (!strcmp("CXX",entry->arg))
+						cctx.tag = SLBT_TAG_CXX;
+					break;
 			}
 		} else
 			nunits++;
