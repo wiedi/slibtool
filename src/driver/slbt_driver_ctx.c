@@ -167,6 +167,9 @@ int slbt_get_driver_ctx(
 					cctx.drvflags |= SLBT_DRIVER_CONFIG;
 					break;
 
+				case TAG_DEBUG:
+					cctx.drvflags |= SLBT_DRIVER_DEBUG;
+					break;
 			}
 		} else
 			nunits++;
