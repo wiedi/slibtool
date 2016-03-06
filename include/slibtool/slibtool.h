@@ -57,6 +57,13 @@ enum slbt_tag {
 	SLBT_TAG_CXX,
 };
 
+enum slbt_warning_level {
+	SLBT_WARNING_LEVEL_UNKNOWN,
+	SLBT_WARNING_LEVEL_ALL,
+	SLBT_WARNING_LEVEL_ERROR,
+	SLBT_WARNING_LEVEL_NONE,
+};
+
 /* unit action flags */
 
 struct slbt_input {
@@ -70,6 +77,7 @@ struct slbt_common_ctx {
 	uint64_t			fmtflags;
 	enum slbt_mode			mode;
 	enum slbt_tag			tag;
+	enum slbt_warning_level		warnings;
 };
 
 struct slbt_driver_ctx {

@@ -174,6 +174,17 @@ int slbt_get_driver_ctx(
 				case TAG_FEATURES:
 					cctx.drvflags |= SLBT_DRIVER_FEATURES;
 					break;
+
+				case TAG_WARNINGS:
+					if (!strcmp("all",entry->arg))
+						cctx.tag = SLBT_WARNING_LEVEL_ALL;
+
+					else if (!strcmp("error",entry->arg))
+						cctx.tag = SLBT_WARNING_LEVEL_ERROR;
+
+					else if (!strcmp("none",entry->arg))
+						cctx.tag = SLBT_WARNING_LEVEL_NONE;
+					break;
 			}
 		} else
 			nunits++;
