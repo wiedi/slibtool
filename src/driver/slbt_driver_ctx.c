@@ -120,6 +120,7 @@ int slbt_get_driver_ctx(
 		if (entry->fopt) {
 			switch (entry->tag) {
 				case TAG_HELP:
+				case TAG_HELP_ALL:
 					if (flags & SLBT_DRIVER_VERBOSITY_USAGE)
 						return slbt_driver_usage(program,entry->arg,options,meta);
 
