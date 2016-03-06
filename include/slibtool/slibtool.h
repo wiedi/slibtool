@@ -36,6 +36,18 @@ extern "C" {
 #define SLBT_DRIVER_VERSION		0x0010
 #define SLBT_DRIVER_DRY_RUN		0x0020
 
+/* execution modes */
+enum slbt_mode {
+	SLBT_MODE_UNKNOWN,
+	SLBT_MODE_CLEAN,
+	SLBT_MODE_COMPILE,
+	SLBT_MODE_EXECUTE,
+	SLBT_MODE_FINISH,
+	SLBT_MODE_INSTALL,
+	SLBT_MODE_LINK,
+	SLBT_MODE_UNINSTALL,
+};
+
 /* unit action flags */
 
 struct slbt_input {
