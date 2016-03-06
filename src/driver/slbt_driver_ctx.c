@@ -162,6 +162,11 @@ int slbt_get_driver_ctx(
 					else if (!strcmp("CXX",entry->arg))
 						cctx.tag = SLBT_TAG_CXX;
 					break;
+
+				case TAG_CONFIG:
+					cctx.drvflags |= SLBT_DRIVER_CONFIG;
+					break;
+
 			}
 		} else
 			nunits++;
