@@ -150,6 +150,10 @@ int slbt_get_driver_ctx(
 					else if (!strcmp("uninstall",entry->arg))
 						cctx.mode = SLBT_MODE_UNINSTALL;
 					break;
+
+				case TAG_DRY_RUN:
+					cctx.drvflags |= SLBT_DRIVER_DRY_RUN;
+					break;
 			}
 		} else
 			nunits++;
