@@ -185,6 +185,11 @@ int slbt_get_driver_ctx(
 					else if (!strcmp("none",entry->arg))
 						cctx.tag = SLBT_WARNING_LEVEL_NONE;
 					break;
+
+				case TAG_DEPS:
+					cctx.drvflags |= SLBT_DRIVER_DEPS;
+					break;
+
 			}
 		} else
 			nunits++;

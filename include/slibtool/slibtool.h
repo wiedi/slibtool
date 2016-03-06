@@ -38,6 +38,7 @@ extern "C" {
 #define SLBT_DRIVER_CONFIG		0x0040
 #define SLBT_DRIVER_DEBUG		0x0080
 #define SLBT_DRIVER_FEATURES		0x0100
+#define SLBT_DRIVER_DEPS		0x0200
 
 /* execution modes */
 enum slbt_mode {
