@@ -209,6 +209,14 @@ int slbt_get_driver_ctx(
 				case TAG_PREFER_NON_PIC:
 					cctx.drvflags |= SLBT_DRIVER_ANTI_PIC;
 					break;
+
+				case TAG_SHARED:
+					cctx.drvflags |= SLBT_DRIVER_SHARED;
+					break;
+
+				case TAG_STATIC:
+					cctx.drvflags |= SLBT_DRIVER_STATIC;
+					break;
 			}
 		} else
 			nunits++;
