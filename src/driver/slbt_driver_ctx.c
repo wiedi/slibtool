@@ -201,6 +201,14 @@ int slbt_get_driver_ctx(
 				case TAG_OUTPUT:
 					cctx.output = entry->arg;
 					break;
+
+				case TAG_PREFER_PIC:
+					cctx.drvflags |= SLBT_DRIVER_PRO_PIC;
+					break;
+
+				case TAG_PREFER_NON_PIC:
+					cctx.drvflags |= SLBT_DRIVER_ANTI_PIC;
+					break;
 			}
 		} else
 			nunits++;
