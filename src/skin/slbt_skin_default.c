@@ -57,5 +57,39 @@ const struct argv_option slbt_default_options[] = {
 				"all|none|error","",
 				"convenient shorthands for the above"},
 
+	{"output",		'o',TAG_OUTPUT,ARGV_OPTARG_REQUIRED,0,0,"<file>",
+				"write output to %s"},
+
+	{"no-suppress",		0,TAG_NO_SUPPRESS,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"transparently forward all "
+				"compiler-generated output"},
+
+	{"prefer-pic",		0,TAG_PREFER_PIC,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"pick on non-PIC objects"},
+
+	{"prefer-non-pic",	0,TAG_PREFER_NON_PIC,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"pick on PIC objects"},
+
+	{"shared",		0,TAG_SHARED,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"only build .libs/srcfile.o"},
+
+	{"static",		0,TAG_STATIC,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"only build ./srcfile.o"},
+
+	{"Wc",			0,TAG_COMPILER_FLAG,ARGV_OPTARG_REQUIRED,
+				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_COMMA,
+				0,"<flag>[,<flag]...",
+				"pass comma-separated flags to the compiler"},
+
+	{"Xcompiler",		0,TAG_VERBATIM_FLAG,ARGV_OPTARG_REQUIRED,
+				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,
+				0,"<flag>",
+				"pass a raw flag to the compiler"},
+
 	{0,0,0,0,0,0,0,0}
 };
