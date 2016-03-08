@@ -187,8 +187,12 @@ static int slbt_split_argv(
 		if (argv[i][0] != '-')
 			*cargv++ = argv[i];
 
-		else if (argv[i][1] == 'o')
+		else if (argv[i][1] == 'o') {
 			*targv++ = argv[i];
+
+			if (argv[i][2] == '\0')
+				*targv++ = argv[++i];
+		}
 
 		else if ((argv[i][1] == 'W')  && (argv[i][2] == 'c'))
 			*cargv++ = argv[i];
@@ -352,6 +356,9 @@ int slbt_get_driver_ctx(
 	ctx->ctx.cctx		= &ctx->cctx;
 	ctx->targv		= sargv.targv;
 	ctx->cargv		= sargv.cargv;
+
+	ctx->cctx.targv		= sargv.targv;
+	ctx->cctx.cargv		= sargv.cargv;
 
 	*pctx = &ctx->ctx;
 	return SLBT_OK;

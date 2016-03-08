@@ -84,6 +84,8 @@ struct slbt_common_ctx {
 	enum slbt_tag			tag;
 	enum slbt_warning_level		warnings;
 	const char *			output;
+	char **				targv;
+	char **				cargv;
 };
 
 struct slbt_driver_ctx {
