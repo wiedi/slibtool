@@ -2,7 +2,9 @@
 #define SOFORT_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "slibtool_api.h"
 
@@ -76,6 +78,14 @@ struct slbt_input {
 	size_t	size;
 };
 
+struct slbt_exec_ctx {
+	char *	program;
+	char **	argv;
+	char **	envp;
+	pid_t	pid;
+	int	exitcode;
+};
+
 struct slbt_common_ctx {
 	uint64_t			drvflags;
 	uint64_t			actflags;
@@ -114,6 +124,9 @@ slbt_api void slbt_free_driver_ctx	(struct slbt_driver_ctx *);
 
 slbt_api int  slbt_get_unit_ctx		(const struct slbt_driver_ctx *, const char * path, struct slbt_unit_ctx **);
 slbt_api void slbt_free_unit_ctx	(struct slbt_unit_ctx *);
+
+slbt_api int  slbt_get_exec_ctx		(const struct slbt_driver_ctx *, struct slbt_exec_ctx **);
+slbt_api void slbt_free_exec_ctx	(struct slbt_exec_ctx *);
 
 slbt_api int  slbt_map_input		(int fd, const char * path, int prot, struct slbt_input *);
 slbt_api int  slbt_unmap_input		(struct slbt_input *);
