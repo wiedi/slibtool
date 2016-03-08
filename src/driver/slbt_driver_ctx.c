@@ -14,6 +14,11 @@
 #include "slibtool_driver_impl.h"
 #include "argv/argv.h"
 
+struct slbt_split_vector {
+	char **		targv;
+	char **		cargv;
+};
+
 struct slbt_driver_ctx_alloc {
 	struct argv_meta *		meta;
 	struct slbt_driver_ctx_impl	ctx;
@@ -89,12 +94,130 @@ static int slbt_get_driver_ctx_fail(struct argv_meta * meta)
 	return -1;
 }
 
+static int slbt_split_argv(
+	char **				argv,
+	uint32_t			flags,
+	struct slbt_split_vector *	sargv)
+{
+	int				i;
+	int				argc;
+	const char *			program;
+	char *				compiler;
+	char **				targv;
+	char **				cargv;
+	struct argv_meta *		meta;
+	struct argv_entry *		entry;
+	struct argv_entry *		mode;
+	const struct argv_option *	option;
+	const struct argv_option *	options = slbt_default_options;
+	struct argv_ctx			ctx = {ARGV_VERBOSITY_NONE,
+						ARGV_MODE_SCAN,
+						0,0,0,0,0,0,0};
+
+	program = argv_program_name(argv[0]);
+
+	/* missing arguments? */
+	if (!argv[1] && (flags & SLBT_DRIVER_VERBOSITY_USAGE))
+		return slbt_driver_usage(program,0,options,0);
+
+	/* initial argv scan: ... --mode=xxx ... <compiler> ... */
+	argv_scan(argv,options,&ctx,0);
+
+	/* invalid slibtool arguments? */
+	if (ctx.erridx && !ctx.unitidx) {
+		if (flags & SLBT_DRIVER_VERBOSITY_ERRORS)
+			argv_get(
+				argv,options,
+				slbt_argv_flags(flags));
+		return -1;
+	}
+
+	/* missing compiler? */
+	if (!ctx.unitidx) {
+		if (flags & SLBT_DRIVER_VERBOSITY_ERRORS)
+			fprintf(stderr,
+				"%s: error: <compiler> is missing.\n",
+				program);
+		return -1;
+	}
+
+	/* obtain slibtool's own arguments */
+	compiler = argv[ctx.unitidx];
+	argv[ctx.unitidx] = 0;
+
+	meta = argv_get(argv,options,ARGV_VERBOSITY_NONE);
+	argv[ctx.unitidx] = compiler;
+
+	/* missing --mode? */
+	for (mode=0, entry=meta->entries; entry->fopt; entry++)
+		if (entry->tag == TAG_MODE)
+			mode = entry;
+
+	argv_free(meta);
+
+	if (!mode) {
+		fprintf(stderr,
+			"%s: error: --mode must be specified.\n",
+			program);
+		return -1;
+	}
+
+	/* allocate split vectors */
+	for (argc=0, targv=argv; *targv; targv++)
+		argc++;
+
+	if ((sargv->targv = calloc(2*(argc+1),sizeof(char *))))
+		sargv->cargv = sargv->targv + argc + 1;
+	else
+		return -1;
+
+	/* split vectors: slibtool's own options */
+	for (i=0; i<ctx.unitidx; i++)
+		sargv->targv[i] = argv[i];
+
+	/* split vectors: legacy mixture */
+	options = option_from_tag(
+			slbt_default_options,
+			TAG_OUTPUT);
+
+	targv = sargv->targv + i;
+	cargv = sargv->cargv;
+
+	for (; i<argc; i++) {
+		if (argv[i][0] != '-')
+			*cargv++ = argv[i];
+
+		else if (argv[i][1] == 'o')
+			*targv++ = argv[i];
+
+		else if ((argv[i][1] == 'W')  && (argv[i][2] == 'c'))
+			*cargv++ = argv[i];
+
+		else if (!(strcmp("Xcompiler",&argv[i][1])))
+			*cargv++ = argv[++i];
+
+		else {
+			for (option=options; option->long_name; option++)
+				if (!(strcmp(option->long_name,&argv[i][1])))
+					break;
+
+			if (option->long_name)
+				*targv++ = argv[i];
+			else
+				*cargv++ = argv[i];
+		}
+	}
+
+	return 0;
+}
+
 int slbt_get_driver_ctx(
 	char **				argv,
 	char **				envp,
 	uint32_t			flags,
 	struct slbt_driver_ctx **	pctx)
 {
+	struct slbt_split_vector	sargv;
 	struct slbt_driver_ctx_impl *	ctx;
 	struct slbt_common_ctx		cctx;
 	const struct argv_option *	options;
@@ -105,15 +228,15 @@ int slbt_get_driver_ctx(
 
 	options = slbt_default_options;
 
-	if (!(meta = argv_get(argv,options,slbt_argv_flags(flags))))
+	if (slbt_split_argv(argv,flags,&sargv))
+		return -1;
+
+	if (!(meta = argv_get(sargv.targv,options,slbt_argv_flags(flags))))
 		return -1;
 
 	nunits	= 0;
 	program = argv_program_name(argv[0]);
 	memset(&cctx,0,sizeof(cctx));
-
-	if (!argv[1] && (flags & SLBT_DRIVER_VERBOSITY_USAGE))
-		return slbt_driver_usage(program,0,options,meta);
 
 	/* get options, count units */
 	for (entry=meta->entries; entry->fopt || entry->arg; entry++) {
@@ -227,6 +350,8 @@ int slbt_get_driver_ctx(
 
 	ctx->ctx.program	= program;
 	ctx->ctx.cctx		= &ctx->cctx;
+	ctx->targv		= sargv.targv;
+	ctx->cargv		= sargv.cargv;
 
 	*pctx = &ctx->ctx;
 	return SLBT_OK;
@@ -254,6 +379,9 @@ int slbt_create_driver_ctx(
 
 static void slbt_free_driver_ctx_impl(struct slbt_driver_ctx_alloc * ictx)
 {
+	if (ictx->ctx.targv)
+		free(ictx->ctx.targv);
+
 	argv_free(ictx->meta);
 	free(ictx);
 }

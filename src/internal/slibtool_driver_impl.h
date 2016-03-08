@@ -38,6 +38,8 @@ enum app_tags {
 struct slbt_driver_ctx_impl {
 	struct slbt_common_ctx	cctx;
 	struct slbt_driver_ctx	ctx;
+	char **			targv;
+	char **			cargv;
 };
 
 struct slbt_unit_ctx_impl {
