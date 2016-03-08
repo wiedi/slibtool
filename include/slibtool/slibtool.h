@@ -71,8 +71,6 @@ enum slbt_warning_level {
 	SLBT_WARNING_LEVEL_NONE,
 };
 
-/* unit action flags */
-
 struct slbt_input {
 	void *	addr;
 	size_t	size;
