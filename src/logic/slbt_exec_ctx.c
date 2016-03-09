@@ -35,6 +35,23 @@ static size_t slbt_parse_comma_separated_flags(
 }
 
 
+static char * slbt_source_file(char ** argv)
+{
+	char **	parg;
+	char *	ch;
+
+	for (parg=argv; *parg; parg++)
+		if ((ch = strrchr(*parg,'.')))
+			if ((!(strcmp(++ch,"s")))
+					|| (!(strcmp(ch,"S")))
+					|| (!(strcmp(ch,"c")))
+					|| (!(strcmp(ch,"cc")))
+					|| (!(strcmp(ch,"cxx"))))
+				return *parg;
+	return 0;
+}
+
+
 static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 	const struct slbt_driver_ctx *	dctx)
 {
@@ -42,9 +59,15 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 	size_t				size;
 	int				argc;
 	char *				args;
+	char *				csrc;
 	char **				parg;
 
-	size = argc = 0;
+	argc = 0;
+	csrc = 0;
+
+	/* clerical buffer size (guard, suffix, version) */
+	size  = strlen(".lo") + strlen(".libs/") + 2*sizeof('\0');
+	size += 36*strlen(".0000") + 36*sizeof('\0');
 
 	/* buffer size (cargv, -Wc) */
 	for (parg=dctx->cctx->cargv; *parg; parg++, argc++)
@@ -54,10 +77,14 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 		else
 			size += sizeof('\0') + strlen(*parg);
 
+	/* buffer size (ldirname, lbasename, lobjname) */
+	if (dctx->cctx->output)
+		size += 3*strlen(dctx->cctx->output);
+	else if ((csrc = slbt_source_file(dctx->cctx->cargv)))
+		size += 3*strlen(csrc);
+
 	/* alloc */
-	if (!(args = malloc(size + strlen(".libs/")
-				 + strlen(".lo")
-				 + strlen(dctx->cctx->output))))
+	if (!(args = malloc(size)))
 		return 0;
 
 	size = sizeof(*ictx) + (argc+SLBT_ARGV_SPARE_PTRS)*sizeof(char *);
@@ -69,6 +96,8 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 
 	ictx->args = args;
 	ictx->argc = argc;
+
+	ictx->ctx.csrc = csrc;
 
 	return ictx;
 }
@@ -82,6 +111,7 @@ int  slbt_get_exec_ctx(
 	char **				parg;
 	char *				ch;
 	char *				slash;
+	const char *			ref;
 	int				i;
 
 	/* alloc */
@@ -94,6 +124,47 @@ int  slbt_get_exec_ctx(
 
 	/* <compiler> */
 	ictx->ctx.program = dctx->cctx->cargv[0];
+
+	/* ldirname, lbasename */
+	ref = (dctx->cctx->output)
+		? dctx->cctx->output
+		: ictx->ctx.csrc;
+
+	if (ref && !ictx->ctx.csrc && (slash = strrchr(ref,'/'))) {
+		ictx->ctx.ldirname = ch;
+		strcpy(ch,ref);
+		ch += slash - ref;
+		ch += sprintf(ch,"%s","/.libs/");
+		ch++;
+
+		ictx->ctx.lbasename = ch;
+		ch += sprintf(ch,"%s",++slash);
+		ch++;
+	} else if (ref) {
+		ictx->ctx.ldirname = ch;
+		ch += sprintf(ch,"%s",".libs/");
+		ch++;
+
+		ictx->ctx.lbasename = ch;
+		slash = strrchr(ref,'/');
+		ch += sprintf(ch,"%s",slash ? ++slash : ref);
+		ch++;
+	}
+
+	/* lbasename suffix */
+	if (ref && (dctx->cctx->mode == SLBT_MODE_COMPILE)) {
+		if ((ch[-4] == '.') && (ch[-3] == 'l') && (ch[-2] == 'o')) {
+			ch[-3] = 'o';
+			ch[-2] = '\0';
+			ch--;
+		} else if (ictx->ctx.csrc) {
+			if ((ch = strrchr(ictx->ctx.lbasename,'.'))) {
+				*++ch = 'o';
+				*++ch = '\0';
+				ch++;
+			}
+		}
+	}
 
 	/* cargv, -Wc */
 	for (i=0, parg=dctx->cctx->cargv; *parg; parg++, ch++) {
@@ -119,21 +190,17 @@ int  slbt_get_exec_ctx(
 		}
 
 		ictx->ctx.argv[i++] = "-c";
+	}
+
+	/* output file name */
+	if (ref) {
 		ictx->ctx.argv[i++] = "-o";
 		ictx->ctx.argv[i++] = ch;
+		ictx->ctx.lobjname  = ch;
 
-		if ((slash = strrchr(dctx->cctx->output,'/'))) {
-			sprintf(ch,"%s",dctx->cctx->output);
-			ch += slash - dctx->cctx->output;
-			ch += sprintf(ch,"/.libs%s",slash);
-		} else
-			ch += sprintf(ch,".libs/%s",dctx->cctx->output);
-
-		if ((ch[-3] == '.') && (ch[-2] == 'l') && (ch[-1] == 'o')) {
-			ch[-2] = 'o';
-			ch[-1] = '\0';
-			ch--;
-		}
+		sprintf(ch,"%s%s",
+			ictx->ctx.ldirname,
+			ictx->ctx.lbasename);
 	}
 
 	*ectx = &ictx->ctx;

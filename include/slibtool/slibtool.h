@@ -82,6 +82,10 @@ struct slbt_exec_ctx {
 	char *	program;
 	char **	argv;
 	char **	envp;
+	char *	csrc;
+	char *	ldirname;
+	char *	lbasename;
+	char *	lobjname;
 	pid_t	pid;
 	int	exitcode;
 };
