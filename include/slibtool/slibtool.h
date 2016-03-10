@@ -90,6 +90,7 @@ struct slbt_exec_ctx {
 	char *	ldirname;
 	char *	lbasename;
 	char *	lobjname;
+	char *	aobjname;
 	pid_t	pid;
 	int	exitcode;
 };

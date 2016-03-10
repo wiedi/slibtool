@@ -77,11 +77,11 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 		else
 			size += sizeof('\0') + strlen(*parg);
 
-	/* buffer size (ldirname, lbasename, lobjname) */
+	/* buffer size (ldirname, lbasename, lobjname, aobjname) */
 	if (dctx->cctx->output)
-		size += 3*strlen(dctx->cctx->output);
+		size += 4*strlen(dctx->cctx->output);
 	else if ((csrc = slbt_source_file(dctx->cctx->cargv)))
-		size += 3*strlen(csrc);
+		size += 4*strlen(csrc);
 
 	/* alloc */
 	if (!(args = malloc(size)))
@@ -197,9 +197,16 @@ int  slbt_get_exec_ctx(
 		*ictx->ctx.lout[1] = ch;
 		ictx->ctx.lobjname = ch;
 
-		sprintf(ch,"%s%s",
+		ch += sprintf(ch,"%s%s",
 			ictx->ctx.ldirname,
-			ictx->ctx.lbasename);
+			ictx->ctx.lbasename)
+			+ sizeof('\0');
+
+		ictx->ctx.aobjname = ch;
+
+		ch += sprintf(ch,"%s",ictx->ctx.ldirname);
+		ch -= strlen(".libs/");
+		sprintf(ch,ictx->ctx.lbasename);
 	}
 
 	*ectx = &ictx->ctx;
