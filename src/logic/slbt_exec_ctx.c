@@ -183,20 +183,19 @@ int  slbt_get_exec_ctx(
 		}
 	}
 
-	if (dctx->cctx->mode == SLBT_MODE_COMPILE) {
-		if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED) {
-			ictx->ctx.argv[i++] = "-DPIC";
-			ictx->ctx.argv[i++] = "-fPIC";
-		}
+	/* placeholders for -DPIC, -fPIC, -c, -o, <output> */
+	ictx->ctx.dpic = &ictx->ctx.argv[i++];
+	ictx->ctx.fpic = &ictx->ctx.argv[i++];
+	ictx->ctx.cass = &ictx->ctx.argv[i++];
 
-		ictx->ctx.argv[i++] = "-c";
-	}
+	ictx->ctx.lout[0] = &ictx->ctx.argv[i++];
+	ictx->ctx.lout[1] = &ictx->ctx.argv[i++];
 
 	/* output file name */
 	if (ref) {
-		ictx->ctx.argv[i++] = "-o";
-		ictx->ctx.argv[i++] = ch;
-		ictx->ctx.lobjname  = ch;
+		*ictx->ctx.lout[0] = "-o";
+		*ictx->ctx.lout[1] = ch;
+		ictx->ctx.lobjname = ch;
 
 		sprintf(ch,"%s%s",
 			ictx->ctx.ldirname,
@@ -228,4 +227,15 @@ void slbt_free_exec_ctx(struct slbt_exec_ctx * ctx)
 		ictx = (struct slbt_exec_ctx_impl *)addr;
 		slbt_free_exec_ctx_impl(ictx,0);
 	}
+}
+
+
+void slbt_reset_placeholders(struct slbt_exec_ctx * ectx)
+{
+	*ectx->dpic = "-DSLIBTOOL_PLACEHOLDER_DPIC";
+	*ectx->fpic = "-DSLIBTOOL_PLACEHOLDER_FPIC";
+	*ectx->cass = "-DSLIBTOOL_PLACEHOLDER_COMPILE_ASSEMBLE";
+
+	*ectx->lout[0] = "-DSLIBTOOL_PLACEHOLDER_OUTPUT_SWITCH";
+	*ectx->lout[1] = "-DSLIBTOOL_PLACEHOLDER_OUTPUT_FILE";
 }
