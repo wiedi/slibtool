@@ -65,9 +65,10 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 	argc = 0;
 	csrc = 0;
 
-	/* clerical buffer size (guard, suffix, version) */
-	size  = strlen(".lo") + strlen(".libs/") + 2*sizeof('\0');
-	size += 36*strlen(".0000") + 36*sizeof('\0');
+	/* clerical [worst-case] buffer size (guard, .libs, version) */
+	size  = strlen(".lo") + sizeof('\0');
+	size +=  6 * (strlen(".libs/") + sizeof('\0'));
+	size += 36 * (strlen(".0000") + sizeof('\0'));
 
 	/* buffer size (cargv, -Wc) */
 	for (parg=dctx->cctx->cargv; *parg; parg++, argc++)
