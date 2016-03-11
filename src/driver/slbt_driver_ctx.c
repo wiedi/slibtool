@@ -242,6 +242,9 @@ int slbt_get_driver_ctx(
 	program = argv_program_name(argv[0]);
 	memset(&cctx,0,sizeof(cctx));
 
+	/* shared and static objects: enable by default, disable by ~switch */
+	cctx.drvflags = SLBT_DRIVER_SHARED | SLBT_DRIVER_STATIC;
+
 	/* get options, count units */
 	for (entry=meta->entries; entry->fopt || entry->arg; entry++) {
 		if (entry->fopt) {
@@ -338,11 +341,11 @@ int slbt_get_driver_ctx(
 					break;
 
 				case TAG_SHARED:
-					cctx.drvflags |= SLBT_DRIVER_SHARED;
+					cctx.drvflags &= ~(uint64_t)SLBT_DRIVER_STATIC;
 					break;
 
 				case TAG_STATIC:
-					cctx.drvflags |= SLBT_DRIVER_STATIC;
+					cctx.drvflags &= ~(uint64_t)SLBT_DRIVER_SHARED;
 					break;
 			}
 		} else
