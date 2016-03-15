@@ -48,6 +48,27 @@ const struct argv_option slbt_default_options[] = {
 				"generate lots of informational messages "
 				"that nobody can understand"},
 
+	{"target",		0,TAG_TARGET,ARGV_OPTARG_REQUIRED,0,0,"<target>",
+				"set an explicit (cross-)target, then pass it to "
+				"the compiler"},
+
+	{"host",		0,TAG_HOST,ARGV_OPTARG_REQUIRED,0,0,"<host>",
+				"set an explicit (cross-)host"},
+
+	{"flavor",		0,TAG_FLAVOR,ARGV_OPTARG_REQUIRED,0,
+				"bsd|cygwin|darwin|linux|midipix|mingw",
+				0,"explicitly specify the host's flavor"},
+
+	{"ar",			0,TAG_AR,ARGV_OPTARG_REQUIRED,0,0,"<ar>",
+				"explicitly specify the archiver to be used"},
+
+	{"ranlib",		0,TAG_RANLIB,ARGV_OPTARG_REQUIRED,0,0,"<ranlib>",
+				"explicitly specify the librarian to be used"},
+
+	{"dlltool",		0,TAG_DLLTOOL,ARGV_OPTARG_REQUIRED,0,0,"<dlltool>",
+				"explicitly specify the PE import library generator "
+				"to be used"},
+
 	{"warnings",		0,TAG_WARNINGS,ARGV_OPTARG_REQUIRED,0,
 				"all|none|error",0,
 				"set the warning reporting level"},
