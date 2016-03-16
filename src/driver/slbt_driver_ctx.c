@@ -200,7 +200,14 @@ static int slbt_split_argv(
 		else if (!(strcmp("Xcompiler",&argv[i][1])))
 			*cargv++ = argv[++i];
 
-		else {
+		else if (!(strncmp("-target=",&argv[i][1],strlen("-target="))))
+			*targv++ = argv[i++];
+
+		else if (!(strcmp("-target",&argv[i][1]))) {
+			*targv++ = argv[i++];
+			*targv++ = argv[i++];
+
+		} else {
 			for (option=options; option->long_name; option++)
 				if (!(strcmp(option->long_name,&argv[i][1])))
 					break;
