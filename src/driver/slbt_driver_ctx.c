@@ -328,6 +328,26 @@ int slbt_get_driver_ctx(
 					cctx.drvflags |= SLBT_DRIVER_VERBOSE;
 					break;
 
+				case TAG_HOST:
+					cctx.host.host = entry->arg;
+					break;
+
+				case TAG_FLAVOR:
+					cctx.host.flavor = entry->arg;
+					break;
+
+				case TAG_AR:
+					cctx.host.ar = entry->arg;
+					break;
+
+				case TAG_RANLIB:
+					cctx.host.ranlib = entry->arg;
+					break;
+
+				case TAG_DLLTOOL:
+					cctx.host.dlltool = entry->arg;
+					break;
+
 				case TAG_OUTPUT:
 					cctx.output = entry->arg;
 					break;
