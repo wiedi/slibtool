@@ -48,10 +48,6 @@ const struct argv_option slbt_default_options[] = {
 				"generate lots of informational messages "
 				"that nobody can understand"},
 
-	{"target",		0,TAG_TARGET,ARGV_OPTARG_REQUIRED,0,0,"<target>",
-				"set an explicit (cross-)target, then pass it to "
-				"the compiler"},
-
 	{"host",		0,TAG_HOST,ARGV_OPTARG_REQUIRED,0,0,"<host>",
 				"set an explicit (cross-)host"},
 
@@ -80,6 +76,10 @@ const struct argv_option slbt_default_options[] = {
 
 	{"output",		'o',TAG_OUTPUT,ARGV_OPTARG_REQUIRED,0,0,"<file>",
 				"write output to %s"},
+
+	{"target",		0,TAG_TARGET,ARGV_OPTARG_REQUIRED,0,0,"<target>",
+				"set an explicit (cross-)target, then pass it to "
+				"the compiler"},
 
 	{"no-suppress",		0,TAG_NO_SUPPRESS,ARGV_OPTARG_NONE,
 				ARGV_OPTION_HYBRID_ONLY,0,0,
