@@ -96,10 +96,20 @@ struct slbt_exec_ctx {
 	int	exitcode;
 };
 
+struct slbt_host_params {
+	const char *			host;
+	const char *			flavor;
+	const char *			ar;
+	const char *			ranlib;
+	const char *			dlltool;
+};
+
 struct slbt_common_ctx {
 	uint64_t			drvflags;
 	uint64_t			actflags;
 	uint64_t			fmtflags;
+	struct slbt_host_params		host;
+	struct slbt_host_params		cfgmeta;
 	enum slbt_mode			mode;
 	enum slbt_tag			tag;
 	enum slbt_warning_level		warnings;
