@@ -113,6 +113,7 @@ struct slbt_common_ctx {
 	enum slbt_mode			mode;
 	enum slbt_tag			tag;
 	enum slbt_warning_level		warnings;
+	const char *			target;
 	const char *			output;
 	char **				targv;
 	char **				cargv;

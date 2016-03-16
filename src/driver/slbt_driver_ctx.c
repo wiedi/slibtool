@@ -332,6 +332,10 @@ int slbt_get_driver_ctx(
 					cctx.output = entry->arg;
 					break;
 
+				case TAG_TARGET:
+					cctx.target = entry->arg;
+					break;
+
 				case TAG_PREFER_PIC:
 					cctx.drvflags |= SLBT_DRIVER_PRO_PIC;
 					break;
