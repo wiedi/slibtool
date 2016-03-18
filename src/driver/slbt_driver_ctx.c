@@ -115,6 +115,7 @@ static int slbt_split_argv(
 	struct argv_meta *		meta;
 	struct argv_entry *		entry;
 	struct argv_entry *		mode;
+	struct argv_entry *		config;
 	const struct argv_option *	option;
 	const struct argv_option *	options = slbt_default_options;
 	struct argv_ctx			ctx = {ARGV_VERBOSITY_NONE,
@@ -155,14 +156,16 @@ static int slbt_split_argv(
 	meta = argv_get(argv,options,ARGV_VERBOSITY_NONE);
 	argv[ctx.unitidx] = compiler;
 
-	/* missing --mode? */
+	/* missing both --mode and --config? */
 	for (mode=0, entry=meta->entries; entry->fopt; entry++)
 		if (entry->tag == TAG_MODE)
 			mode = entry;
+		else if (entry->tag == TAG_CONFIG)
+			config = entry;
 
 	argv_free(meta);
 
-	if (!mode) {
+	if (!mode && !config) {
 		fprintf(stderr,
 			"%s: error: --mode must be specified.\n",
 			program);
