@@ -22,6 +22,15 @@ static ssize_t slibtool_version(struct slbt_driver_ctx * dctx)
 	return fprintf(stdout,vermsg,dctx->program,SLIBTOOL_GIT_VERSION);
 }
 
+static void slibtool_perform_driver_actions(struct slbt_driver_ctx * dctx)
+{
+	if (dctx->cctx->drvflags & SLBT_DRIVER_CONFIG)
+		dctx->nerrors += (slbt_output_config(dctx) < 0);
+
+	if (dctx->cctx->mode == SLBT_MODE_COMPILE)
+		dctx->nerrors += (slbt_exec_compile(dctx,0) < 0);
+}
+
 static void slibtool_perform_unit_actions(struct slbt_unit_ctx * uctx)
 {
 }
@@ -45,6 +54,9 @@ int slibtool_main(int argc, char ** argv, char ** envp)
 	if (dctx->cctx->drvflags & SLBT_DRIVER_VERSION)
 		if ((slibtool_version(dctx)) < 0)
 			return slibtool_exit(dctx,2);
+
+	slibtool_perform_driver_actions(dctx);
+	ret += dctx->nerrors;
 
 	for (unit=dctx->units; *unit; unit++) {
 		if (!(slbt_get_unit_ctx(dctx,*unit,&uctx))) {
