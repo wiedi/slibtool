@@ -538,6 +538,7 @@ int slbt_get_driver_ctx(
 			nunits++;
 	}
 
+	/* driver context */
 	if (!(ctx = slbt_driver_ctx_alloc(meta,&cctx,nunits)))
 		return slbt_get_driver_ctx_fail(meta);
 
