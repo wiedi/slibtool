@@ -552,6 +552,7 @@ int slbt_get_driver_ctx(
 
 	/* host params */
 	if ((cctx.drvflags & SLBT_DRIVER_HEURISTICS)
+			|| (cctx.drvflags & SLBT_DRIVER_CONFIG)
 			|| (cctx.mode != SLBT_MODE_COMPILE))
 		if (slbt_init_host_params(
 				&ctx->cctx,
