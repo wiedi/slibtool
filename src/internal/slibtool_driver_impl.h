@@ -41,9 +41,18 @@ enum app_tags {
 	TAG_VERBATIM_FLAG,
 };
 
+struct slbt_host_strs {
+	char *		host;
+	char *		flavor;
+	char *		ar;
+	char *		ranlib;
+	char *		dlltool;
+};
+
 struct slbt_driver_ctx_impl {
 	struct slbt_common_ctx	cctx;
 	struct slbt_driver_ctx	ctx;
+	struct slbt_host_strs	host;
 	char **			targv;
 	char **			cargv;
 };

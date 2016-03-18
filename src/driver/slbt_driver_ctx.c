@@ -14,6 +14,13 @@
 #include "slibtool_driver_impl.h"
 #include "argv/argv.h"
 
+static const char cfgexplicit[] = "command-line argument";
+static const char cfghost[]     = "derived from <host>";
+static const char cfgtarget[]   = "derived from <target>";
+static const char cfgcompiler[] = "derived from <compiler>";
+static const char cfgmachine[]  = "native (derived from -dumpmachine)";
+static const char cfgnative[]   = "native";
+
 struct slbt_split_vector {
 	char **		targv;
 	char **		cargv;
@@ -222,6 +229,154 @@ static int slbt_split_argv(
 	return 0;
 }
 
+int slbt_init_host_params(
+	const struct slbt_common_ctx *	cctx,
+	struct slbt_host_strs *		drvhost,
+	struct slbt_host_params *	host,
+	struct slbt_host_params *	cfgmeta)
+{
+	size_t		toollen;
+	char *		slash;
+	const char *	machine;
+	bool		ftarget       = false;
+	bool		fhost         = false;
+	bool		fcompiler     = false;
+	bool		fnative       = false;
+
+	/* host */
+	if (host->host) {
+		cfgmeta->host = cfgexplicit;
+		fhost         = true;
+	} else if (cctx->target) {
+		host->host    = cctx->target;
+		cfgmeta->host = cfgtarget;
+		ftarget       = true;
+	} else if (strrchr(cctx->cargv[0],'-')) {
+		if (!(drvhost->host = strdup(cctx->cargv[0])))
+			return -1;
+
+		slash         = strrchr(drvhost->host,'-');
+		*slash        = '\0';
+		host->host    = drvhost->host;
+		cfgmeta->host = cfgcompiler;
+		fcompiler     = true;
+	} else {
+		host->host    = SLBT_MACHINE;
+		cfgmeta->host = cfgmachine;
+		fnative       = true;
+	}
+
+	/* flavor */
+	if (host->flavor) {
+		cfgmeta->flavor = cfgexplicit;
+	} else {
+		if (fhost) {
+			machine         = host->host;
+			cfgmeta->flavor = cfghost;
+		} else if (ftarget) {
+			machine         = cctx->target;
+			cfgmeta->flavor = cfgtarget;
+		} else if (fcompiler) {
+			machine         = drvhost->host;
+			cfgmeta->flavor = cfgcompiler;
+		} else {
+			machine         = SLBT_MACHINE;
+			cfgmeta->flavor = cfgmachine;
+		}
+
+		slash = strrchr(machine,'-');
+		cfgmeta->flavor = cfghost;
+
+		if ((slash && !strcmp(slash,"-bsd")) || strstr(machine,"-bsd-"))
+			host->flavor = "bsd";
+		else if ((slash && !strcmp(slash,"-cygwin")) || strstr(machine,"-cygwin-"))
+			host->flavor = "cygwin";
+		else if ((slash && !strcmp(slash,"-darwin")) || strstr(machine,"-darwin-"))
+			host->flavor = "darwin";
+		else if ((slash && !strcmp(slash,"-linux")) || strstr(machine,"-linux-"))
+			host->flavor = "linux";
+		else if ((slash && !strcmp(slash,"-midipix")) || strstr(machine,"-midipix-"))
+			host->flavor = "midipix";
+		else if ((slash && !strcmp(slash,"-mingw")) || strstr(machine,"-mingw-"))
+			host->flavor = "mingw";
+		else if ((slash && !strcmp(slash,"-mingw32")) || strstr(machine,"-mingw32-"))
+			host->flavor = "mingw";
+		else if ((slash && !strcmp(slash,"-mingw64")) || strstr(machine,"-mingw64-"))
+			host->flavor = "mingw";
+		else {
+			host->flavor   = "default";
+			cfgmeta->flavor = "fallback, unverified";
+		}
+	}
+
+	/* toollen */
+	toollen =  fnative ? 0 : strlen(host->host);
+	toollen += strlen("-utility-name");
+
+	/* ar */
+	if (host->ar)
+		cfgmeta->ar = cfgexplicit;
+	else {
+		if (!(drvhost->ar = calloc(1,toollen)))
+			return -1;
+
+		if (fnative) {
+			strcpy(drvhost->ar,"ar");
+			cfgmeta->ar = cfgnative;
+		} else {
+			sprintf(drvhost->ar,"%s-ar",host->host);
+			cfgmeta->ar = cfghost;
+		}
+
+		host->ar = drvhost->ar;
+	}
+
+	/* ranlib */
+	if (host->ranlib)
+		cfgmeta->ranlib = cfgexplicit;
+	else {
+		if (!(drvhost->ranlib = calloc(1,toollen)))
+			return -1;
+
+		if (fnative) {
+			strcpy(drvhost->ranlib,"ranlib");
+			cfgmeta->ranlib = cfgnative;
+		} else {
+			sprintf(drvhost->ranlib,"%s-ranlib",host->host);
+			cfgmeta->ranlib = cfghost;
+		}
+
+		host->ranlib = drvhost->ranlib;
+	}
+
+	/* dlltool */
+	if (host->dlltool)
+		cfgmeta->dlltool = cfgexplicit;
+
+	else if (strcmp(host->flavor,"cygwin")
+			&& strcmp(host->flavor,"midipix")
+			&& strcmp(host->flavor,"mingw")) {
+		host->dlltool = "";
+		cfgmeta->dlltool = "not applicable";
+
+	} else {
+		if (!(drvhost->dlltool = calloc(1,toollen)))
+			return -1;
+
+		if (fnative) {
+			strcpy(drvhost->dlltool,"dlltool");
+			cfgmeta->dlltool = cfgnative;
+		} else {
+			sprintf(drvhost->dlltool,"%s-dlltool",host->host);
+			cfgmeta->dlltool = cfghost;
+		}
+
+		host->dlltool = drvhost->dlltool;
+	}
+
+	return 0;
+}
+
 int slbt_get_driver_ctx(
 	char **				argv,
 	char **				envp,
@@ -394,6 +549,18 @@ int slbt_get_driver_ctx(
 	ctx->cctx.targv		= sargv.targv;
 	ctx->cctx.cargv		= sargv.cargv;
 
+	/* host params */
+	if ((cctx.drvflags & SLBT_DRIVER_HEURISTICS)
+			|| (cctx.mode != SLBT_MODE_COMPILE))
+		if (slbt_init_host_params(
+				&ctx->cctx,
+				&ctx->host,
+				&ctx->cctx.host,
+				&ctx->cctx.cfgmeta)) {
+			slbt_free_driver_ctx(&ctx->ctx);
+			return -1;
+		}
+
 	*pctx = &ctx->ctx;
 	return SLBT_OK;
 }
@@ -422,6 +589,21 @@ static void slbt_free_driver_ctx_impl(struct slbt_driver_ctx_alloc * ictx)
 {
 	if (ictx->ctx.targv)
 		free(ictx->ctx.targv);
+
+	if (ictx->ctx.host.host)
+		free(ictx->ctx.host.host);
+
+	if (ictx->ctx.host.flavor)
+		free(ictx->ctx.host.flavor);
+
+	if (ictx->ctx.host.ar)
+		free(ictx->ctx.host.ar);
+
+	if (ictx->ctx.host.ranlib)
+		free(ictx->ctx.host.ranlib);
+
+	if (ictx->ctx.host.dlltool)
+		free(ictx->ctx.host.dlltool);
 
 	argv_free(ictx->meta);
 	free(ictx);
