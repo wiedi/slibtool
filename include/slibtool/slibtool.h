@@ -159,6 +159,7 @@ slbt_api int  slbt_map_input		(int fd, const char * path, int prot, struct slbt_
 slbt_api int  slbt_unmap_input		(struct slbt_input *);
 
 /* utility api */
+slbt_api int  slbt_output_config	(const struct slbt_driver_ctx *);
 
 #ifdef __cplusplus
 }
