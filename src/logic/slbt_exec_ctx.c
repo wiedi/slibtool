@@ -252,10 +252,10 @@ void slbt_free_exec_ctx(struct slbt_exec_ctx * ctx)
 
 void slbt_reset_placeholders(struct slbt_exec_ctx * ectx)
 {
-	*ectx->dpic = "-DSLIBTOOL_PLACEHOLDER_DPIC";
-	*ectx->fpic = "-DSLIBTOOL_PLACEHOLDER_FPIC";
-	*ectx->cass = "-DSLIBTOOL_PLACEHOLDER_COMPILE_ASSEMBLE";
+	*ectx->dpic = "-USLIBTOOL_PLACEHOLDER_DPIC";
+	*ectx->fpic = "-USLIBTOOL_PLACEHOLDER_FPIC";
+	*ectx->cass = "-USLIBTOOL_PLACEHOLDER_COMPILE_ASSEMBLE";
 
-	*ectx->lout[0] = "-DSLIBTOOL_PLACEHOLDER_OUTPUT_SWITCH";
-	*ectx->lout[1] = "-DSLIBTOOL_PLACEHOLDER_OUTPUT_FILE";
+	*ectx->lout[0] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_SWITCH";
+	*ectx->lout[1] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_FILE";
 }
