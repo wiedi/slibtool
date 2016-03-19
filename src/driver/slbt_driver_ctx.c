@@ -211,15 +211,15 @@ static int slbt_split_argv(
 			*cargv++ = argv[++i];
 
 		else if (!(strncmp("-target=",&argv[i][1],strlen("-target="))))
-			*targv++ = argv[i++];
+			*targv++ = argv[i];
 
 		else if (!(strcmp("-target",&argv[i][1]))) {
 			*targv++ = argv[i++];
-			*targv++ = argv[i++];
+			*targv++ = argv[i];
 
 		} else if (!(strcmp("rpath",&argv[i][1]))) {
 			*targv++ = argv[i++];
-			*targv++ = argv[i++];
+			*targv++ = argv[i];
 		} else {
 			for (option=options; option->long_name; option++)
 				if (!(strcmp(option->long_name,&argv[i][1])))
