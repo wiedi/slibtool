@@ -15,6 +15,18 @@
 #include "argv/argv.h"
 
 
+/* flavor settings */
+#define SLBT_FLAVOR_SETTINGS(flavor,arp,ars,dsop,dsos,exep,exes,impp,imps) \
+	static const struct slbt_flavor_settings flavor = {		   \
+		arp,ars,dsop,dsos,exep,exes,impp,imps}
+
+SLBT_FLAVOR_SETTINGS(host_flavor_default, "lib",".a", "lib",".so",    "","",     "",   "");
+SLBT_FLAVOR_SETTINGS(host_flavor_midipix, "lib",".a", "lib",".so",    "","",     "lib",".lib.a");
+SLBT_FLAVOR_SETTINGS(host_flavor_mingw,   "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a");
+SLBT_FLAVOR_SETTINGS(host_flavor_cygwin,  "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a");
+SLBT_FLAVOR_SETTINGS(host_flavor_darwin,  "lib",".a", "lib",".dylib", "","",     "",   "");
+
+
 static const char cfgexplicit[] = "command-line argument";
 static const char cfghost[]     = "derived from <host>";
 static const char cfgtarget[]   = "derived from <target>";
@@ -389,6 +401,24 @@ static int slbt_init_host_params(
 	return 0;
 }
 
+static void slbt_init_flavor_settings(struct slbt_common_ctx * cctx)
+{
+	const struct slbt_flavor_settings * settings;
+
+	if (!strcmp(cctx->host.flavor,"midipix"))
+		settings = &host_flavor_midipix;
+	else if (!strcmp(cctx->host.flavor,"mingw"))
+		settings = &host_flavor_mingw;
+	else if (!strcmp(cctx->host.flavor,"cygwin"))
+		settings = &host_flavor_cygwin;
+	else if (!strcmp(cctx->host.flavor,"darwin"))
+		settings = &host_flavor_darwin;
+	else
+		settings = &host_flavor_default;
+
+	memcpy(&cctx->settings,settings,sizeof(*settings));
+}
+
 static int slbt_init_version_info(
 	struct slbt_driver_ctx_impl *	ictx,
 	struct slbt_version_info *	verinfo)
@@ -600,7 +630,7 @@ int slbt_get_driver_ctx(
 	/* host params */
 	if ((cctx.drvflags & SLBT_DRIVER_HEURISTICS)
 			|| (cctx.drvflags & SLBT_DRIVER_CONFIG)
-			|| (cctx.mode != SLBT_MODE_COMPILE))
+			|| (cctx.mode != SLBT_MODE_COMPILE)) {
 		if (slbt_init_host_params(
 				&ctx->cctx,
 				&ctx->host,
@@ -608,7 +638,9 @@ int slbt_get_driver_ctx(
 				&ctx->cctx.cfgmeta)) {
 			slbt_free_driver_ctx(&ctx->ctx);
 			return -1;
-		}
+		} else
+			slbt_init_flavor_settings(&ctx->cctx);
+	}
 
 	/* version info */
 	if (ctx->cctx.verinfo.verinfo)

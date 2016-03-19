@@ -114,12 +114,24 @@ struct slbt_host_params {
 	const char *			dlltool;
 };
 
+struct slbt_flavor_settings {
+	const char *			arprefix;
+	const char *			arsuffix;
+	const char *			dsoprefix;
+	const char *			dsosuffix;
+	const char *			exeprefix;
+	const char *			exesuffix;
+	const char *			impprefix;
+	const char *			impsuffix;
+};
+
 struct slbt_common_ctx {
 	uint64_t			drvflags;
 	uint64_t			actflags;
 	uint64_t			fmtflags;
 	struct slbt_host_params		host;
 	struct slbt_host_params		cfgmeta;
+	struct slbt_flavor_settings	settings;
 	struct slbt_version_info	verinfo;
 	enum slbt_mode			mode;
 	enum slbt_tag			tag;
