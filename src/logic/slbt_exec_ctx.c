@@ -193,7 +193,7 @@ int  slbt_get_exec_ctx(
 	ictx->ctx.lout[1] = &ictx->ctx.argv[i++];
 
 	/* output file name */
-	if (ref) {
+	if (ref && ((dctx->cctx->mode == SLBT_MODE_COMPILE))) {
 		*ictx->ctx.lout[0] = "-o";
 		*ictx->ctx.lout[1] = ch;
 		ictx->ctx.lobjname = ch;
@@ -215,10 +215,7 @@ int  slbt_get_exec_ctx(
 		strcpy(ch,ictx->ctx.aobjname);
 
 		if ((ch = strrchr(ch,'.')))
-			ch += sprintf(ch,"%s",
-				(dctx->cctx->mode == SLBT_MODE_COMPILE)
-					? ".lo"
-					: ".la")
+			ch += sprintf(ch,"%s",".lo")
 				+ sizeof('\0');
 	}
 
