@@ -95,6 +95,10 @@ struct slbt_exec_ctx {
 	char *	lobjname;
 	char *	aobjname;
 	char *	ltobjname;
+	char *	arfilename;
+	char *	lafilename;
+	char *	dsofilename;
+	char *	exefilename;
 	pid_t	pid;
 	int	exitcode;
 };
