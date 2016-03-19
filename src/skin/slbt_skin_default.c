@@ -86,6 +86,11 @@ const struct argv_option slbt_default_options[] = {
 				"where a library should eventually be "
 				"installed, relative to $(DESTDIR)$(PREFIX)"},
 
+	{"version-info",	0,TAG_VERSION_INFO,ARGV_OPTARG_REQUIRED,
+				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,
+				"<current>[:<revision>[:<age>]]",
+				"specify version information"},
+
 	{"no-suppress",		0,TAG_NO_SUPPRESS,ARGV_OPTARG_NONE,
 				ARGV_OPTION_HYBRID_ONLY,0,0,
 				"transparently forward all "

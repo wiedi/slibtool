@@ -99,6 +99,13 @@ struct slbt_exec_ctx {
 	int	exitcode;
 };
 
+struct slbt_version_info {
+	int				major;
+	int				minor;
+	int				revision;
+	const char *			verinfo;
+};
+
 struct slbt_host_params {
 	const char *			host;
 	const char *			flavor;
@@ -113,6 +120,7 @@ struct slbt_common_ctx {
 	uint64_t			fmtflags;
 	struct slbt_host_params		host;
 	struct slbt_host_params		cfgmeta;
+	struct slbt_version_info	verinfo;
 	enum slbt_mode			mode;
 	enum slbt_tag			tag;
 	enum slbt_warning_level		warnings;

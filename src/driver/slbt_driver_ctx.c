@@ -14,6 +14,7 @@
 #include "slibtool_driver_impl.h"
 #include "argv/argv.h"
 
+
 static const char cfgexplicit[] = "command-line argument";
 static const char cfghost[]     = "derived from <host>";
 static const char cfgtarget[]   = "derived from <target>";
@@ -220,6 +221,11 @@ static int slbt_split_argv(
 		} else if (!(strcmp("rpath",&argv[i][1]))) {
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
+
+		} else if (!(strcmp("version-info",&argv[i][1]))) {
+			*targv++ = argv[i++];
+			*targv++ = argv[i];
+
 		} else {
 			for (option=options; option->long_name; option++)
 				if (!(strcmp(option->long_name,&argv[i][1])))
@@ -383,6 +389,33 @@ static int slbt_init_host_params(
 	return 0;
 }
 
+static int slbt_init_version_info(
+	struct slbt_driver_ctx_impl *	ictx,
+	struct slbt_version_info *	verinfo)
+{
+	int	current;
+	int	revision;
+	int	age;
+
+	sscanf(verinfo->verinfo,"%d:%d:%d",
+		&current,&revision,&age);
+
+	if (current < age) {
+		if (ictx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
+			fprintf(stderr,
+				"%s: error: invalid version info: "
+				"<current> may not be smaller than <age>.\n",
+				argv_program_name(ictx->cctx.targv[0]));
+		return -1;
+	}
+
+	verinfo->major    = current - age;
+	verinfo->minor    = age;
+	verinfo->revision = revision;
+
+	return 0;
+}
+
 int slbt_get_driver_ctx(
 	char **				argv,
 	char **				envp,
@@ -524,6 +557,10 @@ int slbt_get_driver_ctx(
 					cctx.rpath = entry->arg;
 					break;
 
+				case TAG_VERSION_INFO:
+					cctx.verinfo.verinfo = entry->arg;
+					break;
+
 				case TAG_TARGET:
 					cctx.target = entry->arg;
 					break;
@@ -569,6 +606,13 @@ int slbt_get_driver_ctx(
 				&ctx->host,
 				&ctx->cctx.host,
 				&ctx->cctx.cfgmeta)) {
+			slbt_free_driver_ctx(&ctx->ctx);
+			return -1;
+		}
+
+	/* version info */
+	if (ctx->cctx.verinfo.verinfo)
+		if (slbt_init_version_info(ctx,&ctx->cctx.verinfo)) {
 			slbt_free_driver_ctx(&ctx->ctx);
 			return -1;
 		}
