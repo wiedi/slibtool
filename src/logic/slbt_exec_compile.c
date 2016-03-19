@@ -51,6 +51,13 @@ int  slbt_exec_compile(
 		*ectx->lout[0] = "-o";
 		*ectx->lout[1] = ectx->lobjname;
 
+		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT)) {
+			if (slbt_output_compile(dctx,ectx)) {
+				slbt_free_exec_ctx(actx);
+				return -1;
+			}
+		}
+
 		if (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode) {
 			slbt_free_exec_ctx(actx);
 			return -1;
@@ -69,6 +76,13 @@ int  slbt_exec_compile(
 		*ectx->cass = "-c";
 		*ectx->lout[0] = "-o";
 		*ectx->lout[1] = ectx->aobjname;;
+
+		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT)) {
+			if (slbt_output_compile(dctx,ectx)) {
+				slbt_free_exec_ctx(actx);
+				return -1;
+			}
+		}
 
 		if (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode) {
 			slbt_free_exec_ctx(actx);
