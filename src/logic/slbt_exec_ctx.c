@@ -125,7 +125,7 @@ int  slbt_get_exec_ctx(
 	struct slbt_exec_ctx_impl *	ictx;
 	char **				parg;
 	char *				ch;
-	char *				slash;
+	char *				mark;
 	const char *			ref;
 	int				i;
 
@@ -145,15 +145,15 @@ int  slbt_get_exec_ctx(
 		? dctx->cctx->output
 		: ictx->ctx.csrc;
 
-	if (ref && !ictx->ctx.csrc && (slash = strrchr(ref,'/'))) {
+	if (ref && !ictx->ctx.csrc && (mark = strrchr(ref,'/'))) {
 		ictx->ctx.ldirname = ch;
 		strcpy(ch,ref);
-		ch += slash - ref;
+		ch += mark - ref;
 		ch += sprintf(ch,"%s","/.libs/");
 		ch++;
 
 		ictx->ctx.lbasename = ch;
-		ch += sprintf(ch,"%s",++slash);
+		ch += sprintf(ch,"%s",++mark);
 		ch++;
 	} else if (ref) {
 		ictx->ctx.ldirname = ch;
@@ -161,8 +161,8 @@ int  slbt_get_exec_ctx(
 		ch++;
 
 		ictx->ctx.lbasename = ch;
-		slash = strrchr(ref,'/');
-		ch += sprintf(ch,"%s",slash ? ++slash : ref);
+		mark = strrchr(ref,'/');
+		ch += sprintf(ch,"%s",mark ? ++mark : ref);
 		ch++;
 	}
 
