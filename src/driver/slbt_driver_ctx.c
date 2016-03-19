@@ -235,7 +235,7 @@ static int slbt_split_argv(
 	return 0;
 }
 
-int slbt_init_host_params(
+static int slbt_init_host_params(
 	const struct slbt_common_ctx *	cctx,
 	struct slbt_host_strs *		drvhost,
 	struct slbt_host_params *	host,
