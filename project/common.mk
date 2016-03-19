@@ -4,6 +4,7 @@ COMMON_SRCS = \
 	src/logic/slbt_exec_compile.c \
 	src/logic/slbt_exec_ctx.c \
 	src/logic/slbt_map_input.c \
+	src/output/slbt_output_compile.c \
 	src/output/slbt_output_config.c \
 	src/skin/slbt_skin_default.c \
 
