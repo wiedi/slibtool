@@ -118,6 +118,7 @@ struct slbt_common_ctx {
 	enum slbt_warning_level		warnings;
 	const char *			target;
 	const char *			output;
+	const char *			rpath;
 	char **				targv;
 	char **				cargv;
 };

@@ -217,6 +217,9 @@ static int slbt_split_argv(
 			*targv++ = argv[i++];
 			*targv++ = argv[i++];
 
+		} else if (!(strcmp("rpath",&argv[i][1]))) {
+			*targv++ = argv[i++];
+			*targv++ = argv[i++];
 		} else {
 			for (option=options; option->long_name; option++)
 				if (!(strcmp(option->long_name,&argv[i][1])))
@@ -515,6 +518,10 @@ int slbt_get_driver_ctx(
 
 				case TAG_OUTPUT:
 					cctx.output = entry->arg;
+					break;
+
+				case TAG_RPATH:
+					cctx.rpath = entry->arg;
 					break;
 
 				case TAG_TARGET:
