@@ -190,8 +190,8 @@ int  slbt_get_exec_ctx(
 
 			for (; *ch; ch++)
 				if (*ch == ',') {
-					*ch = '\0';
-					ictx->ctx.argv[i++] = ch+1;
+					*ch++ = '\0';
+					ictx->ctx.argv[i++] = ch;
 				}
 		} else {
 			ictx->ctx.argv[i++] = ch;
