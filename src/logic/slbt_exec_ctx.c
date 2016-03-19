@@ -67,7 +67,7 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 
 	/* clerical [worst-case] buffer size (guard, .libs, version) */
 	size  = strlen(".lo") + sizeof('\0');
-	size +=  6 * (strlen(".libs/") + sizeof('\0'));
+	size +=  8 * (strlen(".libs/") + sizeof('\0'));
 	size += 36 * (strlen(".0000") + sizeof('\0'));
 
 	/* buffer size (cargv, -Wc) */
@@ -86,6 +86,17 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 
 	/* buffer size (.libs/%.o, pessimistic) */
 	size += argc * strlen(".libs/");
+
+	/* buffer size (linking) */
+	if (dctx->cctx->mode == SLBT_MODE_LINK)
+		size += strlen(dctx->cctx->settings.arprefix) + sizeof('\0')
+			+ strlen(dctx->cctx->settings.arsuffix) + sizeof('\0')
+			+ strlen(dctx->cctx->settings.dsoprefix) + sizeof('\0')
+			+ strlen(dctx->cctx->settings.dsoprefix) + sizeof('\0')
+			+ strlen(dctx->cctx->settings.exeprefix) + sizeof('\0')
+			+ strlen(dctx->cctx->settings.exeprefix) + sizeof('\0')
+			+ strlen(dctx->cctx->settings.impprefix) + sizeof('\0')
+			+ strlen(dctx->cctx->settings.impprefix) + sizeof('\0');
 
 	/* alloc */
 	if (!(args = malloc(size)))
