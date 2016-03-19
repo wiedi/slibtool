@@ -173,7 +173,8 @@ int  slbt_get_exec_ctx(
 			ch[-2] = '\0';
 			ch--;
 		} else if (ictx->ctx.csrc) {
-			if ((ch = strrchr(ictx->ctx.lbasename,'.'))) {
+			if ((mark = strrchr(ictx->ctx.lbasename,'.'))) {
+				ch    = mark;
 				*++ch = 'o';
 				*++ch = '\0';
 				ch++;
@@ -228,8 +229,8 @@ int  slbt_get_exec_ctx(
 		ictx->ctx.ltobjname = ch;
 		strcpy(ch,ictx->ctx.aobjname);
 
-		if ((ch = strrchr(ch,'.')))
-			ch += sprintf(ch,"%s",".lo")
+		if ((mark = strrchr(ch,'.')))
+			ch = mark + sprintf(mark,"%s",".lo")
 				+ sizeof('\0');
 	}
 
