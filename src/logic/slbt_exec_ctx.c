@@ -84,6 +84,9 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 	else if ((csrc = slbt_source_file(dctx->cctx->cargv)))
 		size += 4*strlen(csrc);
 
+	/* buffer size (.libs/%.o, pessimistic) */
+	size += argc * strlen(".libs/");
+
 	/* alloc */
 	if (!(args = malloc(size)))
 		return 0;
