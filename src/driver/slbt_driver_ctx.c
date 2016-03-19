@@ -27,6 +27,7 @@ SLBT_FLAVOR_SETTINGS(host_flavor_cygwin,  "lib",".a", "lib",".dll",   "",".exe",
 SLBT_FLAVOR_SETTINGS(host_flavor_darwin,  "lib",".a", "lib",".dylib", "","",     "",   "");
 
 
+/* annotation strings */
 static const char cfgexplicit[] = "command-line argument";
 static const char cfghost[]     = "derived from <host>";
 static const char cfgtarget[]   = "derived from <target>";
