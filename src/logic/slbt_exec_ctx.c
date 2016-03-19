@@ -74,7 +74,7 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 	for (parg=dctx->cctx->cargv; *parg; parg++, argc++)
 		if (!(strncmp("-Wc,",*parg,4)))
 			size += sizeof('\0') + slbt_parse_comma_separated_flags(
-					parg[4],&argc);
+					&(*parg)[4],&argc);
 		else
 			size += sizeof('\0') + strlen(*parg);
 
@@ -185,7 +185,7 @@ int  slbt_get_exec_ctx(
 	/* cargv, -Wc */
 	for (i=0, parg=dctx->cctx->cargv; *parg; parg++, ch++) {
 		if (!(strncmp("-Wc,",*parg,4))) {
-			strcpy(ch,parg[4]);
+			strcpy(ch,&(*parg)[4]);
 			ictx->ctx.argv[i++] = ch;
 
 			for (; *ch; ch++)
