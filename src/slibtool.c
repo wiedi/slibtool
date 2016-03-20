@@ -29,6 +29,9 @@ static void slibtool_perform_driver_actions(struct slbt_driver_ctx * dctx)
 
 	if (dctx->cctx->mode == SLBT_MODE_COMPILE)
 		dctx->nerrors += (slbt_exec_compile(dctx,0) < 0);
+
+	if (dctx->cctx->mode == SLBT_MODE_LINK)
+		dctx->nerrors += (slbt_exec_link(dctx,0) < 0);
 }
 
 static void slibtool_perform_unit_actions(struct slbt_unit_ctx * uctx)
