@@ -50,18 +50,25 @@ static bool slbt_adjust_input_argument(char * arg, bool fpic)
 
 static int slbt_exec_link_static_archive(
 	const struct slbt_driver_ctx *	dctx,
-	struct slbt_exec_ctx *		ectx)
+	struct slbt_exec_ctx *		ectx,
+	const char *			arfilename)
 {
 	char ** 	aarg;
 	char ** 	parg;
 	char *		ranlib[3];
 	char		program[2048];
+	char		output[2048];
 
 	/* placeholders */
 	slbt_reset_placeholders(ectx);
 
 	/* alternate program (ar, ranlib) */
 	ectx->program = program;
+
+	/* output */
+	if ((size_t)snprintf(output,sizeof(output),"%s",
+			arfilename) >= sizeof(output))
+		return -1;
 
 	/* ar alternate argument vector */
 	if ((size_t)snprintf(program,sizeof(program),"%s",
@@ -71,7 +78,7 @@ static int slbt_exec_link_static_archive(
 	aarg    = ectx->altv;
 	*aarg++ = program;
 	*aarg++ = "cru";
-	*aarg++ = ectx->arfilename;
+	*aarg++ = output;
 
 	/* input argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
@@ -96,7 +103,7 @@ static int slbt_exec_link_static_archive(
 		return -1;
 
 	ranlib[0] = program;
-	ranlib[1] = ectx->arfilename;
+	ranlib[1] = output;
 	ranlib[2] = 0;
 	ectx->argv = ranlib;
 
@@ -119,6 +126,7 @@ int slbt_exec_link(
 {
 	int			ret;
 	int			fdlibs;
+	const char *		output;
 	char *			dot;
 	FILE *			fout;
 	struct slbt_exec_ctx *	actx;
@@ -132,7 +140,8 @@ int slbt_exec_link(
 		actx = ectx;
 
 	/* output suffix */
-	dot = strrchr(dctx->cctx->output,'.');
+	output = dctx->cctx->output;
+	dot    = strrchr(output,'.');
 
 	/* .libs directory */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED) {
@@ -146,7 +155,7 @@ int slbt_exec_link(
 
 	/* non-pic libfoo.a */
 	if (dot && !strcmp(dot,".a"))
-		if (slbt_exec_link_static_archive(dctx,ectx)) {
+		if (slbt_exec_link_static_archive(dctx,ectx,output)) {
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
