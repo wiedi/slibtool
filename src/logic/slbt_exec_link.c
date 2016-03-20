@@ -14,6 +14,105 @@
 #include "slibtool_spawn_impl.h"
 
 
+/*******************************************************************/
+/*                                                                 */
+/* -o <ltlib>  switches              input   result                */
+/* ----------  --------------------- -----   ------                */
+/* libfoo.a    -static               bar.lo  libfoo.a              */
+/*                                                                 */
+/* ar cru libfoo.a bar.lo                                          */
+/* ranlib libfoo.a                                                 */
+/*                                                                 */
+/*******************************************************************/
+
+static bool slbt_adjust_input_argument(char * arg, bool fpic)
+{
+	char *	dot;
+
+	if (*arg == '-')
+		return false;
+
+	if (!(dot = strrchr(arg,'.')))
+		return false;
+
+	if (strcmp(dot,".lo"))
+		return false;
+
+	if (fpic) {
+		/* to do */
+		return false;
+	} else {
+		dot[1] = 'o';
+		dot[2] = '\0';
+		return true;
+	}
+}
+
+static int slbt_exec_link_static_archive(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx)
+{
+	char ** 	aarg;
+	char ** 	parg;
+	char *		ranlib[3];
+	char		program[2048];
+
+	/* placeholders */
+	slbt_reset_placeholders(ectx);
+
+	/* alternate program (ar, ranlib) */
+	ectx->program = program;
+
+	/* ar alternate argument vector */
+	if ((size_t)snprintf(program,sizeof(program),"%s",
+			dctx->cctx->host.ar) >= sizeof(program))
+		return -1;
+
+	aarg    = ectx->altv;
+	*aarg++ = program;
+	*aarg++ = "cru";
+	*aarg++ = ectx->arfilename;
+
+	/* input argument adjustment */
+	for (parg=ectx->cargv; *parg; parg++)
+		if (slbt_adjust_input_argument(*parg,false))
+			*aarg++ = *parg;
+
+	*aarg = 0;
+	ectx->argv = ectx->altv;
+
+	/* step output */
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+		if (slbt_output_link(dctx,ectx))
+			return -1;
+
+	/* ar spawn */
+	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
+		return -1;
+
+	/* ranlib argv */
+	if ((size_t)snprintf(program,sizeof(program),"%s",
+			dctx->cctx->host.ranlib) >= sizeof(program))
+		return -1;
+
+	ranlib[0] = program;
+	ranlib[1] = ectx->arfilename;
+	ranlib[2] = 0;
+	ectx->argv = ranlib;
+
+	/* step output */
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+		if (slbt_output_link(dctx,ectx))
+			return -1;
+
+	/* ranlib spawn */
+	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
+		return -1;
+
+	return 0;
+}
+
+
 int slbt_exec_link(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx)
@@ -32,6 +131,9 @@ int slbt_exec_link(
 	else
 		actx = ectx;
 
+	/* output suffix */
+	dot = strrchr(dctx->cctx->output,'.');
+
 	/* .libs directory */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED) {
 		if ((fdlibs = open(ectx->ldirname,O_DIRECTORY)) >= 0)
@@ -42,8 +144,15 @@ int slbt_exec_link(
 		}
 	}
 
+	/* non-pic libfoo.a */
+	if (dot && !strcmp(dot,".a"))
+		if (slbt_exec_link_static_archive(dctx,ectx)) {
+			slbt_free_exec_ctx(actx);
+			return -1;
+		}
+
 	/* no wrapper? */
-	if (!(dot = strrchr(dctx->cctx->output,'.')) || strcmp(dot,".la")) {
+	if (!dot || strcmp(dot,".la")) {
 		slbt_free_exec_ctx(actx);
 		return 0;
 	}
