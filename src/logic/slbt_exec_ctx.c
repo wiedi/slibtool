@@ -234,6 +234,38 @@ int  slbt_get_exec_ctx(
 				+ sizeof('\0');
 	}
 
+	/* linking: arfilename, lafilename, dsofilename */
+	if (dctx->cctx->mode == SLBT_MODE_LINK && dctx->cctx->libname) {
+		/* arfilename */
+		ictx->ctx.arfilename = ch;
+		ch += sprintf(ch,"%s%s%s%s",
+				ictx->ctx.ldirname,
+				dctx->cctx->settings.arprefix,
+				dctx->cctx->libname,
+				dctx->cctx->settings.arsuffix)
+			+ sizeof('\0');
+
+
+
+		/* lafilename */
+		ictx->ctx.lafilename = ch;
+		ch += sprintf(ch,"%s%s%s.la",
+				ictx->ctx.ldirname,
+				dctx->cctx->settings.dsoprefix,
+				dctx->cctx->libname)
+			+ sizeof('\0');
+
+
+		/* dsofilename */
+		ictx->ctx.dsofilename = ch;
+		ch += sprintf(ch,"%s%s%s%s",
+				ictx->ctx.ldirname,
+				dctx->cctx->settings.dsoprefix,
+				dctx->cctx->libname,
+				dctx->cctx->settings.dsosuffix)
+			+ sizeof('\0');
+	}
+
 	*ectx = &ictx->ctx;
 	return 0;
 }
