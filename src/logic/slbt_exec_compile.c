@@ -110,5 +110,5 @@ int  slbt_exec_compile(
 	fclose(fout);
 	slbt_free_exec_ctx(actx);
 
-	return 0;
+	return (ret > 0) ? 0 : -1;
 }
