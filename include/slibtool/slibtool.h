@@ -85,6 +85,7 @@ struct slbt_exec_ctx {
 	char *	program;
 	char **	argv;
 	char **	envp;
+	char ** altv;
 	char ** dpic;
 	char ** fpic;
 	char ** cass;

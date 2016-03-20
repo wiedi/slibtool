@@ -102,7 +102,7 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 	if (!(args = malloc(size)))
 		return 0;
 
-	size = sizeof(*ictx) + (argc+SLBT_ARGV_SPARE_PTRS)*sizeof(char *);
+	size = sizeof(*ictx) + (2*(argc+1)+SLBT_ARGV_SPARE_PTRS)*sizeof(char *);
 
 	if (!(ictx = calloc(1,size))) {
 		free(args);
@@ -136,6 +136,7 @@ int  slbt_get_exec_ctx(
 	/* init with guard for later .lo check */
 	ch                = ictx->args + strlen(".lo");
 	ictx->ctx.argv    = ictx->buffer;
+	ictx->ctx.altv    = &ictx->buffer[ictx->argc + 1];
 
 	/* <compiler> */
 	ictx->ctx.program = dctx->cctx->cargv[0];
