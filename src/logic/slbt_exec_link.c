@@ -7,7 +7,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <fcntl.h>
-#include <limits.h>
 #include <errno.h>
 #include <sys/stat.h>
 
@@ -24,10 +23,6 @@
 /* ranlib libfoo.a                                                 */
 /*                                                                 */
 /*******************************************************************/
-
-#ifndef PATH_MAX
-#define PATH_MAX _XOPEN_PATH_MAX
-#endif
 
 static bool slbt_adjust_input_argument(char * arg, bool fpic)
 {

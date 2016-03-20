@@ -4,9 +4,14 @@
 /*  Released under the Standard MIT License; see COPYING.SLIBTOOL. */
 /*******************************************************************/
 
+#include <limits.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <sys/wait.h>
+
+#ifndef PATH_MAX
+#define PATH_MAX (_XOPEN_PATH_MAX < 4096) ? 4096 : _XOPEN_PATH_MAX
+#endif
 
 #ifndef SLBT_USE_FORK
 #ifndef SLBT_USE_VFORK
