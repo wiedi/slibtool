@@ -3,6 +3,7 @@ COMMON_SRCS = \
 	src/driver/slbt_unit_ctx.c \
 	src/logic/slbt_exec_compile.c \
 	src/logic/slbt_exec_ctx.c \
+	src/logic/slbt_exec_link.c \
 	src/logic/slbt_map_input.c \
 	src/output/slbt_output_config.c \
 	src/output/slbt_output_exec.c \
