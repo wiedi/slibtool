@@ -7,12 +7,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <errno.h>
 #include <sys/stat.h>
 
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
-
 
 /*******************************************************************/
 /*                                                                 */
@@ -24,6 +24,10 @@
 /* ranlib libfoo.a                                                 */
 /*                                                                 */
 /*******************************************************************/
+
+#ifndef PATH_MAX
+#define PATH_MAX _XOPEN_PATH_MAX
+#endif
 
 static bool slbt_adjust_input_argument(char * arg, bool fpic)
 {
@@ -56,8 +60,8 @@ static int slbt_exec_link_static_archive(
 	char ** 	aarg;
 	char ** 	parg;
 	char *		ranlib[3];
-	char		program[2048];
-	char		output[2048];
+	char		program[PATH_MAX];
+	char		output [PATH_MAX];
 
 	/* placeholders */
 	slbt_reset_placeholders(ectx);
