@@ -196,6 +196,7 @@ int  slbt_get_exec_ctx(
 		} else {
 			ictx->ctx.argv[i++] = ch;
 			ch += sprintf(ch,"%s",*parg);
+			ch += strlen(".libs/");
 		}
 	}
 
