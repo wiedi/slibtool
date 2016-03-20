@@ -447,6 +447,99 @@ static int slbt_init_version_info(
 	return 0;
 }
 
+static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
+{
+	const char * program;
+	const char * libname;
+	const char * prefix;
+	char *       dot;
+
+	program = argv_program_name(ctx->cctx.targv[0]);
+	libname = 0;
+
+	/* output */
+	if (!(ctx->cctx.output)) {
+		if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
+			fprintf(stderr,
+				"%s: error: output file must be "
+				"specified in link mode.\n",
+				program);
+		return -1;
+	}
+
+	/* executable? */
+	if (!(dot = strrchr(ctx->cctx.output,'.')))
+		return 0;
+
+	/* todo: archive? library? wrapper? inlined function, avoid repetition */
+
+	/* archive? */
+	if (!strcmp(dot,ctx->cctx.settings.arsuffix)) {
+		prefix = ctx->cctx.settings.arprefix;
+
+		if (!strncmp(prefix,ctx->cctx.output,strlen(prefix)))
+			libname = ctx->cctx.output;
+		else {
+			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
+				fprintf(stderr,
+					"%s: error: output file prefix does "
+					"not match its (archive) suffix; "
+					"the expected prefix was '%s'\n",
+					program,prefix);
+			return -1;
+		}
+	}
+
+	/* library? */
+	else if (!strcmp(dot,ctx->cctx.settings.dsosuffix)) {
+		prefix = ctx->cctx.settings.dsoprefix;
+
+		if (!strncmp(prefix,ctx->cctx.output,strlen(prefix)))
+			libname = ctx->cctx.output;
+		else {
+			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
+				fprintf(stderr,
+					"%s: error: output file prefix does "
+					"not match its (shared library) suffix; "
+					"the expected prefix was '%s'\n",
+					program,prefix);
+			return -1;
+		}
+	}
+
+	/* wrapper? */
+	else if (!strcmp(dot,".la")) {
+		prefix = ctx->cctx.settings.dsoprefix;
+
+		if (!strncmp(prefix,ctx->cctx.output,strlen(prefix)))
+			libname = ctx->cctx.output;
+		else {
+			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
+				fprintf(stderr,
+					"%s: error: output file prefix does "
+					"not match its (libtool wrapper) suffix; "
+					"the expected prefix was '%s'\n",
+					program,prefix);
+			return -1;
+		}
+	}
+
+	/* executable? */
+	if (!libname)
+		return 0;
+
+	/* libname alloc */
+	if (!(ctx->libname = strdup(libname + strlen(prefix))))
+		return -1;
+
+	dot  = strrchr(ctx->libname,'.');
+	*dot = '\0';
+
+	ctx->cctx.libname = ctx->libname;
+
+	return 0;
+}
+
 int slbt_get_driver_ctx(
 	char **				argv,
 	char **				envp,
@@ -650,6 +743,13 @@ int slbt_get_driver_ctx(
 			return -1;
 		}
 
+	/* link params */
+	if (cctx.mode == SLBT_MODE_LINK)
+		if (slbt_init_link_params(ctx)) {
+			slbt_free_driver_ctx(&ctx->ctx);
+			return -1;
+		}
+
 	*pctx = &ctx->ctx;
 	return SLBT_OK;
 }
@@ -678,6 +778,9 @@ static void slbt_free_driver_ctx_impl(struct slbt_driver_ctx_alloc * ictx)
 {
 	if (ictx->ctx.targv)
 		free(ictx->ctx.targv);
+
+	if (ictx->ctx.libname)
+		free(ictx->ctx.libname);
 
 	if (ictx->ctx.host.host)
 		free(ictx->ctx.host.host);
