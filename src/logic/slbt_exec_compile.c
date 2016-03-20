@@ -40,6 +40,10 @@ int  slbt_exec_compile(
 		}
 	}
 
+	/* compile mode */
+	ectx->program = ectx->compiler;
+	ectx->argv    = ectx->cargv;
+
 	/* shared library object */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED) {
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_ANTI_PIC)) {

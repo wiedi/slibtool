@@ -139,7 +139,8 @@ int  slbt_get_exec_ctx(
 	ictx->ctx.altv    = &ictx->buffer[ictx->argc + 1];
 
 	/* <compiler> */
-	ictx->ctx.program = dctx->cctx->cargv[0];
+	ictx->ctx.compiler = dctx->cctx->cargv[0];
+	ictx->ctx.cargv    = ictx->ctx.argv;
 
 	/* ldirname, lbasename */
 	ref = (dctx->cctx->output)

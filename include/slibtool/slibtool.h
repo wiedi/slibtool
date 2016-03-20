@@ -83,6 +83,8 @@ struct slbt_input {
 
 struct slbt_exec_ctx {
 	char *	program;
+	char *	compiler;
+	char **	cargv;
 	char **	argv;
 	char **	envp;
 	char ** altv;
