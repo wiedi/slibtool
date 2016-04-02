@@ -133,6 +133,45 @@ static int slbt_exec_link_create_archive(
 	return 0;
 }
 
+static int slbt_exec_link_create_symlink(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	const char *			target,
+	char *				lnkname)
+{
+	const char *	slash;
+	char *		ln[6];
+	char		atarget[PATH_MAX];
+
+	/* atarget */
+	if ((slash = strrchr(target,'/')))
+		slash++;
+	else
+		slash = target;
+
+	if ((size_t)snprintf(atarget,sizeof(atarget),"../%s",
+			slash) >= sizeof(atarget))
+		return -1;
+
+	/* ln argv (fake) */
+	ln[0] = "ln";
+	ln[1] = "-f";
+	ln[2] = "-s";
+	ln[3] = atarget;
+	ln[4] = lnkname;
+	ectx->argv = ln;
+
+	/* step output */
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+		if (slbt_output_link(dctx,ectx))
+			return -1;
+
+	/* remove old symlink (if any) */
+	unlink(lnkname);
+
+	/* create symlink */
+	return symlink(atarget,lnkname);
+}
 
 int slbt_exec_link(
 	const struct slbt_driver_ctx *	dctx,
@@ -188,6 +227,15 @@ int slbt_exec_link(
 
 	ret = fprintf(fout,
 		"# slibtool (pre-alphe) generated file\n\n");
+
+	/* wrapper symlink */
+	if (slbt_exec_link_create_symlink(
+			dctx,ectx,
+			output,
+			ectx->lafilename)) {
+		slbt_free_exec_ctx(actx);
+		return -1;
+	}
 
 	/* all done */
 	fclose(fout);
