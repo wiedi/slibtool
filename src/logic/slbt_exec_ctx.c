@@ -17,7 +17,7 @@ struct slbt_exec_ctx_impl {
 	int			argc;
 	char *			args;
 	struct slbt_exec_ctx	ctx;
-	char *			buffer[];
+	char *			vbuffer[];
 };
 
 
@@ -135,8 +135,8 @@ int  slbt_get_exec_ctx(
 
 	/* init with guard for later .lo check */
 	ch                = ictx->args + strlen(".lo");
-	ictx->ctx.argv    = ictx->buffer;
-	ictx->ctx.altv    = &ictx->buffer[ictx->argc + 1];
+	ictx->ctx.argv    = ictx->vbuffer;
+	ictx->ctx.altv    = &ictx->vbuffer[ictx->argc + 1];
 
 	/* <compiler> */
 	ictx->ctx.compiler = dctx->cctx->cargv[0];
