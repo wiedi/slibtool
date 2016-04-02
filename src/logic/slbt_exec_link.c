@@ -17,7 +17,7 @@
 /*                                                                 */
 /* -o <ltlib>  switches              input   result                */
 /* ----------  --------------------- -----   ------                */
-/* libfoo.a    -static               bar.lo  libfoo.a              */
+/* libfoo.a    [-shared|-static]     bar.lo  libfoo.a              */
 /*                                                                 */
 /* ar cru libfoo.a bar.lo                                          */
 /* ranlib libfoo.a                                                 */
