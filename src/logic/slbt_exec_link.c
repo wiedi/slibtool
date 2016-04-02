@@ -19,7 +19,7 @@
 /* ----------  --------------------- -----   ------                */
 /* libfoo.a    [-shared|-static]     bar.lo  libfoo.a              */
 /*                                                                 */
-/* ar cru libfoo.a bar.lo                                          */
+/* ar cru libfoo.a bar.o                                           */
 /* ranlib libfoo.a                                                 */
 /*                                                                 */
 /*******************************************************************/
