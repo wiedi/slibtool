@@ -180,6 +180,7 @@ slbt_api void slbt_free_unit_ctx	(struct slbt_unit_ctx *);
 
 slbt_api int  slbt_get_exec_ctx		(const struct slbt_driver_ctx *, struct slbt_exec_ctx **);
 slbt_api void slbt_free_exec_ctx	(struct slbt_exec_ctx *);
+slbt_api void slbt_reset_arguments	(struct slbt_exec_ctx *);
 slbt_api void slbt_reset_placeholders	(struct slbt_exec_ctx *);
 
 slbt_api int  slbt_exec_compile		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);

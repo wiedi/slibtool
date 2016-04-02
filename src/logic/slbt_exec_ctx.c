@@ -16,6 +16,8 @@
 struct slbt_exec_ctx_impl {
 	int			argc;
 	char *			args;
+	char *			shadow;
+	size_t			size;
 	struct slbt_exec_ctx	ctx;
 	char *			vbuffer[];
 };
@@ -57,8 +59,10 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 {
 	struct slbt_exec_ctx_impl *	ictx;
 	size_t				size;
+	size_t				vsize;
 	int				argc;
 	char *				args;
+	char *				shadow;
 	char *				csrc;
 	char **				parg;
 
@@ -102,15 +106,24 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 	if (!(args = malloc(size)))
 		return 0;
 
-	size = sizeof(*ictx) + (2*(argc+1)+SLBT_ARGV_SPARE_PTRS)*sizeof(char *);
-
-	if (!(ictx = calloc(1,size))) {
+	if (!(shadow = malloc(size))) {
 		free(args);
+		return 0;
+	}
+
+	vsize = sizeof(*ictx) + (2*(argc+1)+SLBT_ARGV_SPARE_PTRS)*sizeof(char *);
+
+	if (!(ictx = calloc(1,vsize))) {
+		free(args);
+		free(shadow);
 		return 0;
 	}
 
 	ictx->args = args;
 	ictx->argc = argc;
+
+	ictx->size   = size;
+	ictx->shadow = shadow;
 
 	ictx->ctx.csrc = csrc;
 
@@ -269,6 +282,9 @@ int  slbt_get_exec_ctx(
 			+ sizeof('\0');
 	}
 
+	/* argument strings shadow copy */
+	memcpy(ictx->shadow,ictx->args,ictx->size);
+
 	*ectx = &ictx->ctx;
 	return 0;
 }
@@ -279,6 +295,7 @@ static int slbt_free_exec_ctx_impl(
 	int				status)
 {
 	free(ictx->args);
+	free(ictx->shadow);
 	free (ictx);
 	return status;
 }
@@ -294,6 +311,17 @@ void slbt_free_exec_ctx(struct slbt_exec_ctx * ctx)
 		ictx = (struct slbt_exec_ctx_impl *)addr;
 		slbt_free_exec_ctx_impl(ictx,0);
 	}
+}
+
+
+void slbt_reset_arguments(struct slbt_exec_ctx * ectx)
+{
+	struct slbt_exec_ctx_impl *	ictx;
+	uintptr_t			addr;
+
+	addr = (uintptr_t)ectx - offsetof(struct slbt_exec_ctx_impl,ctx);
+	ictx = (struct slbt_exec_ctx_impl *)addr;
+	memcpy(ictx->args,ictx->shadow,ictx->size);
 }
 
 

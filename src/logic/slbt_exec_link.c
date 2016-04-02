@@ -58,6 +58,9 @@ static int slbt_exec_link_static_archive(
 	char		program[PATH_MAX];
 	char		output [PATH_MAX];
 
+	/* initial state */
+	slbt_reset_arguments(ectx);
+
 	/* placeholders */
 	slbt_reset_placeholders(ectx);
 
