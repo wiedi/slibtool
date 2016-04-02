@@ -26,7 +26,9 @@
 
 static bool slbt_adjust_input_argument(char * arg, bool fpic)
 {
+	char *	slash;
 	char *	dot;
+	char	base[PATH_MAX];
 
 	if (*arg == '-')
 		return false;
@@ -38,13 +40,22 @@ static bool slbt_adjust_input_argument(char * arg, bool fpic)
 		return false;
 
 	if (fpic) {
-		/* to do */
-		return false;
-	} else {
-		dot[1] = 'o';
-		dot[2] = '\0';
-		return true;
+		if ((slash = strrchr(arg,'/')))
+			slash++;
+		else
+			slash = arg;
+
+		if ((size_t)snprintf(base,sizeof(base),"%s",
+				slash) >= sizeof(base))
+			return false;
+
+		sprintf(slash,".libs/%s",base);
+		dot = strrchr(arg,'.');
 	}
+
+	dot[1] = 'o';
+	dot[2] = '\0';
+	return true;
 }
 
 static int slbt_exec_link_create_archive(
