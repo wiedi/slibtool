@@ -24,6 +24,21 @@
 /*                                                                 */
 /*******************************************************************/
 
+/*******************************************************************/
+/*                                                                 */
+/* -o <ltlib>  switches              input   result                */
+/* ----------  --------------------- -----   ------                */
+/* libfoo.la   -shared               bar.lo  libfoo.la             */
+/*                                           .libs/libfoo.a        */
+/*                                           .libs/libfoo.la (lnk) */
+/*                                                                 */
+/* ar cru .libs/libfoo.a .libs/bar.o                               */
+/* ranlib .libs/libfoo.a                                           */
+/* (generate libfoo.la)                                            */
+/* ln -s ../libfoo.la .libs/libfoo.la                              */
+/*                                                                 */
+/*******************************************************************/
+
 static bool slbt_adjust_input_argument(char * arg, bool fpic)
 {
 	char *	slash;
@@ -209,6 +224,16 @@ int slbt_exec_link(
 	/* non-pic libfoo.a */
 	if (dot && !strcmp(dot,".a"))
 		if (slbt_exec_link_create_archive(dctx,ectx,output,false)) {
+			slbt_free_exec_ctx(actx);
+			return -1;
+		}
+
+	/* pic libfoo.a */
+	if (dot && !strcmp(dot,".la"))
+		if (slbt_exec_link_create_archive(
+				dctx,ectx,
+				ectx->arfilename,
+				true)) {
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
