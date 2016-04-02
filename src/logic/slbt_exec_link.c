@@ -47,10 +47,11 @@ static bool slbt_adjust_input_argument(char * arg, bool fpic)
 	}
 }
 
-static int slbt_exec_link_static_archive(
+static int slbt_exec_link_create_archive(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
-	const char *			arfilename)
+	const char *			arfilename,
+	bool				fpic)
 {
 	char ** 	aarg;
 	char ** 	parg;
@@ -84,7 +85,7 @@ static int slbt_exec_link_static_archive(
 
 	/* input argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
-		if (slbt_adjust_input_argument(*parg,false))
+		if (slbt_adjust_input_argument(*parg,fpic))
 			*aarg++ = *parg;
 
 	*aarg = 0;
@@ -157,7 +158,7 @@ int slbt_exec_link(
 
 	/* non-pic libfoo.a */
 	if (dot && !strcmp(dot,".a"))
-		if (slbt_exec_link_static_archive(dctx,ectx,output)) {
+		if (slbt_exec_link_create_archive(dctx,ectx,output,false)) {
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
