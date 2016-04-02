@@ -170,7 +170,7 @@ int slbt_exec_link(
 	}
 
 	/* hey, yo, let's rap it up */
-	if (!(fout = fopen(ectx->ltobjname,"w"))) {
+	if (!(fout = fopen(output,"w"))) {
 		slbt_free_exec_ctx(actx);
 		return -1;
 	}
