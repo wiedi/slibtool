@@ -73,6 +73,21 @@ static bool slbt_adjust_input_argument(char * arg, bool fpic)
 	return true;
 }
 
+static int slbt_exec_link_remove_file(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	const char *			target)
+{
+	/* remove target (if any) */
+	if (!(unlink(target)) || (errno == ENOENT))
+		return 0;
+
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+		strerror(errno);
+
+	return -1;
+}
+
 static int slbt_exec_link_create_archive(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -122,6 +137,10 @@ static int slbt_exec_link_create_archive(
 		if (slbt_output_link(dctx,ectx))
 			return -1;
 
+	/* remove old archive as needed */
+	if (slbt_exec_link_remove_file(dctx,ectx,output))
+		return -1;
+
 	/* ar spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
 		return -1;
@@ -155,7 +174,7 @@ static int slbt_exec_link_create_symlink(
 	char *				lnkname)
 {
 	const char *	slash;
-	char *		ln[6];
+	char *		ln[5];
 	char		atarget[PATH_MAX];
 
 	/* atarget */
@@ -170,10 +189,9 @@ static int slbt_exec_link_create_symlink(
 
 	/* ln argv (fake) */
 	ln[0] = "ln";
-	ln[1] = "-f";
-	ln[2] = "-s";
-	ln[3] = atarget;
-	ln[4] = lnkname;
+	ln[1] = "-s";
+	ln[2] = atarget;
+	ln[3] = lnkname;
 	ectx->argv = ln;
 
 	/* step output */
@@ -181,8 +199,9 @@ static int slbt_exec_link_create_symlink(
 		if (slbt_output_link(dctx,ectx))
 			return -1;
 
-	/* remove old symlink (if any) */
-	unlink(lnkname);
+	/* remove old symlink as needed */
+	if (slbt_exec_link_remove_file(dctx,ectx,lnkname))
+		return -1;
 
 	/* create symlink */
 	return symlink(atarget,lnkname);
