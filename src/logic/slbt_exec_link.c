@@ -233,7 +233,7 @@ int slbt_exec_link(
 		if (slbt_exec_link_create_archive(
 				dctx,ectx,
 				ectx->arfilename,
-				true)) {
+				dctx->cctx->drvflags & SLBT_DRIVER_SHARED)) {
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
