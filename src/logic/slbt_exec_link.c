@@ -192,6 +192,7 @@ static int slbt_exec_link_create_symlink(
 	ln[1] = "-s";
 	ln[2] = atarget;
 	ln[3] = lnkname;
+	ln[4] = 0;
 	ectx->argv = ln;
 
 	/* step output */
