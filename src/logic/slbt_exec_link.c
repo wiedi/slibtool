@@ -88,6 +88,57 @@ static bool slbt_adjust_input_argument(char * arg, bool fpic)
 	return true;
 }
 
+static bool slbt_adjust_linker_argument(
+	char *		arg,
+	bool		fpic,
+	const char *	dsosuffix,
+	const char *	arsuffix)
+{
+	int	fdlib;
+	char *	slash;
+	char *	dot;
+	char	base[PATH_MAX];
+
+	if (*arg == '-')
+		return false;
+
+	if (!(dot = strrchr(arg,'.')))
+		return false;
+
+	if (strcmp(dot,".la"))
+		return false;
+
+	if (fpic) {
+		if ((slash = strrchr(arg,'/')))
+			slash++;
+		else
+			slash = arg;
+
+		if ((size_t)snprintf(base,sizeof(base),"%s",
+				slash) >= sizeof(base))
+			return false;
+
+		sprintf(slash,".libs/%s",base);
+		dot = strrchr(arg,'.');
+	}
+
+	/* shared library dependency? */
+	if (fpic) {
+		sprintf(dot,"%s",dsosuffix);
+
+		if ((fdlib = open(arg,O_RDONLY)) >= 0)
+			close(fdlib);
+		else
+			sprintf(dot,"%s",arsuffix);
+
+		return true;
+	}
+
+	/* input archive */
+	sprintf(dot,"%s",arsuffix);
+	return true;
+}
+
 static int slbt_exec_link_remove_file(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -182,6 +233,67 @@ static int slbt_exec_link_create_archive(
 	return 0;
 }
 
+static int slbt_exec_link_create_library(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	const char *			dsofilename)
+{
+	char ** parg;
+	char	output [PATH_MAX];
+
+	/* initial state */
+	slbt_reset_arguments(ectx);
+
+	/* placeholders */
+	slbt_reset_placeholders(ectx);
+
+	/* using default argument vector */
+	ectx->argv    = ectx->cargv;
+	ectx->program = ectx->cargv[0];
+
+	/* input argument adjustment */
+	for (parg=ectx->cargv; *parg; parg++)
+		slbt_adjust_input_argument(*parg,true);
+
+	/* linker argument adjustment */
+	for (parg=ectx->cargv; *parg; parg++)
+		slbt_adjust_linker_argument(
+			*parg,true,
+			dctx->cctx->settings.dsosuffix,
+			dctx->cctx->settings.arsuffix);
+
+	/* --no-undefined */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_NO_UNDEFINED)
+		*ectx->noundef = "-Wl,--no-undefined";
+
+	/* shared object */
+	*ectx->dpic = "-shared";
+	*ectx->fpic = "-fPIC";
+
+	/* output */
+	if ((size_t)snprintf(output,sizeof(output),"%s.%d.%d.%d",
+				dsofilename,
+				dctx->cctx->verinfo.major,
+				dctx->cctx->verinfo.minor,
+				dctx->cctx->verinfo.revision)
+			>= sizeof(output))
+		return -1;
+
+	*ectx->lout[0] = "-o";
+	*ectx->lout[1] = output;
+
+	/* step output */
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+		if (slbt_output_link(dctx,ectx))
+			return -1;
+
+	/* spawn */
+	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
+		return -1;
+
+	return 0;
+}
+
 static int slbt_exec_link_create_symlink(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -225,6 +337,34 @@ static int slbt_exec_link_create_symlink(
 
 	/* create symlink */
 	return symlink(atarget,lnkname);
+}
+
+static int slbt_exec_link_create_library_symlink(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	bool				fmajor)
+{
+	char	target[PATH_MAX];
+	char	lnkname[PATH_MAX];
+
+	sprintf(target,"%s.%d.%d.%d",
+		ectx->dsofilename,
+		dctx->cctx->verinfo.major,
+		dctx->cctx->verinfo.minor,
+		dctx->cctx->verinfo.revision);
+
+	if (fmajor)
+		sprintf(lnkname,"%s.%d",
+			ectx->dsofilename,
+			dctx->cctx->verinfo.major);
+
+	else
+		strcpy(lnkname,ectx->dsofilename);
+
+	return slbt_exec_link_create_symlink(
+		dctx,ectx,
+		target,lnkname,
+		false);
 }
 
 int slbt_exec_link(
@@ -276,6 +416,33 @@ int slbt_exec_link(
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
+
+	/* dynamic library */
+	if (dot && !strcmp(dot,".la") && dctx->cctx->rpath) {
+		/* linking: libfoo.so.x.y.z */
+		if (slbt_exec_link_create_library(
+				dctx,ectx,
+				ectx->dsofilename)) {
+			slbt_free_exec_ctx(actx);
+			return -1;
+		}
+
+		/* symlink: libfoo.so.x --> libfoo.so.x.y.z */
+		if (slbt_exec_link_create_library_symlink(
+				dctx,ectx,
+				true)) {
+			slbt_free_exec_ctx(actx);
+			return -1;
+		}
+
+		/* symlink: libfoo.so --> libfoo.so.x.y.z */
+		if (slbt_exec_link_create_library_symlink(
+				dctx,ectx,
+				false)) {
+			slbt_free_exec_ctx(actx);
+			return -1;
+		}
+	}
 
 	/* no wrapper? */
 	if (!dot || strcmp(dot,".la")) {
