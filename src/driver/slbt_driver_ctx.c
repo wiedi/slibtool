@@ -697,6 +697,10 @@ int slbt_get_driver_ctx(
 					cctx.drvflags |= SLBT_DRIVER_ANTI_PIC;
 					break;
 
+				case TAG_NO_UNDEFINED:
+					cctx.drvflags |= SLBT_DRIVER_NO_UNDEFINED;
+					break;
+
 				case TAG_SHARED:
 					cctx.drvflags &= ~(uint64_t)SLBT_DRIVER_STATIC;
 					break;

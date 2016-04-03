@@ -50,6 +50,7 @@ extern "C" {
 
 #define SLBT_DRIVER_HEURISTICS		0x010000
 #define SLBT_DRIVER_STRICT		0x020000
+#define SLBT_DRIVER_NO_UNDEFINED	0x040000
 
 /* execution modes */
 enum slbt_mode {
@@ -91,6 +92,7 @@ struct slbt_exec_ctx {
 	char ** dpic;
 	char ** fpic;
 	char ** cass;
+	char ** noundef;
 	char ** lout[2];
 	char ** sentinel;
 	char *	csrc;

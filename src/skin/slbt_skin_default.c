@@ -122,5 +122,9 @@ const struct argv_option slbt_default_options[] = {
 				0,"<flag>",
 				"pass a raw flag to the compiler"},
 
+	{"no-undefined",	0,TAG_NO_UNDEFINED,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"disallow unresolved references"},
+
 	{0,0,0,0,0,0,0,0}
 };
