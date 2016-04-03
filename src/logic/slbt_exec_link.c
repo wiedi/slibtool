@@ -39,6 +39,21 @@
 /*                                                                 */
 /*******************************************************************/
 
+/*******************************************************************/
+/*                                                                 */
+/* -o <ltlib>  switches              input   result                */
+/* ----------  --------------------- -----   ------                */
+/* libfoo.la   -static               bar.lo  libfoo.la             */
+/*                                           .libs/libfoo.a        */
+/*                                           .libs/libfoo.la (lnk) */
+/*                                                                 */
+/* ar cru .libs/libfoo.a bar.o                                     */
+/* ranlib .libs/libfoo.a                                           */
+/* (generate libfoo.la)                                            */
+/* ln -s ../libfoo.la .libs/libfoo.la                              */
+/*                                                                 */
+/*******************************************************************/
+
 static bool slbt_adjust_input_argument(char * arg, bool fpic)
 {
 	char *	slash;
