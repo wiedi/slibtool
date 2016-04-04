@@ -223,6 +223,8 @@ int  slbt_get_exec_ctx(
 	ictx->ctx.lout[0] = &ictx->ctx.argv[i++];
 	ictx->ctx.lout[1] = &ictx->ctx.argv[i++];
 
+	slbt_reset_placeholders(&ictx->ctx);
+
 	/* output file name */
 	if (ref && ((dctx->cctx->mode == SLBT_MODE_COMPILE))) {
 		*ictx->ctx.lout[0] = "-o";
