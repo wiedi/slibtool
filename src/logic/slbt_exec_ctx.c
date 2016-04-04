@@ -222,6 +222,7 @@ int  slbt_get_exec_ctx(
 
 	ictx->ctx.lout[0] = &ictx->ctx.argv[i++];
 	ictx->ctx.lout[1] = &ictx->ctx.argv[i++];
+	ictx->ctx.sentinel= &ictx->ctx.argv[i++];
 
 	slbt_reset_placeholders(&ictx->ctx);
 
@@ -335,4 +336,5 @@ void slbt_reset_placeholders(struct slbt_exec_ctx * ectx)
 
 	*ectx->lout[0] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_SWITCH";
 	*ectx->lout[1] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_FILE";
+	*ectx->sentinel= 0;
 }

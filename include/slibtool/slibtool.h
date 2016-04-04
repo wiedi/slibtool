@@ -92,6 +92,7 @@ struct slbt_exec_ctx {
 	char ** fpic;
 	char ** cass;
 	char ** lout[2];
+	char ** sentinel;
 	char *	csrc;
 	char *	ldirname;
 	char *	lbasename;
