@@ -186,10 +186,12 @@ static int slbt_exec_link_create_symlink(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
 	const char *			target,
-	char *				lnkname)
+	char *				lnkname,
+	bool				flawrapper)
 {
 	const char *	slash;
 	char *		ln[5];
+	char *		dotdot;
 	char		atarget[PATH_MAX];
 
 	/* atarget */
@@ -198,8 +200,10 @@ static int slbt_exec_link_create_symlink(
 	else
 		slash = target;
 
-	if ((size_t)snprintf(atarget,sizeof(atarget),"../%s",
-			slash) >= sizeof(atarget))
+	dotdot = flawrapper ? "../" : "";
+
+	if ((size_t)snprintf(atarget,sizeof(atarget),"%s%s",
+			dotdot,slash) >= sizeof(atarget))
 		return -1;
 
 	/* ln argv (fake) */
@@ -292,7 +296,8 @@ int slbt_exec_link(
 	if (slbt_exec_link_create_symlink(
 			dctx,ectx,
 			output,
-			ectx->lafilename)) {
+			ectx->lafilename,
+			true)) {
 		slbt_free_exec_ctx(actx);
 		return -1;
 	}
