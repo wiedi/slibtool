@@ -16,15 +16,15 @@
 
 
 /* flavor settings */
-#define SLBT_FLAVOR_SETTINGS(flavor,arp,ars,dsop,dsos,exep,exes,impp,imps) \
+#define SLBT_FLAVOR_SETTINGS(flavor,arp,ars,dsop,dsos,exep,exes,impp,imps,ldenv) \
 	static const struct slbt_flavor_settings flavor = {		   \
-		arp,ars,dsop,dsos,exep,exes,impp,imps}
+		arp,ars,dsop,dsos,exep,exes,impp,imps,ldenv}
 
-SLBT_FLAVOR_SETTINGS(host_flavor_default, "lib",".a", "lib",".so",    "","",     "",   "");
-SLBT_FLAVOR_SETTINGS(host_flavor_midipix, "lib",".a", "lib",".so",    "","",     "lib",".lib.a");
-SLBT_FLAVOR_SETTINGS(host_flavor_mingw,   "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a");
-SLBT_FLAVOR_SETTINGS(host_flavor_cygwin,  "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a");
-SLBT_FLAVOR_SETTINGS(host_flavor_darwin,  "lib",".a", "lib",".dylib", "","",     "",   "");
+SLBT_FLAVOR_SETTINGS(host_flavor_default, "lib",".a", "lib",".so",    "","",     "",   "",       "LD_LIBRARY_PATH");
+SLBT_FLAVOR_SETTINGS(host_flavor_midipix, "lib",".a", "lib",".so",    "","",     "lib",".lib.a", "PATH");
+SLBT_FLAVOR_SETTINGS(host_flavor_mingw,   "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a", "PATH");
+SLBT_FLAVOR_SETTINGS(host_flavor_cygwin,  "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a", "PATH");
+SLBT_FLAVOR_SETTINGS(host_flavor_darwin,  "lib",".a", "lib",".dylib", "","",     "",   "",       "DYLD_LIBRARY_PATH");
 
 
 /* annotation strings */

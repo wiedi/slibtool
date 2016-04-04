@@ -133,6 +133,7 @@ struct slbt_flavor_settings {
 	const char *			exesuffix;
 	const char *			impprefix;
 	const char *			impsuffix;
+	const char *			ldpathenv;
 };
 
 struct slbt_common_ctx {
