@@ -89,8 +89,12 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 	else if ((csrc = slbt_source_file(dctx->cctx->cargv)))
 		size += 4*strlen(csrc);
 
+	/* pessimistic argc: .libs/libfoo.so --> -L.libs -lfoo */
+	argc *= 2;
+	argc += SLBT_ARGV_SPARE_PTRS;
+
 	/* buffer size (.libs/%.o, pessimistic) */
-	size += argc * strlen(".libs/");
+	size += argc * strlen(".libs/-L-l");
 
 	/* buffer size (linking) */
 	if (dctx->cctx->mode == SLBT_MODE_LINK)
@@ -112,7 +116,8 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 		return 0;
 	}
 
-	vsize = sizeof(*ictx) + (2*(argc+1)+SLBT_ARGV_SPARE_PTRS)*sizeof(char *);
+	/* altv: duplicate set, -Wl,--whole-archive, -Wl,--no-whole-archive */
+	vsize = sizeof(*ictx) + 4*(argc+1)*sizeof(char *);
 
 	if (!(ictx = calloc(1,vsize))) {
 		free(args);
@@ -213,7 +218,7 @@ int  slbt_get_exec_ctx(
 		} else {
 			ictx->ctx.argv[i++] = ch;
 			ch += sprintf(ch,"%s",*parg);
-			ch += strlen(".libs/");
+			ch += strlen(".libs/-L-l");
 		}
 	}
 
