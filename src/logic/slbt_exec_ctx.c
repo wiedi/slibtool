@@ -140,6 +140,7 @@ int  slbt_get_exec_ctx(
 	char **				parg;
 	char *				ch;
 	char *				mark;
+	char *				slash;
 	const char *			ref;
 	int				i;
 
@@ -286,6 +287,20 @@ int  slbt_get_exec_ctx(
 				dctx->cctx->libname,
 				dctx->cctx->settings.dsosuffix)
 			+ sizeof('\0');
+	}
+
+	/* linking: exefilename */
+	if (dctx->cctx->mode == SLBT_MODE_LINK && !dctx->cctx->libname) {
+		ictx->ctx.exefilename = ch;
+
+		if ((slash = strrchr(dctx->cctx->output,'/'))) {
+			strcpy(ch,dctx->cctx->output);
+			mark = ch + (slash - dctx->cctx->output);
+			sprintf(++mark,".libs/%s",++slash);
+			ch += strlen(ch) + sizeof('\0');
+		} else
+			ch += sprintf(ch,".libs/%s",dctx->cctx->output)
+				+ sizeof('\0');
 	}
 
 	/* argument strings shadow copy */
