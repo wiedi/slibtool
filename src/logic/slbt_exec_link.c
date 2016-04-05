@@ -294,6 +294,60 @@ static int slbt_exec_link_create_library(
 	return 0;
 }
 
+static int slbt_exec_link_create_executable(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	const char *			exefilename)
+{
+	char ** parg;
+	char	output [PATH_MAX];
+
+	/* initial state */
+	slbt_reset_arguments(ectx);
+
+	/* placeholders */
+	slbt_reset_placeholders(ectx);
+
+	/* using default argument vector */
+	ectx->argv    = ectx->cargv;
+	ectx->program = ectx->cargv[0];
+
+	/* input argument adjustment */
+	for (parg=ectx->cargv; *parg; parg++)
+		slbt_adjust_input_argument(*parg,true);
+
+	/* linker argument adjustment */
+	for (parg=ectx->cargv; *parg; parg++)
+		slbt_adjust_linker_argument(
+			*parg,true,
+			dctx->cctx->settings.dsosuffix,
+			dctx->cctx->settings.arsuffix);
+
+	/* --no-undefined */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_NO_UNDEFINED)
+		*ectx->noundef = "-Wl,--no-undefined";
+
+	/* output */
+	if ((size_t)snprintf(output,sizeof(output),"%s",
+				exefilename)
+			>= sizeof(output))
+		return -1;
+
+	*ectx->lout[0] = "-o";
+	*ectx->lout[1] = output;
+
+	/* step output */
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+		if (slbt_output_link(dctx,ectx))
+			return -1;
+
+	/* spawn */
+	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
+		return -1;
+
+	return 0;
+}
+
 static int slbt_exec_link_create_symlink(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -439,6 +493,17 @@ int slbt_exec_link(
 		if (slbt_exec_link_create_library_symlink(
 				dctx,ectx,
 				false)) {
+			slbt_free_exec_ctx(actx);
+			return -1;
+		}
+	}
+
+	/* executable */
+	if (!dctx->cctx->rpath && !dctx->cctx->libname) {
+		/* linking: .libs/exefilename */
+		if (slbt_exec_link_create_executable(
+				dctx,ectx,
+				ectx->exefilename)) {
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
