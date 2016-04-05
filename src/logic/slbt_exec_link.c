@@ -139,6 +139,78 @@ static bool slbt_adjust_linker_argument(
 	return true;
 }
 
+static int slbt_exec_link_adjust_argument_vector(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	bool				flibrary)
+{
+	char ** carg;
+	char ** aarg;
+	char *	slash;
+	char *	mark;
+	char *	dot;
+	char	arg[PATH_MAX];
+	bool	fwholearchive = false;
+
+	carg = ectx->cargv;
+	aarg = ectx->altv;
+
+	for (; *carg; ) {
+		if (!strcmp(*carg,"-Wl,--whole-archive"))
+			fwholearchive = true;
+		else if (!strcmp(*carg,"-Wl,--no-whole-archive"))
+			fwholearchive = false;
+
+
+
+		if (**carg == '-') {
+			*aarg++ = *carg++;
+
+		} else if (!(dot = strrchr(*carg,'.'))) {
+			*aarg++ = *carg++;
+
+		} else if (!(strcmp(dot,".a"))) {
+			if (flibrary && !fwholearchive)
+				*aarg++ = "-Wl,--whole-archive";
+
+			*aarg++ = *carg++;
+
+			if (flibrary && !fwholearchive)
+				*aarg++ = "-Wl,--no-whole-archive";
+
+		} else if (strcmp(dot,dctx->cctx->settings.dsosuffix)) {
+			*aarg++ = *carg++;
+
+		} else {
+			/* account for {'-','L','-','l'} */
+			if ((size_t)snprintf(arg,sizeof(arg),"%s",
+					*carg) >= (sizeof(arg) - 4))
+				return -1;
+
+			if ((slash = strrchr(arg,'/'))) {
+				sprintf(*carg,"-L%s",arg);
+
+				mark   = strrchr(*carg,'/');
+				*mark  = '\0';
+
+				*aarg++ = *carg++;
+				*aarg++ = ++mark;
+
+				++slash;
+				slash += strlen(dctx->cctx->settings.dsoprefix);
+
+				sprintf(mark,"-l%s",slash);
+				dot  = strrchr(mark,'.');
+				*dot = '\0';
+			} else {
+				*aarg++ = *carg++;
+			}
+		}
+	}
+
+	return 0;
+}
+
 static int slbt_exec_link_remove_file(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -247,10 +319,6 @@ static int slbt_exec_link_create_library(
 	/* placeholders */
 	slbt_reset_placeholders(ectx);
 
-	/* using default argument vector */
-	ectx->argv    = ectx->cargv;
-	ectx->program = ectx->cargv[0];
-
 	/* input argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
 		slbt_adjust_input_argument(*parg,true);
@@ -282,6 +350,15 @@ static int slbt_exec_link_create_library(
 	*ectx->lout[0] = "-o";
 	*ectx->lout[1] = output;
 
+	/* .libs/libfoo.so --> -L.libs -lfoo */
+	if (slbt_exec_link_adjust_argument_vector(
+			dctx,ectx,true))
+		return -1;
+
+	/* using alternate argument vector */
+	ectx->argv    = ectx->altv;
+	ectx->program = ectx->altv[0];
+
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
@@ -308,10 +385,6 @@ static int slbt_exec_link_create_executable(
 	/* placeholders */
 	slbt_reset_placeholders(ectx);
 
-	/* using default argument vector */
-	ectx->argv    = ectx->cargv;
-	ectx->program = ectx->cargv[0];
-
 	/* input argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
 		slbt_adjust_input_argument(*parg,true);
@@ -335,6 +408,15 @@ static int slbt_exec_link_create_executable(
 
 	*ectx->lout[0] = "-o";
 	*ectx->lout[1] = output;
+
+	/* .libs/libfoo.so --> -L.libs -lfoo */
+	if (slbt_exec_link_adjust_argument_vector(
+			dctx,ectx,false))
+		return -1;
+
+	/* using alternate argument vector */
+	ectx->argv    = ectx->altv;
+	ectx->program = ectx->altv[0];
 
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
