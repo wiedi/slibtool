@@ -227,8 +227,10 @@ int  slbt_get_exec_ctx(
 	ictx->ctx.fpic = &ictx->ctx.argv[i++];
 	ictx->ctx.cass = &ictx->ctx.argv[i++];
 
-
 	ictx->ctx.noundef = &ictx->ctx.argv[i++];
+	ictx->ctx.soname  = &ictx->ctx.argv[i++];
+	ictx->ctx.lsoname = &ictx->ctx.argv[i++];
+
 	ictx->ctx.lout[0] = &ictx->ctx.argv[i++];
 	ictx->ctx.lout[1] = &ictx->ctx.argv[i++];
 	ictx->ctx.sentinel= &ictx->ctx.argv[i++];
@@ -361,6 +363,9 @@ void slbt_reset_placeholders(struct slbt_exec_ctx * ectx)
 	*ectx->cass = "-USLIBTOOL_PLACEHOLDER_COMPILE_ASSEMBLE";
 
 	*ectx->noundef = "-USLIBTOOL_PLACEHOLDER_NO_UNDEFINED";
+	*ectx->soname  = "-USLIBTOOL_PLACEHOLDER_SONAME";
+	*ectx->lsoname = "-USLIBTOOL_PLACEHOLDER_LSONAME";
+
 	*ectx->lout[0] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_SWITCH";
 	*ectx->lout[1] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_FILE";
 	*ectx->sentinel= 0;

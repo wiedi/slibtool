@@ -93,6 +93,8 @@ struct slbt_exec_ctx {
 	char ** fpic;
 	char ** cass;
 	char ** noundef;
+	char ** soname;
+	char ** lsoname;
 	char ** lout[2];
 	char ** sentinel;
 	FILE *	fwrapper;

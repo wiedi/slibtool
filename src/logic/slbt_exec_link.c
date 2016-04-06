@@ -322,6 +322,7 @@ static int slbt_exec_link_create_library(
 {
 	char ** parg;
 	char	output [PATH_MAX];
+	char	soname [PATH_MAX];
 
 	/* initial state */
 	slbt_reset_arguments(ectx);
@@ -343,6 +344,18 @@ static int slbt_exec_link_create_library(
 	/* --no-undefined */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_NO_UNDEFINED)
 		*ectx->noundef = "-Wl,--no-undefined";
+
+	/* -soname */
+	if ((size_t)snprintf(soname,sizeof(soname),"-Wl,%s%s%s.%d",
+				dctx->cctx->settings.dsoprefix,
+				dctx->cctx->libname,
+				dctx->cctx->settings.dsosuffix,
+				dctx->cctx->verinfo.major)
+			>= sizeof(soname))
+		return -1;
+
+	*ectx->soname  = "-Wl,-soname";
+	*ectx->lsoname = soname;
 
 	/* shared object */
 	*ectx->dpic = "-shared";
