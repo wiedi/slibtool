@@ -320,6 +320,9 @@ static int slbt_free_exec_ctx_impl(
 	struct slbt_exec_ctx_impl *	ictx,
 	int				status)
 {
+	if (ictx->ctx.fwrapper)
+		fclose(ictx->ctx.fwrapper);
+
 	free(ictx->args);
 	free(ictx->shadow);
 	free (ictx);

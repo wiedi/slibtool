@@ -193,6 +193,16 @@ static int slbt_exec_link_adjust_argument_vector(
 				mark   = strrchr(*carg,'/');
 				*mark  = '\0';
 
+				if (ectx->fwrapper) {
+					*slash = '\0';
+
+					if (fprintf(ectx->fwrapper,
+							"DL_PATH=\"$DL_PATH$COLON%s\"\n"
+							"COLON=':'\n\n",
+							arg) < 0)
+						return -1;
+				}
+
 				*aarg++ = *carg++;
 				*aarg++ = ++mark;
 
@@ -377,7 +387,9 @@ static int slbt_exec_link_create_executable(
 	const char *			exefilename)
 {
 	char ** parg;
+	char	cwd    [PATH_MAX];
 	char	output [PATH_MAX];
+	char	wrapper[PATH_MAX];
 
 	/* initial state */
 	slbt_reset_arguments(ectx);
@@ -400,6 +412,30 @@ static int slbt_exec_link_create_executable(
 	if (dctx->cctx->drvflags & SLBT_DRIVER_NO_UNDEFINED)
 		*ectx->noundef = "-Wl,--no-undefined";
 
+	/* executable wrapper: header */
+	if ((size_t)snprintf(wrapper,sizeof(wrapper),"%s.wrapper.tmp",
+				dctx->cctx->output)
+			>= sizeof(wrapper))
+		return -1;
+
+	if (!(ectx->fwrapper = fopen(wrapper,"w")))
+		return -1;
+
+	if (fprintf(ectx->fwrapper,
+			"#!/bin/sh\n"
+			"# slibtool (pre-alpha): generated executable wrapper\n\n"
+			"if [ -z \"$%s\" ]; then\n"
+			"\tDL_PATH=\n"
+			"\tCOLON=\n"
+			"\tLCOLON=\n"
+			"else\n"
+			"\tDL_PATH=\n"
+			"\tCOLON=\n"
+			"\tLCOLON=':'\n"
+			"fi\n\n",
+			dctx->cctx->settings.ldpathenv) < 0)
+		return -1;
+
 	/* output */
 	if ((size_t)snprintf(output,sizeof(output),"%s",
 				exefilename)
@@ -418,6 +454,20 @@ static int slbt_exec_link_create_executable(
 	ectx->argv    = ectx->altv;
 	ectx->program = ectx->altv[0];
 
+
+	/* executable wrapper: footer */
+	if (!getcwd(cwd,sizeof(cwd)))
+		return -1;
+
+	if (fprintf(ectx->fwrapper,
+			"DL_PATH=\"$DL_PATH$LCOLON$%s\"\n\n"
+			"export %s=$DL_PATH\n\n"
+			"exec %s/%s \"$@\"\n",
+			dctx->cctx->settings.ldpathenv,
+			dctx->cctx->settings.ldpathenv,
+			cwd,exefilename) < 0)
+		return -1;
+
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
@@ -425,6 +475,16 @@ static int slbt_exec_link_create_executable(
 
 	/* spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
+		return -1;
+
+	/* executable wrapper: finalize */
+	fclose(ectx->fwrapper);
+	ectx->fwrapper = 0;
+
+	if (rename(wrapper,dctx->cctx->output))
+		return -1;
+
+	if (chmod(dctx->cctx->output,0755))
 		return -1;
 
 	return 0;
