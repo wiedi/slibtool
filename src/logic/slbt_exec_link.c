@@ -676,18 +676,16 @@ int slbt_exec_link(
 		return -1;
 	}
 
-	ret = fprintf(fout,
-		"# slibtool (pre-alpha) generated file\n\n");
-
 	/* wrapper symlink */
 	if (slbt_exec_link_create_symlink(
 			dctx,ectx,
 			output,
 			ectx->lafilename,
-			true)) {
-		slbt_free_exec_ctx(actx);
-		return -1;
-	}
+			true))
+		ret = -1;
+	else
+		ret = fprintf(fout,
+			"# slibtool (pre-alpha) generated file\n\n");
 
 	/* all done */
 	fclose(fout);
