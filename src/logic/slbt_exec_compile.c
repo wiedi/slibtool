@@ -101,7 +101,7 @@ int  slbt_exec_compile(
 	}
 
 	ret = fprintf(fout,
-		"# slibtool (pre-alphe) generated file\n\n"
+		"# slibtool (pre-alpha) generated file\n\n"
 		"pic_object='%s'\n"
 		"non_pic_object='%s'\n",
 		(dctx->cctx->drvflags & SLBT_DRIVER_SHARED)

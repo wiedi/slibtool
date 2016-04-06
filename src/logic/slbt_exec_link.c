@@ -664,7 +664,7 @@ int slbt_exec_link(
 	}
 
 	ret = fprintf(fout,
-		"# slibtool (pre-alphe) generated file\n\n");
+		"# slibtool (pre-alpha) generated file\n\n");
 
 	/* wrapper symlink */
 	if (slbt_exec_link_create_symlink(
