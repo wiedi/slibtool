@@ -456,6 +456,7 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 
 	program = argv_program_name(ctx->cctx.targv[0]);
 	libname = 0;
+	prefix  = 0;
 
 	/* output */
 	if (!(ctx->cctx.output)) {
