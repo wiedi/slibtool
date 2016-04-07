@@ -632,13 +632,13 @@ int slbt_get_driver_ctx(
 
 				case TAG_WARNINGS:
 					if (!strcmp("all",entry->arg))
-						cctx.tag = SLBT_WARNING_LEVEL_ALL;
+						cctx.warnings = SLBT_WARNING_LEVEL_ALL;
 
 					else if (!strcmp("error",entry->arg))
-						cctx.tag = SLBT_WARNING_LEVEL_ERROR;
+						cctx.warnings = SLBT_WARNING_LEVEL_ERROR;
 
 					else if (!strcmp("none",entry->arg))
-						cctx.tag = SLBT_WARNING_LEVEL_NONE;
+						cctx.warnings = SLBT_WARNING_LEVEL_NONE;
 					break;
 
 				case TAG_DEPS:
