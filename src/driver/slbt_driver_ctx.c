@@ -171,7 +171,7 @@ static int slbt_split_argv(
 	argv[ctx.unitidx] = compiler;
 
 	/* missing both --mode and --config? */
-	for (mode=0, entry=meta->entries; entry->fopt; entry++)
+	for (mode=0, config=0, entry=meta->entries; entry->fopt; entry++)
 		if (entry->tag == TAG_MODE)
 			mode = entry;
 		else if (entry->tag == TAG_CONFIG)
