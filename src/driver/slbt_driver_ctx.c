@@ -523,10 +523,7 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 					program,prefix);
 			return -1;
 		}
-	}
-
-	/* executable? */
-	if (!libname)
+	} else
 		return 0;
 
 	/* libname alloc */
