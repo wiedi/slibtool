@@ -79,7 +79,7 @@ int  slbt_exec_compile(
 
 		*ectx->cass = "-c";
 		*ectx->lout[0] = "-o";
-		*ectx->lout[1] = ectx->aobjname;;
+		*ectx->lout[1] = ectx->aobjname;
 
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT)) {
 			if (slbt_output_compile(dctx,ectx)) {
