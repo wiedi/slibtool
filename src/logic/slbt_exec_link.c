@@ -4,6 +4,7 @@
 /*  Released under the Standard MIT License; see COPYING.SLIBTOOL. */
 /*******************************************************************/
 
+#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <fcntl.h>
