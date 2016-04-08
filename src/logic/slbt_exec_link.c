@@ -12,6 +12,7 @@
 
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
+#include "slibtool_symlink_impl.h"
 
 /*******************************************************************/
 /*                                                                 */
@@ -503,51 +504,6 @@ static int slbt_exec_link_create_executable(
 	return 0;
 }
 
-static int slbt_exec_link_create_symlink(
-	const struct slbt_driver_ctx *	dctx,
-	struct slbt_exec_ctx *		ectx,
-	const char *			target,
-	char *				lnkname,
-	bool				flawrapper)
-{
-	const char *	slash;
-	char *		ln[5];
-	char *		dotdot;
-	char		atarget[PATH_MAX];
-
-	/* atarget */
-	if ((slash = strrchr(target,'/')))
-		slash++;
-	else
-		slash = target;
-
-	dotdot = flawrapper ? "../" : "";
-
-	if ((size_t)snprintf(atarget,sizeof(atarget),"%s%s",
-			dotdot,slash) >= sizeof(atarget))
-		return -1;
-
-	/* ln argv (fake) */
-	ln[0] = "ln";
-	ln[1] = "-s";
-	ln[2] = atarget;
-	ln[3] = lnkname;
-	ln[4] = 0;
-	ectx->argv = ln;
-
-	/* step output */
-	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
-		if (slbt_output_link(dctx,ectx))
-			return -1;
-
-	/* remove old symlink as needed */
-	if (slbt_exec_link_remove_file(dctx,ectx,lnkname))
-		return -1;
-
-	/* create symlink */
-	return symlink(atarget,lnkname);
-}
-
 static int slbt_exec_link_create_library_symlink(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -570,7 +526,7 @@ static int slbt_exec_link_create_library_symlink(
 	else
 		strcpy(lnkname,ectx->dsofilename);
 
-	return slbt_exec_link_create_symlink(
+	return slbt_create_symlink(
 		dctx,ectx,
 		target,lnkname,
 		false);
@@ -677,7 +633,7 @@ int slbt_exec_link(
 	}
 
 	/* wrapper symlink */
-	if (slbt_exec_link_create_symlink(
+	if (slbt_create_symlink(
 			dctx,ectx,
 			output,
 			ectx->lafilename,
