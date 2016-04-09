@@ -50,9 +50,14 @@ int slbt_create_symlink(
 	ectx->argv = ln;
 
 	/* step output */
-	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
-		if (slbt_output_link(dctx,ectx))
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT)) {
+		if ((dctx->cctx->mode == SLBT_MODE_LINK)
+				&& slbt_output_link(dctx,ectx))
 			return -1;
+
+		else if (slbt_output_install(dctx,ectx))
+			return -1;
+	}
 
 	/* create symlink */
 	if (symlink(atarget,tmplnk))
