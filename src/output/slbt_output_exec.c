@@ -34,6 +34,13 @@ int slbt_output_compile(
 	return slbt_output_exec(dctx,ectx,"compile");
 }
 
+int slbt_output_install(
+	const struct slbt_driver_ctx *	dctx,
+	const struct slbt_exec_ctx *	ectx)
+{
+	return slbt_output_exec(dctx,ectx,"install");
+}
+
 int slbt_output_link(
 	const struct slbt_driver_ctx *	dctx,
 	const struct slbt_exec_ctx *	ectx)

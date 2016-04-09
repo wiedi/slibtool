@@ -201,6 +201,7 @@ slbt_api int  slbt_unmap_input		(struct slbt_input *);
 slbt_api int  slbt_output_config	(const struct slbt_driver_ctx *);
 slbt_api int  slbt_output_exec		(const struct slbt_driver_ctx *, const struct slbt_exec_ctx *, const char *);
 slbt_api int  slbt_output_compile	(const struct slbt_driver_ctx *, const struct slbt_exec_ctx *);
+slbt_api int  slbt_output_install	(const struct slbt_driver_ctx *, const struct slbt_exec_ctx *);
 slbt_api int  slbt_output_link		(const struct slbt_driver_ctx *, const struct slbt_exec_ctx *);
 
 #ifdef __cplusplus
