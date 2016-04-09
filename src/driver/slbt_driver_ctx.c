@@ -235,6 +235,10 @@ static int slbt_split_argv(
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
 
+		} else if (!(strcmp("release",&argv[i][1]))) {
+			*targv++ = argv[i++];
+			*targv++ = argv[i];
+
 		} else if (!(strcmp("version-info",&argv[i][1]))) {
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
@@ -677,6 +681,10 @@ int slbt_get_driver_ctx(
 
 				case TAG_RPATH:
 					cctx.rpath = entry->arg;
+					break;
+
+				case TAG_RELEASE:
+					cctx.release = entry->arg;
 					break;
 
 				case TAG_VERSION_INFO:
