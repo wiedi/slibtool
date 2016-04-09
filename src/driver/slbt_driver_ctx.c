@@ -566,7 +566,7 @@ int slbt_get_driver_ctx(
 	memset(&cctx,0,sizeof(cctx));
 
 	/* shared and static objects: enable by default, disable by ~switch */
-	cctx.drvflags = SLBT_DRIVER_SHARED | SLBT_DRIVER_STATIC;
+	cctx.drvflags = flags | SLBT_DRIVER_SHARED | SLBT_DRIVER_STATIC;
 
 	/* get options, count units */
 	for (entry=meta->entries; entry->fopt || entry->arg; entry++) {
