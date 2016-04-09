@@ -370,3 +370,18 @@ void slbt_reset_placeholders(struct slbt_exec_ctx * ectx)
 	*ectx->lout[1] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_FILE";
 	*ectx->sentinel= 0;
 }
+
+void slbt_disable_placeholders(struct slbt_exec_ctx * ectx)
+{
+	*ectx->dpic = 0;
+	*ectx->fpic = 0;
+	*ectx->cass = 0;
+
+	*ectx->noundef = 0;
+	*ectx->soname  = 0;
+	*ectx->lsoname = 0;
+
+	*ectx->lout[0] = 0;
+	*ectx->lout[1] = 0;
+	*ectx->sentinel= 0;
+}
