@@ -452,6 +452,8 @@ static int slbt_init_version_info(
 		return 0;
 	}
 
+	current = revision = age = 0;
+
 	sscanf(verinfo->verinfo,"%d:%d:%d",
 		&current,&revision,&age);
 
