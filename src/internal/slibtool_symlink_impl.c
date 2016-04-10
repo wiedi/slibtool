@@ -15,13 +15,14 @@ int slbt_create_symlink(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
 	const char *			target,
-	char *				lnkname,
+	const char *			lnkname,
 	bool				flawrapper)
 {
 	const char *	slash;
 	char *		ln[5];
 	char *		dotdot;
 	char		tmplnk [PATH_MAX];
+	char		lnkarg [PATH_MAX];
 	char		atarget[PATH_MAX];
 
 	/* atarget */
@@ -41,11 +42,14 @@ int slbt_create_symlink(
 			lnkname) >= sizeof(tmplnk))
 		return -1;
 
+	/* lnkarg */
+	strcpy(lnkarg,lnkname);
+
 	/* ln argv (fake) */
 	ln[0] = "ln";
 	ln[1] = "-s";
 	ln[2] = atarget;
-	ln[3] = lnkname;
+	ln[3] = lnkarg;
 	ln[4] = 0;
 	ectx->argv = ln;
 

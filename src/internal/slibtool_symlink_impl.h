@@ -11,5 +11,5 @@ int slbt_create_symlink(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
 	const char *			target,
-	char *				lnkname,
+	const char *			lnkname,
 	bool				flawrapper);
