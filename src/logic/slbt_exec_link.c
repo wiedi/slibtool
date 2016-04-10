@@ -411,6 +411,7 @@ static int slbt_exec_link_create_executable(
 	char	cwd    [PATH_MAX];
 	char	output [PATH_MAX];
 	char	wrapper[PATH_MAX];
+	char	wraplnk[PATH_MAX];
 
 	/* initial state */
 	slbt_reset_arguments(ectx);
@@ -501,6 +502,16 @@ static int slbt_exec_link_create_executable(
 	/* executable wrapper: finalize */
 	fclose(ectx->fwrapper);
 	ectx->fwrapper = 0;
+
+	if ((size_t)snprintf(wraplnk,sizeof(wraplnk),"%s.exe.wrapper",
+			dctx->cctx->output) >= sizeof(wraplnk))
+		return -1;
+
+	if (slbt_create_symlink(
+			dctx,ectx,
+			dctx->cctx->output,wraplnk,
+			false))
+		return -1;
 
 	if (rename(wrapper,dctx->cctx->output))
 		return -1;

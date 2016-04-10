@@ -106,9 +106,20 @@ static int slbt_exec_install_entry(
 	char		slnkname[PATH_MAX];
 	char		dlnkname[PATH_MAX];
 	char		lasource[PATH_MAX];
+	bool		fexe = false;
+	struct stat	st;
+
+	/* executable wrapper? */
+	if ((size_t)snprintf(slnkname,sizeof(slnkname),"%s.exe.wrapper",
+			entry->arg) >= sizeof(slnkname))
+		return -1;
+
+	fexe = stat(slnkname,&st)
+		? false
+		: true;
 
 	/* .la ? */
-	if (!(dot = strrchr(entry->arg,'.')) || strcmp(dot,".la")) {
+	if (!fexe && (!(dot = strrchr(entry->arg,'.')) || strcmp(dot,".la"))) {
 		*src = (char *)entry->arg;
 		*dst = dest ? 0 : (char *)last->arg;
 
@@ -132,9 +143,21 @@ static int slbt_exec_install_entry(
 	} else
 		sprintf(srcfile,".libs/%s",lasource);
 
-	strcpy(slnkname,srcfile);
+	/* executable? */
+	if (fexe) {
+		*src = srcfile;
+		*dst = dest ? 0 : (char *)last->arg;
+
+		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+			if (slbt_output_install(dctx,ectx))
+				return -1;
+
+		return (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode)
+			? -1 : 0;
+	}
 
 	/* libfoo.la --> libfoo.so */
+	strcpy(slnkname,srcfile);
 	dot = strrchr(slnkname,'.');
 	sprintf(dot,dctx->cctx->settings.dsosuffix);
 
