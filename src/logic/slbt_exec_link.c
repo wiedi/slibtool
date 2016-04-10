@@ -144,6 +144,7 @@ static bool slbt_adjust_linker_argument(
 static int slbt_exec_link_adjust_argument_vector(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
+	const char *			cwd,
 	bool				flibrary)
 {
 	char ** carg;
@@ -199,9 +200,9 @@ static int slbt_exec_link_adjust_argument_vector(
 					*slash = '\0';
 
 					if (fprintf(ectx->fwrapper,
-							"DL_PATH=\"$DL_PATH$COLON%s\"\n"
+							"DL_PATH=\"$DL_PATH$COLON%s/%s\"\n"
 							"COLON=':'\n\n",
-							arg) < 0)
+							cwd,arg) < 0)
 						return -1;
 				}
 
@@ -323,6 +324,7 @@ static int slbt_exec_link_create_library(
 	const char *			dsofilename)
 {
 	char ** parg;
+	char	cwd    [PATH_MAX];
 	char	output [PATH_MAX];
 	char	soname [PATH_MAX];
 
@@ -375,9 +377,13 @@ static int slbt_exec_link_create_library(
 	*ectx->lout[0] = "-o";
 	*ectx->lout[1] = output;
 
+	/* cwd */
+	if (!getcwd(cwd,sizeof(cwd)))
+		return -1;
+
 	/* .libs/libfoo.so --> -L.libs -lfoo */
 	if (slbt_exec_link_adjust_argument_vector(
-			dctx,ectx,true))
+			dctx,ectx,cwd,true))
 		return -1;
 
 	/* using alternate argument vector */
@@ -460,20 +466,20 @@ static int slbt_exec_link_create_executable(
 	*ectx->lout[0] = "-o";
 	*ectx->lout[1] = output;
 
+	/* cwd */
+	if (!getcwd(cwd,sizeof(cwd)))
+		return -1;
+
 	/* .libs/libfoo.so --> -L.libs -lfoo */
 	if (slbt_exec_link_adjust_argument_vector(
-			dctx,ectx,false))
+			dctx,ectx,cwd,false))
 		return -1;
 
 	/* using alternate argument vector */
 	ectx->argv    = ectx->altv;
 	ectx->program = ectx->altv[0];
 
-
 	/* executable wrapper: footer */
-	if (!getcwd(cwd,sizeof(cwd)))
-		return -1;
-
 	if (fprintf(ectx->fwrapper,
 			"DL_PATH=\"$DL_PATH$LCOLON$%s\"\n\n"
 			"export %s=$DL_PATH\n\n"
