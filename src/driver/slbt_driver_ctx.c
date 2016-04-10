@@ -508,7 +508,7 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 		prefix = ctx->cctx.settings.arprefix;
 
 		if (!strncmp(prefix,base,strlen(prefix)))
-			libname = ctx->cctx.output;
+			libname = base;
 		else {
 			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
 				fprintf(stderr,
@@ -525,7 +525,7 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 		prefix = ctx->cctx.settings.dsoprefix;
 
 		if (!strncmp(prefix,base,strlen(prefix)))
-			libname = ctx->cctx.output;
+			libname = base;
 		else {
 			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
 				fprintf(stderr,
@@ -542,7 +542,7 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 		prefix = ctx->cctx.settings.dsoprefix;
 
 		if (!strncmp(prefix,base,strlen(prefix)))
-			libname = ctx->cctx.output;
+			libname = base;
 		else {
 			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
 				fprintf(stderr,
