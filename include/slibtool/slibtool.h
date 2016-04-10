@@ -156,6 +156,7 @@ struct slbt_common_ctx {
 	char *				libname;
 	const char *			rpath;
 	const char *			release;
+	const char *			symfile;
 	const char *			regex;
 	char **				targv;
 	char **				cargv;

@@ -239,6 +239,10 @@ static int slbt_split_argv(
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
 
+		} else if (!(strcmp("export-symbols",&argv[i][1]))) {
+			*targv++ = argv[i++];
+			*targv++ = argv[i];
+
 		} else if (!(strcmp("export-symbols-regex",&argv[i][1]))) {
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
@@ -701,6 +705,10 @@ int slbt_get_driver_ctx(
 
 				case TAG_RELEASE:
 					cctx.release = entry->arg;
+					break;
+
+				case TAG_EXPSYM_FILE:
+					cctx.symfile = entry->arg;
 					break;
 
 				case TAG_EXPSYM_REGEX:

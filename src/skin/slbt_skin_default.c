@@ -90,6 +90,12 @@ const struct argv_option slbt_default_options[] = {
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,0,
 				"specify release information"},
 
+	{"export-symbols",	0,TAG_EXPSYM_FILE,ARGV_OPTARG_REQUIRED,
+				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,
+				0,"<symfile>",
+				"only export the symbols that are listed in %s "
+				"[currently a no-op]"},
+
 	{"export-symbols-regex",0,TAG_EXPSYM_REGEX,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,
 				0,"<regex>",
