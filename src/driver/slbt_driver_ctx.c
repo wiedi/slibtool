@@ -476,6 +476,7 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 	const char * program;
 	const char * libname;
 	const char * prefix;
+	const char * base;
 	char *       dot;
 
 	program = argv_program_name(ctx->cctx.targv[0]);
@@ -497,12 +498,16 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 		return 0;
 
 	/* todo: archive? library? wrapper? inlined function, avoid repetition */
+	if ((base = strrchr(ctx->cctx.output,'/')))
+		base++;
+	else
+		base = ctx->cctx.output;
 
 	/* archive? */
 	if (!strcmp(dot,ctx->cctx.settings.arsuffix)) {
 		prefix = ctx->cctx.settings.arprefix;
 
-		if (!strncmp(prefix,ctx->cctx.output,strlen(prefix)))
+		if (!strncmp(prefix,base,strlen(prefix)))
 			libname = ctx->cctx.output;
 		else {
 			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
@@ -519,7 +524,7 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 	else if (!strcmp(dot,ctx->cctx.settings.dsosuffix)) {
 		prefix = ctx->cctx.settings.dsoprefix;
 
-		if (!strncmp(prefix,ctx->cctx.output,strlen(prefix)))
+		if (!strncmp(prefix,base,strlen(prefix)))
 			libname = ctx->cctx.output;
 		else {
 			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
@@ -536,7 +541,7 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 	else if (!strcmp(dot,".la")) {
 		prefix = ctx->cctx.settings.dsoprefix;
 
-		if (!strncmp(prefix,ctx->cctx.output,strlen(prefix)))
+		if (!strncmp(prefix,base,strlen(prefix)))
 			libname = ctx->cctx.output;
 		else {
 			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
