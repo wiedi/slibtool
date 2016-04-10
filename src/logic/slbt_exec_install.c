@@ -52,6 +52,7 @@ static int slbt_exec_install_init_dstdir(
 	struct argv_entry *	last,
 	char *			dstdir)
 {
+	struct stat	st;
 	char *		slash;
 	size_t		len;
 
@@ -69,8 +70,17 @@ static int slbt_exec_install_init_dstdir(
 	if (dstdir[--len] == '/')
 		dstdir[len] = '\0';
 
+	/* -t DSTDIR? */
+	if (dest)
+		return 0;
+
+	/* is DEST a directory? */
+	if (!(stat(dstdir,&st)))
+		if (S_ISDIR(st.st_mode))
+			return 0;
+
 	/* remove last path component */
-	if (!dest && (slash = strrchr(dstdir,'/')))
+	if ((slash = strrchr(dstdir,'/')))
 		*slash = '\0';
 
 	return 0;
