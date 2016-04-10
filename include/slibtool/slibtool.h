@@ -117,6 +117,7 @@ struct slbt_version_info {
 	int				minor;
 	int				revision;
 	const char *			verinfo;
+	const char *			vernumber;
 };
 
 struct slbt_host_params {

@@ -95,6 +95,11 @@ const struct argv_option slbt_default_options[] = {
 				"<current>[:<revision>[:<age>]]",
 				"specify version information"},
 
+	{"version-number",	0,TAG_VERSION_NUMBER,ARGV_OPTARG_REQUIRED,
+				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,
+				"<major>[:<minor>[:<revision>]]",
+				"specify version information"},
+
 	{"no-suppress",		0,TAG_NO_SUPPRESS,ARGV_OPTARG_NONE,
 				ARGV_OPTION_HYBRID_ONLY,0,0,
 				"transparently forward all "

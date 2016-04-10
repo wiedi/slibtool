@@ -243,6 +243,10 @@ static int slbt_split_argv(
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
 
+		} else if (!(strcmp("version-number",&argv[i][1]))) {
+			*targv++ = argv[i++];
+			*targv++ = argv[i];
+
 		} else {
 			for (option=options; option->long_name; option++)
 				if (!(strcmp(option->long_name,&argv[i][1])))
@@ -431,6 +435,14 @@ static int slbt_init_version_info(
 	int	current;
 	int	revision;
 	int	age;
+
+	if (verinfo->vernumber) {
+		sscanf(verinfo->vernumber,"%d:%d:%d",
+			&verinfo->major,
+			&verinfo->minor,
+			&verinfo->revision);
+		return 0;
+	}
 
 	sscanf(verinfo->verinfo,"%d:%d:%d",
 		&current,&revision,&age);
@@ -689,6 +701,10 @@ int slbt_get_driver_ctx(
 
 				case TAG_VERSION_INFO:
 					cctx.verinfo.verinfo = entry->arg;
+					break;
+
+				case TAG_VERSION_NUMBER:
+					cctx.verinfo.vernumber = entry->arg;
 					break;
 
 				case TAG_TARGET:
