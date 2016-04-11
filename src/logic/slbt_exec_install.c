@@ -168,8 +168,29 @@ static int slbt_exec_install_entry(
 		base = slnkname;
 
 	/* source (build) symlink target */
-	if (readlink(slnkname,target,sizeof(target)) <= 0)
-		return -1;
+	if (readlink(slnkname,target,sizeof(target)) <= 0) {
+		/* -avoid-version? */
+		if (stat(slnkname,&st))
+			return -1;
+
+		/* dstfile */
+		if ((size_t)snprintf(dstfile,sizeof(dstfile),"%s/%s",
+				dstdir,base) >= sizeof(dstfile))
+			return -1;
+
+		/* single spawn, no symlinks */
+		*src = slnkname;
+		*dst = dest ? 0 : dstfile;
+
+		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+			if (slbt_output_install(dctx,ectx))
+				return -1;
+
+		if (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode)
+			return -1;
+
+		return 0;
+	}
 
 	/* srcfile: .libs/libfoo.so.x.y.z */
 	slash = strrchr(srcfile,'/');
