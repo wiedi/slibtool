@@ -159,7 +159,7 @@ static int slbt_exec_install_entry(
 	/* libfoo.la --> libfoo.so */
 	strcpy(slnkname,srcfile);
 	dot = strrchr(slnkname,'.');
-	sprintf(dot,dctx->cctx->settings.dsosuffix);
+	strcpy(dot,dctx->cctx->settings.dsosuffix);
 
 	/* basename */
 	if ((base = strrchr(slnkname,'/')))
