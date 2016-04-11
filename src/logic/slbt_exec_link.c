@@ -184,6 +184,9 @@ static int slbt_exec_link_adjust_argument_vector(
 		} else if (strcmp(dot,dctx->cctx->settings.dsosuffix)) {
 			*aarg++ = *carg++;
 
+		} else if (carg == ectx->lout[1]) {
+			/* ^^^hoppla^^^ */
+			*aarg++ = *carg++;
 		} else {
 			/* account for {'-','L','-','l'} */
 			if ((size_t)snprintf(arg,sizeof(arg),"%s",
@@ -350,29 +353,35 @@ static int slbt_exec_link_create_library(
 		*ectx->noundef = "-Wl,--no-undefined";
 
 	/* -soname */
-	if ((size_t)snprintf(soname,sizeof(soname),"-Wl,%s%s%s.%d",
-				dctx->cctx->settings.dsoprefix,
-				dctx->cctx->libname,
-				dctx->cctx->settings.dsosuffix,
-				dctx->cctx->verinfo.major)
-			>= sizeof(soname))
-		return -1;
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION)) {
+		if ((size_t)snprintf(soname,sizeof(soname),"-Wl,%s%s%s.%d",
+					dctx->cctx->settings.dsoprefix,
+					dctx->cctx->libname,
+					dctx->cctx->settings.dsosuffix,
+					dctx->cctx->verinfo.major)
+				>= sizeof(soname))
+			return -1;
 
-	*ectx->soname  = "-Wl,-soname";
-	*ectx->lsoname = soname;
+		*ectx->soname  = "-Wl,-soname";
+		*ectx->lsoname = soname;
+	}
 
 	/* shared object */
 	*ectx->dpic = "-shared";
 	*ectx->fpic = "-fPIC";
 
 	/* output */
-	if ((size_t)snprintf(output,sizeof(output),"%s.%d.%d.%d",
-				dsofilename,
-				dctx->cctx->verinfo.major,
-				dctx->cctx->verinfo.minor,
-				dctx->cctx->verinfo.revision)
-			>= sizeof(output))
-		return -1;
+	if (dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION) {
+		strcpy(output,dsofilename);
+	} else {
+		if ((size_t)snprintf(output,sizeof(output),"%s.%d.%d.%d",
+					dsofilename,
+					dctx->cctx->verinfo.major,
+					dctx->cctx->verinfo.minor,
+					dctx->cctx->verinfo.revision)
+				>= sizeof(output))
+			return -1;
+	}
 
 	*ectx->lout[0] = "-o";
 	*ectx->lout[1] = output;
@@ -610,20 +619,22 @@ int slbt_exec_link(
 			return -1;
 		}
 
-		/* symlink: libfoo.so.x --> libfoo.so.x.y.z */
-		if (slbt_exec_link_create_library_symlink(
-				dctx,ectx,
-				true)) {
-			slbt_free_exec_ctx(actx);
-			return -1;
-		}
+		if (!(dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION)) {
+			/* symlink: libfoo.so.x --> libfoo.so.x.y.z */
+			if (slbt_exec_link_create_library_symlink(
+					dctx,ectx,
+					true)) {
+				slbt_free_exec_ctx(actx);
+				return -1;
+			}
 
-		/* symlink: libfoo.so --> libfoo.so.x.y.z */
-		if (slbt_exec_link_create_library_symlink(
-				dctx,ectx,
-				false)) {
-			slbt_free_exec_ctx(actx);
-			return -1;
+			/* symlink: libfoo.so --> libfoo.so.x.y.z */
+			if (slbt_exec_link_create_library_symlink(
+					dctx,ectx,
+					false)) {
+				slbt_free_exec_ctx(actx);
+				return -1;
+			}
 		}
 	}
 
