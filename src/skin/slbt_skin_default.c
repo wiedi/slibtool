@@ -102,6 +102,13 @@ const struct argv_option slbt_default_options[] = {
 				"only export symbols mathing the regex expression %s "
 				"[currently a no-op]"},
 
+	{"module",		0,TAG_MODULE,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"create a shared object that will only be "
+				"loaded at runtime via dlopen(3). the shared "
+				"object name need not follow the platform's "
+				"library naming conventions"},
+
 	{"version-info",	0,TAG_VERSION_INFO,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,
 				"<current>[:<revision>[:<age>]]",

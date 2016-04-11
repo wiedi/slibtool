@@ -281,7 +281,9 @@ int  slbt_get_exec_ctx(
 		ictx->ctx.lafilename = ch;
 		ch += sprintf(ch,"%s%s%s.la",
 				ictx->ctx.ldirname,
-				dctx->cctx->settings.dsoprefix,
+				(dctx->cctx->drvflags & SLBT_DRIVER_MODULE)
+					? ""
+					: dctx->cctx->settings.dsoprefix,
 				dctx->cctx->libname)
 			+ sizeof('\0');
 
@@ -290,7 +292,9 @@ int  slbt_get_exec_ctx(
 		ictx->ctx.dsofilename = ch;
 		ch += sprintf(ch,"%s%s%s%s",
 				ictx->ctx.ldirname,
-				dctx->cctx->settings.dsoprefix,
+				(dctx->cctx->drvflags & SLBT_DRIVER_MODULE)
+					? ""
+					: dctx->cctx->settings.dsoprefix,
 				dctx->cctx->libname,
 				dctx->cctx->settings.dsosuffix)
 			+ sizeof('\0');

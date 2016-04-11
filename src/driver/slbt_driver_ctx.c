@@ -480,10 +480,12 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 	const char * prefix;
 	const char * base;
 	char *       dot;
+	bool         fmodule;
 
 	program = argv_program_name(ctx->cctx.targv[0]);
 	libname = 0;
 	prefix  = 0;
+	fmodule = false;
 
 	/* output */
 	if (!(ctx->cctx.output)) {
@@ -545,7 +547,10 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 
 		if (!strncmp(prefix,base,strlen(prefix)))
 			libname = base;
-		else {
+		else if (ctx->cctx.drvflags & SLBT_DRIVER_MODULE) {
+			libname = base;
+			fmodule = true;
+		} else {
 			if (ctx->cctx.drvflags & SLBT_DRIVER_VERBOSITY_ERRORS)
 				fprintf(stderr,
 					"%s: error: output file prefix does "
@@ -558,7 +563,10 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 		return 0;
 
 	/* libname alloc */
-	if (!(ctx->libname = strdup(libname + strlen(prefix))))
+	if (!fmodule)
+		libname += strlen(prefix);
+
+	if (!(ctx->libname = strdup(libname)))
 		return -1;
 
 	dot  = strrchr(ctx->libname,'.');
@@ -744,6 +752,10 @@ int slbt_get_driver_ctx(
 
 				case TAG_NO_UNDEFINED:
 					cctx.drvflags |= SLBT_DRIVER_NO_UNDEFINED;
+					break;
+
+				case TAG_MODULE:
+					cctx.drvflags |= SLBT_DRIVER_MODULE;
 					break;
 
 				case TAG_SHARED:
