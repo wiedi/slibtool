@@ -109,6 +109,11 @@ const struct argv_option slbt_default_options[] = {
 				"object name need not follow the platform's "
 				"library naming conventions"},
 
+	{"avoid-version",	0,TAG_AVOID_VERSION,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"do not store version information, "
+				"do not create version-specific symlinks"},
+
 	{"version-info",	0,TAG_VERSION_INFO,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,
 				"<current>[:<revision>[:<age>]]",

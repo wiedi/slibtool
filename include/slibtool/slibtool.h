@@ -52,6 +52,7 @@ extern "C" {
 #define SLBT_DRIVER_STRICT		0x020000
 #define SLBT_DRIVER_NO_UNDEFINED	0x040000
 #define SLBT_DRIVER_MODULE		0x080000
+#define SLBT_DRIVER_AVOID_VERSION	0x100000
 
 /* execution modes */
 enum slbt_mode {

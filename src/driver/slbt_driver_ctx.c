@@ -758,6 +758,10 @@ int slbt_get_driver_ctx(
 					cctx.drvflags |= SLBT_DRIVER_MODULE;
 					break;
 
+				case TAG_AVOID_VERSION:
+					cctx.drvflags |= SLBT_DRIVER_AVOID_VERSION;
+					break;
+
 				case TAG_SHARED:
 					cctx.drvflags &= ~(uint64_t)SLBT_DRIVER_STATIC;
 					break;
