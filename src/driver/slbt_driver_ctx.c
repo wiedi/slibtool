@@ -545,9 +545,10 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 	else if (!strcmp(dot,".la")) {
 		prefix = ctx->cctx.settings.dsoprefix;
 
-		if (!strncmp(prefix,base,strlen(prefix)))
+		if (!strncmp(prefix,base,strlen(prefix))) {
 			libname = base;
-		else if (ctx->cctx.drvflags & SLBT_DRIVER_MODULE) {
+			fmodule = !!(ctx->cctx.drvflags & SLBT_DRIVER_MODULE);
+		} else if (ctx->cctx.drvflags & SLBT_DRIVER_MODULE) {
 			libname = base;
 			fmodule = true;
 		} else {
