@@ -53,6 +53,21 @@ int slibtool_main(int argc, char ** argv, char ** envp)
 	struct slbt_driver_ctx *	dctx;
 	struct slbt_unit_ctx *		uctx;
 	const char **			unit;
+	char *				sargv[5];
+
+	/* --version only? */
+	if ((argc == 2) && !strcmp(argv[1],"--version")) {
+		sargv[0] = argv[0];
+		sargv[1] = argv[1];
+		sargv[2] = "--mode=compile";
+		sargv[3] = "<compiler>";
+		sargv[4] = 0;
+
+		return (slbt_get_driver_ctx(sargv,envp,SLBT_DRIVER_FLAGS,&dctx))
+			? 2 : (slibtool_version(dctx) < 0)
+				? slibtool_exit(dctx,2)
+				: slibtool_exit(dctx,0);
+	}
 
 	if ((ret = slbt_get_driver_ctx(argv,envp,SLBT_DRIVER_FLAGS,&dctx)))
 		return (ret == SLBT_USAGE) ? !--argc : 2;
