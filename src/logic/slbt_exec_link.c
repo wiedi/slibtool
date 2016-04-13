@@ -302,6 +302,12 @@ static int slbt_exec_link_create_archive(
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
 		return -1;
 
+	/* input objects associated with .la archives */
+	for (parg=ectx->cargv; *parg; parg++)
+		if (slbt_adjust_input_argument(*parg,".la",".a",fpic))
+			if (slbt_archive_import(dctx,ectx,output,*parg))
+				return -1;
+
 	/* ranlib argv */
 	if ((size_t)snprintf(program,sizeof(program),"%s",
 			dctx->cctx->host.ranlib) >= sizeof(program))
