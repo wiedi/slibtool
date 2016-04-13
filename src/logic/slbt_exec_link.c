@@ -56,7 +56,11 @@
 /*                                                                 */
 /*******************************************************************/
 
-static bool slbt_adjust_input_argument(char * arg, bool fpic)
+static bool slbt_adjust_input_argument(
+	char *		arg,
+	const char *	osuffix,
+	const char *	asuffix,
+	bool		fpic)
 {
 	char *	slash;
 	char *	dot;
@@ -68,7 +72,7 @@ static bool slbt_adjust_input_argument(char * arg, bool fpic)
 	if (!(dot = strrchr(arg,'.')))
 		return false;
 
-	if (strcmp(dot,".lo"))
+	if (strcmp(dot,osuffix))
 		return false;
 
 	if (fpic) {
@@ -85,8 +89,7 @@ static bool slbt_adjust_input_argument(char * arg, bool fpic)
 		dot = strrchr(arg,'.');
 	}
 
-	dot[1] = 'o';
-	dot[2] = '\0';
+	strcpy(dot,asuffix);
 	return true;
 }
 
@@ -280,7 +283,7 @@ static int slbt_exec_link_create_archive(
 
 	/* input argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
-		if (slbt_adjust_input_argument(*parg,fpic))
+		if (slbt_adjust_input_argument(*parg,".lo",".o",fpic))
 			*aarg++ = *parg;
 
 	*aarg = 0;
@@ -339,7 +342,7 @@ static int slbt_exec_link_create_library(
 
 	/* input argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
-		slbt_adjust_input_argument(*parg,true);
+		slbt_adjust_input_argument(*parg,".lo",".o",true);
 
 	/* linker argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
@@ -430,7 +433,7 @@ static int slbt_exec_link_create_executable(
 
 	/* input argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
-		slbt_adjust_input_argument(*parg,true);
+		slbt_adjust_input_argument(*parg,".lo",".o",true);
 
 	/* linker argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
