@@ -201,8 +201,11 @@ slbt_api int  slbt_exec_compile		(const struct slbt_driver_ctx *, struct slbt_ex
 slbt_api int  slbt_exec_install		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);
 slbt_api int  slbt_exec_link		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);
 
+/* helper api */
 slbt_api int  slbt_map_input		(int fd, const char * path, int prot, struct slbt_input *);
 slbt_api int  slbt_unmap_input		(struct slbt_input *);
+slbt_api int  slbt_archive_import	(const struct slbt_driver_ctx *, struct slbt_exec_ctx *,
+					 char * dstarchive, char * srcarchive);
 
 /* utility api */
 slbt_api int  slbt_output_config	(const struct slbt_driver_ctx *);
