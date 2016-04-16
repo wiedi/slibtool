@@ -18,6 +18,7 @@ int slbt_create_symlink(
 	const char *			lnkname,
 	bool				flawrapper)
 {
+	char **		oargv;
 	const char *	slash;
 	char *		ln[5];
 	char *		dotdot;
@@ -51,18 +52,27 @@ int slbt_create_symlink(
 	ln[2] = atarget;
 	ln[3] = lnkarg;
 	ln[4] = 0;
+
+	oargv      = ectx->argv;
 	ectx->argv = ln;
 
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT)) {
 		if (dctx->cctx->mode == SLBT_MODE_LINK) {
-			if (slbt_output_link(dctx,ectx))
+			if (slbt_output_link(dctx,ectx)) {
+				ectx->argv = oargv;
 				return -1;
+			}
 		} else {
-			if (slbt_output_install(dctx,ectx))
+			if (slbt_output_install(dctx,ectx)) {
+				ectx->argv = oargv;
 				return -1;
+			}
 		}
 	}
+
+	/* restore execution context */
+	ectx->argv = oargv;
 
 	/* create symlink */
 	if (symlink(atarget,tmplnk))
