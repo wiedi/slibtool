@@ -430,6 +430,7 @@ static int slbt_exec_link_create_executable(
 	char	output [PATH_MAX];
 	char	wrapper[PATH_MAX];
 	char	wraplnk[PATH_MAX];
+	bool	fabspath;
 
 	/* initial state */
 	slbt_reset_arguments(ectx);
@@ -499,13 +500,16 @@ static int slbt_exec_link_create_executable(
 	ectx->program = ectx->altv[0];
 
 	/* executable wrapper: footer */
+	fabspath = (exefilename[0] == '/');
+
 	if (fprintf(ectx->fwrapper,
 			"DL_PATH=\"$DL_PATH$LCOLON$%s\"\n\n"
 			"export %s=$DL_PATH\n\n"
 			"exec %s/%s \"$@\"\n",
 			dctx->cctx->settings.ldpathenv,
 			dctx->cctx->settings.ldpathenv,
-			cwd,exefilename) < 0)
+			fabspath ? "" : cwd,
+			fabspath ? &exefilename[1] : exefilename) < 0)
 		return -1;
 
 	/* step output */
