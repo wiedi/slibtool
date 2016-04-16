@@ -451,6 +451,9 @@ static int slbt_init_version_info(
 	int	revision;
 	int	age;
 
+	if (!verinfo->verinfo && !verinfo->vernumber)
+		return 0;
+
 	if (verinfo->vernumber) {
 		sscanf(verinfo->vernumber,"%d:%d:%d",
 			&verinfo->major,
@@ -810,11 +813,10 @@ int slbt_get_driver_ctx(
 	}
 
 	/* version info */
-	if (ctx->cctx.verinfo.verinfo)
-		if (slbt_init_version_info(ctx,&ctx->cctx.verinfo)) {
-			slbt_free_driver_ctx(&ctx->ctx);
-			return -1;
-		}
+	if (slbt_init_version_info(ctx,&ctx->cctx.verinfo)) {
+		slbt_free_driver_ctx(&ctx->ctx);
+		return -1;
+	}
 
 	/* link params */
 	if (cctx.mode == SLBT_MODE_LINK)
