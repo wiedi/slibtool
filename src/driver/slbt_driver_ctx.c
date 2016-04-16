@@ -231,6 +231,13 @@ static int slbt_split_argv(
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
 
+		} else if ((argv[i][1] == 'R')  && (argv[i][2] == '\0')) {
+			*targv++ = argv[i++];
+			*targv++ = argv[i];
+
+		} else if (argv[i][1] == 'R') {
+			*targv++ = argv[i];
+
 		} else if (!(strcmp("rpath",&argv[i][1]))) {
 			*targv++ = argv[i++];
 			*targv++ = argv[i];

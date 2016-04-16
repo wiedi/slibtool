@@ -81,6 +81,11 @@ const struct argv_option slbt_default_options[] = {
 				"set an explicit (cross-)target, then pass it to "
 				"the compiler"},
 
+	{"R",			0,TAG_LDRPATH,ARGV_OPTARG_REQUIRED,
+				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_CIRCUS,0,0,
+				"encode library path into the executable image "
+				"[currently a no-op]"},
+
 	{"rpath",		0,TAG_RPATH,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,0,
 				"where a library should eventually be "
