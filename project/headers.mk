@@ -6,6 +6,7 @@ INTERNAL_HEADERS = \
 	$(PROJECT_DIR)/src/internal/argv/argv.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_driver_impl.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_install_impl.h \
+	$(PROJECT_DIR)/src/internal/$(PACKAGE)_readlink_impl.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_spawn_impl.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_symlink_impl.h \
 

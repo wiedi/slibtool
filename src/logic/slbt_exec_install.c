@@ -15,6 +15,7 @@
 
 #include <slibtool/slibtool.h>
 #include "slibtool_install_impl.h"
+#include "slibtool_readlink_impl.h"
 #include "slibtool_spawn_impl.h"
 #include "slibtool_symlink_impl.h"
 #include "argv/argv.h"
@@ -168,7 +169,7 @@ static int slbt_exec_install_entry(
 		base = slnkname;
 
 	/* source (build) symlink target */
-	if (readlink(slnkname,target,sizeof(target)) <= 0) {
+	if (slbt_readlink(slnkname,target,sizeof(target)) < 0) {
 		/* -avoid-version? */
 		if (stat(slnkname,&st))
 			return -1;
