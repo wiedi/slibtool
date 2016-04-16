@@ -134,6 +134,12 @@ const struct argv_option slbt_default_options[] = {
 				"transparently forward all "
 				"compiler-generated output"},
 
+	{"no-install",		0,TAG_NO_INSTALL,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"consider the executable image wrapper "
+				"to be optional "
+				"[currently a no-op]"},
+
 	{"prefer-pic",		0,TAG_PREFER_PIC,ARGV_OPTARG_NONE,
 				ARGV_OPTION_HYBRID_ONLY,0,0,
 				"pick on non-PIC objects"},
