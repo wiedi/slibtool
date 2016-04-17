@@ -93,7 +93,7 @@ static bool slbt_adjust_input_argument(
 	return true;
 }
 
-static bool slbt_adjust_linker_argument(
+static int slbt_adjust_linker_argument(
 	char *		arg,
 	bool		fpic,
 	const char *	dsosuffix,
@@ -105,13 +105,13 @@ static bool slbt_adjust_linker_argument(
 	char	base[PATH_MAX];
 
 	if (*arg == '-')
-		return false;
+		return 0;
 
 	if (!(dot = strrchr(arg,'.')))
-		return false;
+		return 0;
 
 	if (strcmp(dot,".la"))
-		return false;
+		return 0;
 
 	if (fpic) {
 		if ((slash = strrchr(arg,'/')))
@@ -121,7 +121,7 @@ static bool slbt_adjust_linker_argument(
 
 		if ((size_t)snprintf(base,sizeof(base),"%s",
 				slash) >= sizeof(base))
-			return false;
+			return 0;
 
 		sprintf(slash,".libs/%s",base);
 		dot = strrchr(arg,'.');
@@ -136,12 +136,12 @@ static bool slbt_adjust_linker_argument(
 		else
 			sprintf(dot,"%s",arsuffix);
 
-		return true;
+		return 0;
 	}
 
 	/* input archive */
 	sprintf(dot,"%s",arsuffix);
-	return true;
+	return 0;
 }
 
 static int slbt_exec_link_adjust_argument_vector(
@@ -406,10 +406,11 @@ static int slbt_exec_link_create_library(
 
 	/* linker argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
-		slbt_adjust_linker_argument(
-			*parg,true,
-			dctx->cctx->settings.dsosuffix,
-			dctx->cctx->settings.arsuffix);
+		if (slbt_adjust_linker_argument(
+				*parg,true,
+				dctx->cctx->settings.dsosuffix,
+				dctx->cctx->settings.arsuffix) < 0)
+			return -1;
 
 	/* --no-undefined */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_NO_UNDEFINED)
@@ -502,10 +503,11 @@ static int slbt_exec_link_create_executable(
 
 	/* linker argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
-		slbt_adjust_linker_argument(
-			*parg,true,
-			dctx->cctx->settings.dsosuffix,
-			dctx->cctx->settings.arsuffix);
+		if (slbt_adjust_linker_argument(
+				*parg,true,
+				dctx->cctx->settings.dsosuffix,
+				dctx->cctx->settings.arsuffix) < 0)
+			return -1;
 
 	/* --no-undefined */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_NO_UNDEFINED)
