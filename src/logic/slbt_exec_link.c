@@ -245,6 +245,56 @@ static int slbt_exec_link_remove_file(
 	return -1;
 }
 
+static int slbt_exec_link_create_dep_file(
+	struct slbt_exec_ctx *	ectx,
+	char **			altv,
+	const char *		libfilename)
+{
+	char **	parg;
+	char *	popt;
+	char *	plib;
+	char	depfile[PATH_MAX];
+
+	if (ectx->fdeps)
+		fclose(ectx->fdeps);
+
+	if ((size_t)snprintf(depfile,sizeof(depfile),"%s.slibtool.deps",
+				libfilename)
+			>= sizeof(depfile))
+		return -1;
+
+	if (!(ectx->fdeps = fopen(depfile,"w")))
+		return -1;
+
+	for (parg=altv; *parg; parg++) {
+		popt = 0;
+		plib = 0;
+
+		if (!strcmp(*parg,"-l")) {
+			popt = *parg++;
+			plib = *parg;
+		} else if (!strcmp(*parg,"--library")) {
+			popt = *parg++;
+			plib = *parg;
+		} else if (!strncmp(*parg,"-l",2)) {
+			popt = *parg;
+			plib = popt + 2;
+		} else if (!strncmp(*parg,"--library=",10)) {
+			popt = *parg;
+			plib = popt + 10;
+		}
+
+		if (plib)
+			if (fprintf(ectx->fdeps,"-l%s\n",plib) < 0)
+				return -1;
+	}
+
+	if (fflush(ectx->fdeps))
+		return -1;
+
+	return 0;
+}
+
 static int slbt_exec_link_create_archive(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -296,6 +346,10 @@ static int slbt_exec_link_create_archive(
 
 	/* remove old archive as needed */
 	if (slbt_exec_link_remove_file(dctx,ectx,output))
+		return -1;
+
+	/* .deps */
+	if (slbt_exec_link_create_dep_file(ectx,ectx->cargv,arfilename))
 		return -1;
 
 	/* ar spawn */
@@ -412,6 +466,10 @@ static int slbt_exec_link_create_library(
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
 			return -1;
+
+	/* .deps */
+	if (slbt_exec_link_create_dep_file(ectx,ectx->argv,dsofilename))
+		return -1;
 
 	/* spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)

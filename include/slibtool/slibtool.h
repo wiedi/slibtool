@@ -100,6 +100,7 @@ struct slbt_exec_ctx {
 	char ** lout[2];
 	char ** sentinel;
 	FILE *	fwrapper;
+	FILE *	fdeps;
 	char *	csrc;
 	char *	ldirname;
 	char *	lbasename;
