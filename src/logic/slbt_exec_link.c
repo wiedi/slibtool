@@ -64,6 +64,19 @@ struct slbt_deps_meta {
 /*                                                                 */
 /*******************************************************************/
 
+static int slbt_exec_link_exit(
+	struct slbt_deps_meta *	depsmeta,
+	int			ret)
+{
+	if (depsmeta->altv)
+		free(depsmeta->altv);
+
+	if (depsmeta->args)
+		free(depsmeta->args);
+
+	return ret;
+}
+
 static int slbt_get_deps_meta(
 	char *			libfilename,
 	struct slbt_deps_meta *	depsmeta)
@@ -195,6 +208,7 @@ static int slbt_adjust_linker_argument(
 static int slbt_exec_link_adjust_argument_vector(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
+	struct slbt_deps_meta *		depsmeta,
 	const char *			cwd,
 	bool				flibrary)
 {
@@ -202,14 +216,34 @@ static int slbt_exec_link_adjust_argument_vector(
 	char ** aarg;
 	char *	slash;
 	char *	mark;
+	char *	darg;
 	char *	dot;
+	FILE *	fdeps;
+	char *	dpath;
+	int	argc;
 	char	arg[PATH_MAX];
+	char	lib[PATH_MAX];
 	bool	fwholearchive = false;
 
+	for (argc=0,carg=ectx->cargv; *carg; carg++)
+		argc++;
+
+	if (!(depsmeta->args = calloc(1,depsmeta->infolen)))
+		return -1;
+
+	argc *= 3;
+	argc += depsmeta->depscnt;
+
+	if (!(depsmeta->altv = calloc(argc,sizeof(char *))))
+		return -1;
+
 	carg = ectx->cargv;
-	aarg = ectx->altv;
+	aarg = depsmeta->altv;
+	darg = depsmeta->args;
 
 	for (; *carg; ) {
+		dpath = 0;
+
 		if (!strcmp(*carg,"-Wl,--whole-archive"))
 			fwholearchive = true;
 		else if (!strcmp(*carg,"-Wl,--no-whole-archive"))
@@ -227,6 +261,8 @@ static int slbt_exec_link_adjust_argument_vector(
 			if (flibrary && !fwholearchive)
 				*aarg++ = "-Wl,--whole-archive";
 
+			dpath = lib;
+			sprintf(lib,"%s.slibtool.deps",*carg);
 			*aarg++ = *carg++;
 
 			if (flibrary && !fwholearchive)
@@ -239,6 +275,9 @@ static int slbt_exec_link_adjust_argument_vector(
 			/* ^^^hoppla^^^ */
 			*aarg++ = *carg++;
 		} else {
+			dpath = lib;
+			sprintf(lib,"%s.slibtool.deps",*carg);
+
 			/* account for {'-','L','-','l'} */
 			if ((size_t)snprintf(arg,sizeof(arg),"%s",
 					*carg) >= (sizeof(arg) - 4))
@@ -271,6 +310,30 @@ static int slbt_exec_link_adjust_argument_vector(
 				*dot = '\0';
 			} else {
 				*aarg++ = *carg++;
+			}
+		}
+
+		if (dpath) {
+			*aarg = darg;
+
+			if (!(fdeps = fopen(dpath,"r"))) {
+				free(depsmeta->altv);
+				free(depsmeta->args);
+				return -1;
+			}
+
+			while (fscanf(fdeps,"%s\n",darg) == 1) {
+				*aarg++ = darg;
+				darg   += strlen(darg) + sizeof('\0');
+			}
+
+			if (ferror(fdeps)) {
+				free(depsmeta->altv);
+				free(depsmeta->args);
+				fclose(fdeps);
+				return -1;
+			} else {
+				fclose(fdeps);
 			}
 		}
 	}
@@ -506,27 +569,27 @@ static int slbt_exec_link_create_library(
 
 	/* .libs/libfoo.so --> -L.libs -lfoo */
 	if (slbt_exec_link_adjust_argument_vector(
-			dctx,ectx,cwd,true))
+			dctx,ectx,&depsmeta,cwd,true))
 		return -1;
 
 	/* using alternate argument vector */
-	ectx->argv    = ectx->altv;
-	ectx->program = ectx->altv[0];
+	ectx->argv    = depsmeta.altv;
+	ectx->program = depsmeta.altv[0];
 
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
-			return -1;
+			return slbt_exec_link_exit(&depsmeta,-1);
 
 	/* .deps */
 	if (slbt_exec_link_create_dep_file(ectx,ectx->argv,dsofilename))
-		return -1;
+		return slbt_exec_link_exit(&depsmeta,-1);
 
 	/* spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
-		return -1;
+		return slbt_exec_link_exit(&depsmeta,-1);
 
-	return 0;
+	return slbt_exec_link_exit(&depsmeta,0);
 }
 
 static int slbt_exec_link_create_executable(
@@ -604,12 +667,12 @@ static int slbt_exec_link_create_executable(
 
 	/* .libs/libfoo.so --> -L.libs -lfoo */
 	if (slbt_exec_link_adjust_argument_vector(
-			dctx,ectx,cwd,false))
+			dctx,ectx,&depsmeta,cwd,false))
 		return -1;
 
 	/* using alternate argument vector */
-	ectx->argv    = ectx->altv;
-	ectx->program = ectx->altv[0];
+	ectx->argv    = depsmeta.altv;
+	ectx->program = depsmeta.altv[0];
 
 	/* executable wrapper: footer */
 	fabspath = (exefilename[0] == '/');
@@ -622,16 +685,16 @@ static int slbt_exec_link_create_executable(
 			dctx->cctx->settings.ldpathenv,
 			fabspath ? "" : cwd,
 			fabspath ? &exefilename[1] : exefilename) < 0)
-		return -1;
+		return slbt_exec_link_exit(&depsmeta,-1);
 
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
-			return -1;
+			return slbt_exec_link_exit(&depsmeta,-1);
 
 	/* spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
-		return -1;
+		return slbt_exec_link_exit(&depsmeta,-1);
 
 	/* executable wrapper: finalize */
 	fclose(ectx->fwrapper);
@@ -639,21 +702,21 @@ static int slbt_exec_link_create_executable(
 
 	if ((size_t)snprintf(wraplnk,sizeof(wraplnk),"%s.exe.wrapper",
 			dctx->cctx->output) >= sizeof(wraplnk))
-		return -1;
+		return slbt_exec_link_exit(&depsmeta,-1);
 
 	if (slbt_create_symlink(
 			dctx,ectx,
 			dctx->cctx->output,wraplnk,
 			false))
-		return -1;
+		return slbt_exec_link_exit(&depsmeta,-1);
 
 	if (rename(wrapper,dctx->cctx->output))
-		return -1;
+		return slbt_exec_link_exit(&depsmeta,-1);
 
 	if (chmod(dctx->cctx->output,0755))
-		return -1;
+		return slbt_exec_link_exit(&depsmeta,-1);
 
-	return 0;
+	return slbt_exec_link_exit(&depsmeta,0);
 }
 
 static int slbt_exec_link_create_library_symlink(
