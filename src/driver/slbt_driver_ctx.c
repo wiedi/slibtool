@@ -16,15 +16,15 @@
 
 
 /* flavor settings */
-#define SLBT_FLAVOR_SETTINGS(flavor,arp,ars,dsop,dsos,exep,exes,impp,imps,ldenv) \
+#define SLBT_FLAVOR_SETTINGS(flavor,bfmt,arp,ars,dsop,dsos,exep,exes,impp,imps,ldenv) \
 	static const struct slbt_flavor_settings flavor = {		   \
-		arp,ars,dsop,dsos,exep,exes,impp,imps,ldenv}
+		bfmt,arp,ars,dsop,dsos,exep,exes,impp,imps,ldenv}
 
-SLBT_FLAVOR_SETTINGS(host_flavor_default, "lib",".a", "lib",".so",    "","",     "",   "",       "LD_LIBRARY_PATH");
-SLBT_FLAVOR_SETTINGS(host_flavor_midipix, "lib",".a", "lib",".so",    "","",     "lib",".lib.a", "PATH");
-SLBT_FLAVOR_SETTINGS(host_flavor_mingw,   "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a", "PATH");
-SLBT_FLAVOR_SETTINGS(host_flavor_cygwin,  "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a", "PATH");
-SLBT_FLAVOR_SETTINGS(host_flavor_darwin,  "lib",".a", "lib",".dylib", "","",     "",   "",       "DYLD_LIBRARY_PATH");
+SLBT_FLAVOR_SETTINGS(host_flavor_default, "elf",  "lib",".a", "lib",".so",    "","",     "",   "",       "LD_LIBRARY_PATH");
+SLBT_FLAVOR_SETTINGS(host_flavor_midipix, "pe",   "lib",".a", "lib",".so",    "","",     "lib",".lib.a", "PATH");
+SLBT_FLAVOR_SETTINGS(host_flavor_mingw,   "pe",   "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a", "PATH");
+SLBT_FLAVOR_SETTINGS(host_flavor_cygwin,  "pe",   "lib",".a", "lib",".dll",   "",".exe", "lib",".dll.a", "PATH");
+SLBT_FLAVOR_SETTINGS(host_flavor_darwin,  "macho","lib",".a", "lib",".dylib", "","",     "",   "",       "DYLD_LIBRARY_PATH");
 
 
 /* annotation strings */
@@ -439,6 +439,13 @@ static void slbt_init_flavor_settings(struct slbt_common_ctx * cctx)
 		settings = &host_flavor_darwin;
 	else
 		settings = &host_flavor_default;
+
+	if (!strcmp(settings->imagefmt,"elf"))
+		cctx->drvflags |= SLBT_DRIVER_IMAGE_ELF;
+	else if (!strcmp(settings->imagefmt,"pe"))
+		cctx->drvflags |= SLBT_DRIVER_IMAGE_PE;
+	else if (!strcmp(settings->imagefmt,"macho"))
+		cctx->drvflags |= SLBT_DRIVER_IMAGE_PE;
 
 	memcpy(&cctx->settings,settings,sizeof(*settings));
 }

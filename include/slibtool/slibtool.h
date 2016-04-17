@@ -53,6 +53,9 @@ extern "C" {
 #define SLBT_DRIVER_NO_UNDEFINED	0x040000
 #define SLBT_DRIVER_MODULE		0x080000
 #define SLBT_DRIVER_AVOID_VERSION	0x100000
+#define SLBT_DRIVER_IMAGE_ELF		0x200000
+#define SLBT_DRIVER_IMAGE_PE		0x400000
+#define SLBT_DRIVER_IMAGE_MACHO		0x800000
 
 /* execution modes */
 enum slbt_mode {
@@ -132,6 +135,7 @@ struct slbt_host_params {
 };
 
 struct slbt_flavor_settings {
+	const char *			imagefmt;
 	const char *			arprefix;
 	const char *			arsuffix;
 	const char *			dsoprefix;
