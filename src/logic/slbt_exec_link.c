@@ -504,6 +504,7 @@ static int slbt_exec_link_create_library(
 	char	cwd    [PATH_MAX];
 	char	output [PATH_MAX];
 	char	soname [PATH_MAX];
+	char	symfile[PATH_MAX];
 	struct slbt_deps_meta depsmeta = {0};
 
 	/* initial state */
@@ -541,6 +542,17 @@ static int slbt_exec_link_create_library(
 
 		*ectx->soname  = "-Wl,-soname";
 		*ectx->lsoname = soname;
+	}
+
+	/* PE: --output-def */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_IMAGE_PE) {
+		if ((size_t)snprintf(symfile,sizeof(symfile),"-Wl,%s",
+					ectx->deffilename)
+				>= sizeof(output))
+			return -1;
+
+		*ectx->symdefs = "-Wl,--output-def";
+		*ectx->symfile = symfile;
 	}
 
 	/* shared object */
