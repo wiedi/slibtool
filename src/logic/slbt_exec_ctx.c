@@ -309,6 +309,38 @@ int  slbt_get_exec_ctx(
 				dctx->cctx->libname,
 				dctx->cctx->settings.dsosuffix)
 			+ sizeof('\0');
+
+		/* default implib file name */
+		ictx->ctx.dimpfilename = ch;
+		ch += sprintf(ch,"%s%s%s%s",
+				ictx->ctx.ldirname,
+				dctx->cctx->settings.impprefix,
+				dctx->cctx->libname,
+				dctx->cctx->settings.impsuffix)
+			+ sizeof('\0');
+
+
+		/* primary implib file name */
+		ictx->ctx.pimpfilename = ch;
+		ch += sprintf(ch,"%s%s%s.%d%s",
+				ictx->ctx.ldirname,
+				dctx->cctx->settings.impprefix,
+				dctx->cctx->libname,
+				dctx->cctx->verinfo.major,
+				dctx->cctx->settings.impsuffix)
+			+ sizeof('\0');
+
+		/* versioned implib file name */
+		ictx->ctx.vimpfilename = ch;
+		ch += sprintf(ch,"%s%s%s.%d.%d.%d%s",
+				ictx->ctx.ldirname,
+				dctx->cctx->settings.impprefix,
+				dctx->cctx->libname,
+				dctx->cctx->verinfo.major,
+				dctx->cctx->verinfo.minor,
+				dctx->cctx->verinfo.revision,
+				dctx->cctx->settings.impsuffix)
+			+ sizeof('\0');
 	}
 
 	/* linking: exefilename */
