@@ -83,11 +83,11 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 		else
 			size += sizeof('\0') + strlen(*parg);
 
-	/* buffer size (ldirname, lbasename, lobjname, aobjname, ltobjname) */
+	/* buffer size (ldirname, lbasename, lobjname, aobjname, etc.) */
 	if (dctx->cctx->output)
-		size += 4*strlen(dctx->cctx->output);
+		size += 8*strlen(dctx->cctx->output);
 	else if ((csrc = slbt_source_file(dctx->cctx->cargv)))
-		size += 4*strlen(csrc);
+		size += 8*strlen(csrc);
 
 	/* pessimistic argc: .libs/libfoo.so --> -L.libs -lfoo */
 	argc *= 2;
@@ -297,6 +297,15 @@ int  slbt_get_exec_ctx(
 				(dctx->cctx->drvflags & SLBT_DRIVER_MODULE)
 					? ""
 					: dctx->cctx->settings.dsoprefix,
+				dctx->cctx->libname,
+				dctx->cctx->settings.dsosuffix)
+			+ sizeof('\0');
+
+		/* deffilename */
+		ictx->ctx.deffilename = ch;
+		ch += sprintf(ch,"%s%s%s%s.def",
+				ictx->ctx.ldirname,
+				dctx->cctx->settings.dsoprefix,
 				dctx->cctx->libname,
 				dctx->cctx->settings.dsosuffix)
 			+ sizeof('\0');

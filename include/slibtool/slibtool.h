@@ -115,6 +115,7 @@ struct slbt_exec_ctx {
 	char *	arfilename;
 	char *	lafilename;
 	char *	dsofilename;
+	char *	deffilename;
 	char *	exefilename;
 	pid_t	pid;
 	int	exitcode;
