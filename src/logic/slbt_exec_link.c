@@ -406,6 +406,46 @@ static int slbt_exec_link_create_dep_file(
 	return 0;
 }
 
+static int slbt_exec_link_create_import_library(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	char *				impfilename,
+	char *				deffilename,
+	char *				soname)
+{
+	char *	dlltool[8];
+	char	program[PATH_MAX];
+
+	/* dlltool argv */
+	if ((size_t)snprintf(program,sizeof(program),"%s",
+			dctx->cctx->host.dlltool) >= sizeof(program))
+		return -1;
+
+	dlltool[0] = program;
+	dlltool[1] = "-l";
+	dlltool[2] = impfilename;
+	dlltool[3] = "-d";
+	dlltool[4] = deffilename;
+	dlltool[5] = "-D";
+	dlltool[6] = soname;
+	dlltool[7] = 0;
+
+	/* alternate argument vector */
+	ectx->argv    = dlltool;
+	ectx->program = program;
+
+	/* step output */
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+		if (slbt_output_link(dctx,ectx))
+			return -1;
+
+	/* dlltool spawn */
+	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
+		return -1;
+
+	return 0;
+}
+
 static int slbt_exec_link_create_archive(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -769,6 +809,7 @@ int slbt_exec_link(
 	char *			dot;
 	FILE *			fout;
 	struct slbt_exec_ctx *	actx;
+	char			soname[PATH_MAX];
 
 	/* context */
 	if (ectx)
@@ -835,6 +876,51 @@ int slbt_exec_link(
 				slbt_free_exec_ctx(actx);
 				return -1;
 			}
+		}
+
+		/* PE import libraries */
+		if (dctx->cctx->drvflags & SLBT_DRIVER_IMAGE_PE) {
+			/* libfoo.lib.a */
+			if ((size_t)snprintf(soname,sizeof(soname),"%s%s%s.%d",
+						dctx->cctx->settings.dsoprefix,
+						dctx->cctx->libname,
+						dctx->cctx->settings.dsosuffix,
+						dctx->cctx->verinfo.major)
+					>= sizeof(soname))
+				return -1;
+
+			if (slbt_exec_link_create_import_library(
+					dctx,ectx,
+					ectx->dimpfilename,
+					ectx->deffilename,
+					soname))
+				return -1;
+
+			/* libfoo.x.lib.a */
+			if (slbt_exec_link_create_import_library(
+					dctx,ectx,
+					ectx->pimpfilename,
+					ectx->deffilename,
+					soname))
+				return -1;
+
+			/* libfoo.x.y.z.lib.a */
+			if ((size_t)snprintf(soname,sizeof(soname),"%s%s%s.%d.%d.%d",
+						dctx->cctx->settings.dsoprefix,
+						dctx->cctx->libname,
+						dctx->cctx->settings.dsosuffix,
+						dctx->cctx->verinfo.major,
+						dctx->cctx->verinfo.minor,
+						dctx->cctx->verinfo.revision)
+					>= sizeof(soname))
+				return -1;
+
+			if (slbt_exec_link_create_import_library(
+					dctx,ectx,
+					ectx->vimpfilename,
+					ectx->deffilename,
+					soname))
+				return -1;
 		}
 	}
 
