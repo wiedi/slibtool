@@ -230,6 +230,8 @@ int  slbt_get_exec_ctx(
 	ictx->ctx.noundef = &ictx->ctx.argv[i++];
 	ictx->ctx.soname  = &ictx->ctx.argv[i++];
 	ictx->ctx.lsoname = &ictx->ctx.argv[i++];
+	ictx->ctx.symdefs = &ictx->ctx.argv[i++];
+	ictx->ctx.symfile = &ictx->ctx.argv[i++];
 
 	ictx->ctx.lout[0] = &ictx->ctx.argv[i++];
 	ictx->ctx.lout[1] = &ictx->ctx.argv[i++];
@@ -372,6 +374,8 @@ void slbt_reset_placeholders(struct slbt_exec_ctx * ectx)
 	*ectx->noundef = "-USLIBTOOL_PLACEHOLDER_NO_UNDEFINED";
 	*ectx->soname  = "-USLIBTOOL_PLACEHOLDER_SONAME";
 	*ectx->lsoname = "-USLIBTOOL_PLACEHOLDER_LSONAME";
+	*ectx->symdefs = "-USLIBTOOL_PLACEHOLDER_SYMDEF_SWITCH";
+	*ectx->symfile = "-USLIBTOOL_PLACEHOLDER_SYMDEF_FILE";
 
 	*ectx->lout[0] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_SWITCH";
 	*ectx->lout[1] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_FILE";
@@ -387,6 +391,8 @@ void slbt_disable_placeholders(struct slbt_exec_ctx * ectx)
 	*ectx->noundef = 0;
 	*ectx->soname  = 0;
 	*ectx->lsoname = 0;
+	*ectx->symdefs = 0;
+	*ectx->symfile = 0;
 
 	*ectx->lout[0] = 0;
 	*ectx->lout[1] = 0;
