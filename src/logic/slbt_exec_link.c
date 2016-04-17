@@ -4,6 +4,7 @@
 /*  Released under the Standard MIT License; see COPYING.SLIBTOOL. */
 /*******************************************************************/
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -14,6 +15,13 @@
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
 #include "slibtool_symlink_impl.h"
+
+struct slbt_deps_meta {
+	char ** altv;
+	char *	args;
+	int	depscnt;
+	int	infolen;
+};
 
 /*******************************************************************/
 /*                                                                 */
@@ -56,6 +64,45 @@
 /*                                                                 */
 /*******************************************************************/
 
+static int slbt_get_deps_meta(
+	char *			libfilename,
+	struct slbt_deps_meta *	depsmeta)
+{
+	int		ret;
+	FILE *		fdeps;
+	struct stat	st;
+	char		depfile[4*PATH_MAX];
+	char *		deplibs = depfile;
+
+	if ((size_t)snprintf(depfile,sizeof(depfile),"%s.slibtool.deps",
+				libfilename)
+			>= sizeof(depfile))
+		return -1;
+
+	if ((stat(depfile,&st)))
+		return -1;
+
+	if (!(fdeps = fopen(depfile,"r")))
+		return -1;
+
+	if ((size_t)st.st_size >= sizeof(depfile))
+		if (!(deplibs = malloc(st.st_size+1))) {
+			fclose(fdeps);
+			return -1;
+		}
+
+	depsmeta->infolen += st.st_size;
+	depsmeta->infolen++;
+
+	while (fscanf(fdeps,"%s\n",deplibs) == 1)
+		depsmeta->depscnt++;
+
+	ret = ferror(fdeps) ? -1 : 0;
+	fclose(fdeps);
+
+	return ret;
+}
+
 static bool slbt_adjust_input_argument(
 	char *		arg,
 	const char *	osuffix,
@@ -97,7 +144,8 @@ static int slbt_adjust_linker_argument(
 	char *		arg,
 	bool		fpic,
 	const char *	dsosuffix,
-	const char *	arsuffix)
+	const char *	arsuffix,
+	struct slbt_deps_meta * depsmeta)
 {
 	int	fdlib;
 	char *	slash;
@@ -136,7 +184,7 @@ static int slbt_adjust_linker_argument(
 		else
 			sprintf(dot,"%s",arsuffix);
 
-		return 0;
+		return slbt_get_deps_meta(arg,depsmeta);
 	}
 
 	/* input archive */
@@ -393,6 +441,7 @@ static int slbt_exec_link_create_library(
 	char	cwd    [PATH_MAX];
 	char	output [PATH_MAX];
 	char	soname [PATH_MAX];
+	struct slbt_deps_meta depsmeta = {0};
 
 	/* initial state */
 	slbt_reset_arguments(ectx);
@@ -409,7 +458,8 @@ static int slbt_exec_link_create_library(
 		if (slbt_adjust_linker_argument(
 				*parg,true,
 				dctx->cctx->settings.dsosuffix,
-				dctx->cctx->settings.arsuffix) < 0)
+				dctx->cctx->settings.arsuffix,
+				&depsmeta) < 0)
 			return -1;
 
 	/* --no-undefined */
@@ -490,6 +540,7 @@ static int slbt_exec_link_create_executable(
 	char	wrapper[PATH_MAX];
 	char	wraplnk[PATH_MAX];
 	bool	fabspath;
+	struct slbt_deps_meta depsmeta = {0};
 
 	/* initial state */
 	slbt_reset_arguments(ectx);
@@ -506,7 +557,8 @@ static int slbt_exec_link_create_executable(
 		if (slbt_adjust_linker_argument(
 				*parg,true,
 				dctx->cctx->settings.dsosuffix,
-				dctx->cctx->settings.arsuffix) < 0)
+				dctx->cctx->settings.arsuffix,
+				&depsmeta) < 0)
 			return -1;
 
 	/* --no-undefined */
