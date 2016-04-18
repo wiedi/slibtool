@@ -793,10 +793,15 @@ static int slbt_exec_link_create_library_symlink(
 	else
 		strcpy(lnkname,ectx->dsofilename);
 
-	return slbt_create_symlink(
-		dctx,ectx,
-		target,lnkname,
-		false);
+	if (fmajor && (dctx->cctx->drvflags & SLBT_DRIVER_IMAGE_PE))
+		return slbt_copy_file(
+			dctx,ectx,
+			target,lnkname);
+	else
+		return slbt_create_symlink(
+			dctx,ectx,
+			target,lnkname,
+			false);
 }
 
 int slbt_exec_link(
