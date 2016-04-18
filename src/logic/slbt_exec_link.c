@@ -880,7 +880,7 @@ int slbt_exec_link(
 
 		/* PE import libraries */
 		if (dctx->cctx->drvflags & SLBT_DRIVER_IMAGE_PE) {
-			/* libfoo.lib.a */
+			/* libfoo.x.lib.a */
 			if ((size_t)snprintf(soname,sizeof(soname),"%s%s%s.%d",
 						dctx->cctx->settings.dsoprefix,
 						dctx->cctx->libname,
@@ -891,17 +891,17 @@ int slbt_exec_link(
 
 			if (slbt_exec_link_create_import_library(
 					dctx,ectx,
-					ectx->dimpfilename,
+					ectx->pimpfilename,
 					ectx->deffilename,
 					soname))
 				return -1;
 
-			/* libfoo.x.lib.a */
-			if (slbt_exec_link_create_import_library(
+			/* symlink: libfoo.lib.a --> libfoo.x.lib.a */
+			if (slbt_create_symlink(
 					dctx,ectx,
 					ectx->pimpfilename,
-					ectx->deffilename,
-					soname))
+					ectx->dimpfilename,
+					false))
 				return -1;
 
 			/* libfoo.x.y.z.lib.a */
