@@ -33,7 +33,7 @@ static int slbt_archive_import_child(
 	return -1;
 }
 
-inline int slbt_archive_import(
+int slbt_archive_import(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
 	char *				dstarchive,
