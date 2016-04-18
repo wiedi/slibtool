@@ -217,6 +217,8 @@ slbt_api int  slbt_map_input		(int fd, const char * path, int prot, struct slbt_
 slbt_api int  slbt_unmap_input		(struct slbt_input *);
 slbt_api int  slbt_archive_import	(const struct slbt_driver_ctx *, struct slbt_exec_ctx *,
 					 char * dstarchive, char * srcarchive);
+slbt_api int  slbt_copy_file		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *,
+					 char * src, char * dst);
 
 /* utility api */
 slbt_api int  slbt_output_config	(const struct slbt_driver_ctx *);
