@@ -425,7 +425,9 @@ static int slbt_init_host_params(
 	return 0;
 }
 
-static void slbt_init_flavor_settings(struct slbt_common_ctx * cctx)
+static void slbt_init_flavor_settings(
+	struct slbt_common_ctx *	cctx,
+	struct slbt_flavor_settings *	psettings)
 {
 	const struct slbt_flavor_settings * settings;
 
@@ -447,7 +449,7 @@ static void slbt_init_flavor_settings(struct slbt_common_ctx * cctx)
 	else if (!strcmp(settings->imagefmt,"macho"))
 		cctx->drvflags |= SLBT_DRIVER_IMAGE_PE;
 
-	memcpy(&cctx->settings,settings,sizeof(*settings));
+	memcpy(psettings,settings,sizeof(*settings));
 }
 
 static int slbt_init_version_info(
@@ -816,7 +818,9 @@ int slbt_get_driver_ctx(
 			slbt_free_driver_ctx(&ctx->ctx);
 			return -1;
 		} else
-			slbt_init_flavor_settings(&ctx->cctx);
+			slbt_init_flavor_settings(
+				&ctx->cctx,
+				&ctx->cctx.settings);
 	}
 
 	/* version info */
