@@ -425,6 +425,24 @@ static int slbt_init_host_params(
 	return 0;
 }
 
+static void slbt_free_host_params(struct slbt_host_strs * host)
+{
+	if (host->host)
+		free(host->host);
+
+	if (host->flavor)
+		free(host->flavor);
+
+	if (host->ar)
+		free(host->ar);
+
+	if (host->ranlib)
+		free(host->ranlib);
+
+	if (host->dlltool)
+		free(host->dlltool);
+}
+
 static void slbt_init_flavor_settings(
 	struct slbt_common_ctx *	cctx,
 	const struct slbt_host_params * ahost,
@@ -874,21 +892,7 @@ static void slbt_free_driver_ctx_impl(struct slbt_driver_ctx_alloc * ictx)
 	if (ictx->ctx.libname)
 		free(ictx->ctx.libname);
 
-	if (ictx->ctx.host.host)
-		free(ictx->ctx.host.host);
-
-	if (ictx->ctx.host.flavor)
-		free(ictx->ctx.host.flavor);
-
-	if (ictx->ctx.host.ar)
-		free(ictx->ctx.host.ar);
-
-	if (ictx->ctx.host.ranlib)
-		free(ictx->ctx.host.ranlib);
-
-	if (ictx->ctx.host.dlltool)
-		free(ictx->ctx.host.dlltool);
-
+	slbt_free_host_params(&ictx->ctx.host);
 	argv_free(ictx->meta);
 	free(ictx);
 }
