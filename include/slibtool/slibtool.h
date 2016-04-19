@@ -160,6 +160,9 @@ struct slbt_common_ctx {
 	struct slbt_host_params		host;
 	struct slbt_host_params		cfgmeta;
 	struct slbt_flavor_settings	settings;
+	struct slbt_host_params		ahost;
+	struct slbt_host_params		acfgmeta;
+	struct slbt_flavor_settings	asettings;
 	struct slbt_version_info	verinfo;
 	enum slbt_mode			mode;
 	enum slbt_tag			tag;
@@ -211,6 +214,9 @@ slbt_api void slbt_disable_placeholders	(struct slbt_exec_ctx *);
 slbt_api int  slbt_exec_compile		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);
 slbt_api int  slbt_exec_install		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);
 slbt_api int  slbt_exec_link		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);
+
+slbt_api int  slbt_set_alternate_host	(const struct slbt_driver_ctx *, const char * host, const char * flavor);
+slbt_api void slbt_reset_alternate_host	(const struct slbt_driver_ctx *);
 
 /* helper api */
 slbt_api int  slbt_map_input		(int fd, const char * path, int prot, struct slbt_input *);

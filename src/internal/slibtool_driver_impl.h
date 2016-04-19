@@ -64,6 +64,7 @@ struct slbt_driver_ctx_impl {
 	struct slbt_common_ctx	cctx;
 	struct slbt_driver_ctx	ctx;
 	struct slbt_host_strs	host;
+	struct slbt_host_strs	ahost;
 	char *			libname;
 	char **			targv;
 	char **			cargv;

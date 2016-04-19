@@ -441,6 +441,8 @@ static void slbt_free_host_params(struct slbt_host_strs * host)
 
 	if (host->dlltool)
 		free(host->dlltool);
+
+	memset(host,0,sizeof(*host));
 }
 
 static void slbt_init_flavor_settings(
@@ -908,4 +910,57 @@ void slbt_free_driver_ctx(struct slbt_driver_ctx * ctx)
 		ictx = (struct slbt_driver_ctx_alloc *)addr;
 		slbt_free_driver_ctx_impl(ictx);
 	}
+}
+
+void slbt_reset_alternate_host(const struct slbt_driver_ctx * ctx)
+{
+	struct slbt_driver_ctx_alloc *	ictx;
+	uintptr_t			addr;
+
+	addr = (uintptr_t)ctx - offsetof(struct slbt_driver_ctx_alloc,ctx);
+	addr = addr - offsetof(struct slbt_driver_ctx_impl,ctx);
+	ictx = (struct slbt_driver_ctx_alloc *)addr;
+
+	slbt_free_host_params(&ictx->ctx.ahost);
+}
+
+int  slbt_set_alternate_host(
+	const struct slbt_driver_ctx *	ctx,
+	const char *			host,
+	const char *			flavor)
+{
+	struct slbt_driver_ctx_alloc *	ictx;
+	uintptr_t			addr;
+
+	addr = (uintptr_t)ctx - offsetof(struct slbt_driver_ctx_alloc,ctx);
+	addr = addr - offsetof(struct slbt_driver_ctx_impl,ctx);
+	ictx = (struct slbt_driver_ctx_alloc *)addr;
+	slbt_free_host_params(&ictx->ctx.ahost);
+
+	if (!(ictx->ctx.ahost.host = strdup(host)))
+		return -1;
+
+	if (!(ictx->ctx.ahost.flavor = strdup(flavor))) {
+		slbt_free_host_params(&ictx->ctx.ahost);
+		return -1;
+	}
+
+	ictx->ctx.cctx.ahost.host   = ictx->ctx.ahost.host;
+	ictx->ctx.cctx.ahost.flavor = ictx->ctx.ahost.flavor;
+
+	if (slbt_init_host_params(
+			ctx->cctx,
+			&ictx->ctx.ahost,
+			&ictx->ctx.cctx.ahost,
+			&ictx->ctx.cctx.acfgmeta)) {
+		slbt_free_host_params(&ictx->ctx.ahost);
+		return -1;
+	}
+
+	slbt_init_flavor_settings(
+		&ictx->ctx.cctx,
+		&ictx->ctx.cctx.ahost,
+		&ictx->ctx.cctx.asettings);
+
+	return 0;
 }
