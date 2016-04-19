@@ -87,6 +87,130 @@ static int slbt_exec_install_init_dstdir(
 	return 0;
 }
 
+static int slbt_exec_install_import_libraries(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	char *				srcdso,
+	char *				dstdir)
+{
+	char *	host;
+	char *	slash;
+	char *	dot;
+	char *	mark;
+	char	srcbuf [PATH_MAX];
+	char	implib [PATH_MAX];
+	char	hosttag[PATH_MAX];
+	char	hostlnk[PATH_MAX];
+	char	major  [128];
+	char	minor  [128];
+	char	rev    [128];
+
+	/* .libs/libfoo.so.x.y.z */
+	if ((size_t)snprintf(srcbuf,sizeof(srcbuf),"%s",
+			srcdso) >= sizeof(srcbuf))
+		return -1;
+
+	/* (dso is under .libs) */
+	if (!(slash = strrchr(srcbuf,'/')))
+		return -1;
+
+	/* libfoo.so.x.y.z */
+	if ((size_t)snprintf(implib,sizeof(implib),"%s",
+			++slash) >= sizeof(implib)
+				    - strlen(dctx->cctx->settings.impsuffix))
+		return -1;
+
+	/* guard againt an infinitely long version */
+	mark = srcbuf + strlen(srcbuf);
+
+	/* rev */
+	if (!(dot = strrchr(srcbuf,'.')))
+		return -1;
+	else if ((size_t)(mark - dot) > sizeof(rev))
+		return -1;
+	else {
+		strcpy(rev,dot);
+		*dot = '\0';
+	}
+
+	/* minor */
+	if (!(dot = strrchr(srcbuf,'.')))
+		return -1;
+	else if ((size_t)(mark - dot) > sizeof(minor))
+		return -1;
+	else {
+		strcpy(minor,dot);
+		*dot = '\0';
+	}
+
+	/* major */
+	if (!(dot = strrchr(srcbuf,'.')))
+		return -1;
+	else if ((size_t)(mark - dot) > sizeof(major))
+		return -1;
+	else {
+		strcpy(major,dot);
+		*dot = '\0';
+	}
+
+	if (!(dot = strrchr(srcbuf,'.')))
+		return -1;
+
+	/* .libs/libfoo.so.def.host */
+	if ((size_t)snprintf(hostlnk,sizeof(hostlnk),"%s.def.host",
+			srcbuf) >= sizeof(hostlnk))
+		return -1;
+
+	/* libfoo.so.def.{flavor} */
+	if (slbt_readlink(hostlnk,hosttag,sizeof(hosttag)))
+		return -1;
+
+	/* host/flabor */
+	if (!(host = strrchr(hosttag,'.')))
+		return -1;
+	else
+		host++;
+
+	/* symlink-based alternate host */
+	if (slbt_set_alternate_host(dctx,host,host))
+		return -1;
+
+	/* .libs/libfoo.x.y.z.lib.a */
+	sprintf(dot,"%s%s%s%s",
+		major,minor,rev,
+		dctx->cctx->asettings.impsuffix);
+
+	/* copy: .libs/libfoo.x.y.z.lib.a --> dstdir */
+	if (slbt_copy_file(dctx,ectx,srcbuf,dstdir))
+		return -1;
+
+	/* .libs/libfoo.x.lib.a */
+	sprintf(dot,"%s%s",
+		major,
+		dctx->cctx->asettings.impsuffix);
+
+	/* copy: .libs/libfoo.x.lib.a --> dstdir */
+	if (slbt_copy_file(dctx,ectx,srcbuf,dstdir))
+		return -1;
+
+	/* /dstdir/libfoo.lib.a */
+	strcpy(implib,slash);
+	strcpy(dot,dctx->cctx->asettings.impsuffix);
+
+	if ((size_t)snprintf(hostlnk,sizeof(hostlnk),"%s/%s",
+			dstdir,slash) >= sizeof(hostlnk))
+		return -1;
+
+	if (slbt_create_symlink(
+			dctx,ectx,
+			implib,
+			hostlnk,
+			false))
+		return -1;
+
+	return 0;
+}
+
 static int slbt_exec_install_entry(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -258,6 +382,13 @@ static int slbt_exec_install_entry(
 				dctx,ectx,
 				srcfile,
 				dlnkname))
+			return -1;
+
+		/* import libraries */
+		if (slbt_exec_install_import_libraries(
+				dctx,ectx,
+				srcfile,
+				dstdir))
 			return -1;
 	} else {
 		/* create symlink: libfoo.so.x --> libfoo.so.x.y.z */
