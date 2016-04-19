@@ -30,9 +30,16 @@ int slbt_copy_file(
 
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT)) {
-		if (slbt_output_link(dctx,ectx)) {
-			ectx->argv = oargv;
-			return -1;
+		if (dctx->cctx->mode == SLBT_MODE_LINK) {
+			if (slbt_output_link(dctx,ectx)) {
+				ectx->argv = oargv;
+				return -1;
+			}
+		} else {
+			if (slbt_output_install(dctx,ectx)) {
+				ectx->argv = oargv;
+				return -1;
+			}
 		}
 	}
 
