@@ -411,10 +411,48 @@ static int slbt_exec_link_create_import_library(
 	struct slbt_exec_ctx *		ectx,
 	char *				impfilename,
 	char *				deffilename,
-	char *				soname)
+	char *				soname,
+	bool				ftag)
 {
+	char *	slash;
 	char *	dlltool[8];
 	char	program[PATH_MAX];
+	char	hosttag[PATH_MAX];
+	char	hostlnk[PATH_MAX];
+
+	/* libfoo.so.def.{flavor} */
+	if (ftag) {
+		if ((size_t)snprintf(hosttag,sizeof(hosttag),"%s.%s",
+				deffilename,
+				dctx->cctx->host.flavor) >= sizeof(hosttag))
+			return -1;
+
+		if ((size_t)snprintf(hostlnk,sizeof(hostlnk),"%s.host",
+				deffilename) >= sizeof(hostlnk))
+			return -1;
+
+		/* libfoo.so.def is under .libs/ */
+		if (!(slash = strrchr(deffilename,'/')))
+			return -1;
+
+		if (slbt_create_symlink(
+				dctx,ectx,
+				deffilename,
+				hosttag,
+				false))
+			return -1;
+
+		/* libfoo.so.def.{flavor} is under .libs/ */
+		if (!(slash = strrchr(hosttag,'/')))
+			return -1;
+
+		if (slbt_create_symlink(
+				dctx,ectx,
+				++slash,
+				hostlnk,
+				false))
+			return -1;
+	}
 
 	/* dlltool argv */
 	if ((size_t)snprintf(program,sizeof(program),"%s",
@@ -898,7 +936,8 @@ int slbt_exec_link(
 					dctx,ectx,
 					ectx->pimpfilename,
 					ectx->deffilename,
-					soname))
+					soname,
+					true))
 				return -1;
 
 			/* symlink: libfoo.lib.a --> libfoo.x.lib.a */
@@ -924,7 +963,8 @@ int slbt_exec_link(
 					dctx,ectx,
 					ectx->vimpfilename,
 					ectx->deffilename,
-					soname))
+					soname,
+					false))
 				return -1;
 		}
 	}
