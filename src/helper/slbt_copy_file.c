@@ -13,7 +13,9 @@ int slbt_copy_file(
 	char *				src,
 	char *				dst)
 {
+	char **	oargv;
 	char *	cp[4];
+	int	ret;
 
 	/* cp argv */
 	cp[0] = "cp";
@@ -22,17 +24,22 @@ int slbt_copy_file(
 	cp[3] = 0;
 
 	/* alternate argument vector */
+	oargv         = ectx->argv;
 	ectx->argv    = cp;
 	ectx->program = "cp";
 
 	/* step output */
-	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
-		if (slbt_output_link(dctx,ectx))
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT)) {
+		if (slbt_output_link(dctx,ectx)) {
+			ectx->argv = oargv;
 			return -1;
+		}
+	}
 
 	/* dlltool spawn */
-	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
-		return -1;
+	ret = ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
+		? -1 : 0;
 
-	return 0;
+	ectx->argv = oargv;
+	return ret;
 }
