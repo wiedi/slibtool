@@ -895,6 +895,7 @@ static void slbt_free_driver_ctx_impl(struct slbt_driver_ctx_alloc * ictx)
 		free(ictx->ctx.libname);
 
 	slbt_free_host_params(&ictx->ctx.host);
+	slbt_free_host_params(&ictx->ctx.ahost);
 	argv_free(ictx->meta);
 	free(ictx);
 }
