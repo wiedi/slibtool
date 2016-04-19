@@ -427,27 +427,33 @@ static int slbt_init_host_params(
 
 static void slbt_init_flavor_settings(
 	struct slbt_common_ctx *	cctx,
+	const struct slbt_host_params * ahost,
 	struct slbt_flavor_settings *	psettings)
 {
+	const struct slbt_host_params *     host;
 	const struct slbt_flavor_settings * settings;
 
-	if (!strcmp(cctx->host.flavor,"midipix"))
+	host = ahost ? ahost : &cctx->host;
+
+	if (!strcmp(host->flavor,"midipix"))
 		settings = &host_flavor_midipix;
-	else if (!strcmp(cctx->host.flavor,"mingw"))
+	else if (!strcmp(host->flavor,"mingw"))
 		settings = &host_flavor_mingw;
-	else if (!strcmp(cctx->host.flavor,"cygwin"))
+	else if (!strcmp(host->flavor,"cygwin"))
 		settings = &host_flavor_cygwin;
-	else if (!strcmp(cctx->host.flavor,"darwin"))
+	else if (!strcmp(host->flavor,"darwin"))
 		settings = &host_flavor_darwin;
 	else
 		settings = &host_flavor_default;
 
-	if (!strcmp(settings->imagefmt,"elf"))
-		cctx->drvflags |= SLBT_DRIVER_IMAGE_ELF;
-	else if (!strcmp(settings->imagefmt,"pe"))
-		cctx->drvflags |= SLBT_DRIVER_IMAGE_PE;
-	else if (!strcmp(settings->imagefmt,"macho"))
-		cctx->drvflags |= SLBT_DRIVER_IMAGE_PE;
+	if (!ahost) {
+		if (!strcmp(settings->imagefmt,"elf"))
+			cctx->drvflags |= SLBT_DRIVER_IMAGE_ELF;
+		else if (!strcmp(settings->imagefmt,"pe"))
+			cctx->drvflags |= SLBT_DRIVER_IMAGE_PE;
+		else if (!strcmp(settings->imagefmt,"macho"))
+			cctx->drvflags |= SLBT_DRIVER_IMAGE_PE;
+	}
 
 	memcpy(psettings,settings,sizeof(*settings));
 }
@@ -819,7 +825,7 @@ int slbt_get_driver_ctx(
 			return -1;
 		} else
 			slbt_init_flavor_settings(
-				&ctx->cctx,
+				&ctx->cctx,0,
 				&ctx->cctx.settings);
 	}
 
