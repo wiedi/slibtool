@@ -108,6 +108,7 @@ static int slbt_exec_install_entry(
 	char		dlnkname[PATH_MAX];
 	char		lasource[PATH_MAX];
 	bool		fexe = false;
+	bool		fpe;
 	struct stat	st;
 
 	/* executable wrapper? */
@@ -161,6 +162,13 @@ static int slbt_exec_install_entry(
 	strcpy(slnkname,srcfile);
 	dot = strrchr(slnkname,'.');
 	strcpy(dot,dctx->cctx->settings.dsosuffix);
+
+	/* PE support: does .libs/libfoo.so.def exist? */
+	if ((size_t)snprintf(dstfile,sizeof(dstfile),"%s.def",
+			slnkname) >= sizeof(dstfile))
+		return -1;
+
+	fpe = stat(dstfile,&st) ? false : true;
 
 	/* basename */
 	if ((base = strrchr(slnkname,'/')))
@@ -244,12 +252,21 @@ static int slbt_exec_install_entry(
 			dstdir,slnkname) >= sizeof(dlnkname))
 		return -1;
 
-	/* create symlink: libfoo.so.x --> libfoo.so.x.y.z */
-	if (slbt_create_symlink(
-			dctx,ectx,
-			target,dlnkname,
-			false))
-		return -1;
+	if (fpe) {
+		/* copy: .libs/libfoo.so.x.y.z --> libfoo.so.x */
+		if (slbt_copy_file(
+				dctx,ectx,
+				srcfile,
+				dlnkname))
+			return -1;
+	} else {
+		/* create symlink: libfoo.so.x --> libfoo.so.x.y.z */
+		if (slbt_create_symlink(
+				dctx,ectx,
+				target,dlnkname,
+				false))
+			return -1;
+	}
 
 	return 0;
 }
