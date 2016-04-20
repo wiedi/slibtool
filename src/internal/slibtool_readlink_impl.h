@@ -18,7 +18,7 @@ static inline int slbt_readlink(
 	else if (ret == bufsize)
 		return -1;
 	else {
-		buf[ret] = '\0';
+		buf[ret] = 0;
 		return 0;
 	}
 }
