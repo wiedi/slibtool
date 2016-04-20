@@ -244,8 +244,14 @@ static int slbt_exec_install_entry(
 		? false
 		: true;
 
+	dot  = strrchr(entry->arg,'.');
+
+	/* .lai --> .la */
+	if (!fexe && dot && !strcmp(dot,".lai"))
+		dot[3] = 0;
+
 	/* .la ? */
-	if (!fexe && (!(dot = strrchr(entry->arg,'.')) || strcmp(dot,".la"))) {
+	if (!fexe && (!dot || strcmp(dot,".la"))) {
 		*src = (char *)entry->arg;
 		*dst = dest ? 0 : (char *)last->arg;
 
