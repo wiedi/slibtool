@@ -110,6 +110,9 @@ static int slbt_get_deps_meta(
 	while (fscanf(fdeps,"%s\n",deplibs) == 1)
 		depsmeta->depscnt++;
 
+	if (deplibs != depfile)
+		free(deplibs);
+
 	ret = ferror(fdeps) ? -1 : 0;
 	fclose(fdeps);
 
