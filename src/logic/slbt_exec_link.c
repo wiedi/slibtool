@@ -290,10 +290,10 @@ static int slbt_exec_link_adjust_argument_vector(
 				sprintf(*carg,"-L%s",arg);
 
 				mark   = strrchr(*carg,'/');
-				*mark  = '\0';
+				*mark  = 0;
 
 				if (ectx->fwrapper) {
-					*slash = '\0';
+					*slash = 0;
 
 					if (fprintf(ectx->fwrapper,
 							"DL_PATH=\"$DL_PATH$COLON%s/%s\"\n"
@@ -310,7 +310,7 @@ static int slbt_exec_link_adjust_argument_vector(
 
 				sprintf(mark,"-l%s",slash);
 				dot  = strrchr(mark,'.');
-				*dot = '\0';
+				*dot = 0;
 			} else {
 				*aarg++ = *carg++;
 			}
