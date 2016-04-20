@@ -71,17 +71,17 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 	csrc = 0;
 
 	/* clerical [worst-case] buffer size (guard, .libs, version) */
-	size  = strlen(".lo") + sizeof('\0');
-	size +=  8 * (strlen(".libs/") + sizeof('\0'));
-	size += 36 * (strlen(".0000") + sizeof('\0'));
+	size  = strlen(".lo") + 1;
+	size +=  8 * (strlen(".libs/") + 1);
+	size += 36 * (strlen(".0000") + 1);
 
 	/* buffer size (cargv, -Wc) */
 	for (parg=dctx->cctx->cargv; *parg; parg++, argc++)
 		if (!(strncmp("-Wc,",*parg,4)))
-			size += sizeof('\0') + slbt_parse_comma_separated_flags(
-					&(*parg)[4],&argc);
+			size += slbt_parse_comma_separated_flags(
+				&(*parg)[4],&argc) + 1;
 		else
-			size += sizeof('\0') + strlen(*parg);
+			size += strlen(*parg) + 1;
 
 	/* buffer size (ldirname, lbasename, lobjname, aobjname, etc.) */
 	if (dctx->cctx->output)
@@ -98,14 +98,14 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 
 	/* buffer size (linking) */
 	if (dctx->cctx->mode == SLBT_MODE_LINK)
-		size += strlen(dctx->cctx->settings.arprefix) + sizeof('\0')
-			+ strlen(dctx->cctx->settings.arsuffix) + sizeof('\0')
-			+ strlen(dctx->cctx->settings.dsoprefix) + sizeof('\0')
-			+ strlen(dctx->cctx->settings.dsoprefix) + sizeof('\0')
-			+ strlen(dctx->cctx->settings.exeprefix) + sizeof('\0')
-			+ strlen(dctx->cctx->settings.exeprefix) + sizeof('\0')
-			+ strlen(dctx->cctx->settings.impprefix) + sizeof('\0')
-			+ strlen(dctx->cctx->settings.impprefix) + sizeof('\0');
+		size += strlen(dctx->cctx->settings.arprefix) + 1
+			+ strlen(dctx->cctx->settings.arsuffix) + 1
+			+ strlen(dctx->cctx->settings.dsoprefix) + 1
+			+ strlen(dctx->cctx->settings.dsoprefix) + 1
+			+ strlen(dctx->cctx->settings.exeprefix) + 1
+			+ strlen(dctx->cctx->settings.exeprefix) + 1
+			+ strlen(dctx->cctx->settings.impprefix) + 1
+			+ strlen(dctx->cctx->settings.impprefix) + 1;
 
 	/* alloc */
 	if (!(args = malloc(size)))
@@ -248,7 +248,7 @@ int  slbt_get_exec_ctx(
 		ch += sprintf(ch,"%s%s",
 			ictx->ctx.ldirname,
 			ictx->ctx.lbasename)
-			+ sizeof('\0');
+			+ 1;
 
 		ictx->ctx.aobjname = ch;
 
@@ -256,14 +256,14 @@ int  slbt_get_exec_ctx(
 		ch -= strlen(".libs/");
 		ch += sprintf(ch,"%s",
 			ictx->ctx.lbasename)
-			+ sizeof('\0');
+			+ 1;
 
 		ictx->ctx.ltobjname = ch;
 		strcpy(ch,ictx->ctx.aobjname);
 
 		if ((mark = strrchr(ch,'.')))
 			ch = mark + sprintf(mark,"%s",".lo")
-				+ sizeof('\0');
+				+ 1;
 	}
 
 	/* linking: arfilename, lafilename, dsofilename */
@@ -274,8 +274,8 @@ int  slbt_get_exec_ctx(
 				ictx->ctx.ldirname,
 				dctx->cctx->settings.arprefix,
 				dctx->cctx->libname,
-				dctx->cctx->settings.arsuffix)
-			+ sizeof('\0');
+				dctx->cctx->settings.arsuffix);
+		ch++;
 
 
 
@@ -286,8 +286,8 @@ int  slbt_get_exec_ctx(
 				(dctx->cctx->drvflags & SLBT_DRIVER_MODULE)
 					? ""
 					: dctx->cctx->settings.dsoprefix,
-				dctx->cctx->libname)
-			+ sizeof('\0');
+				dctx->cctx->libname);
+		ch++;
 
 
 		/* dsofilename */
@@ -298,8 +298,8 @@ int  slbt_get_exec_ctx(
 					? ""
 					: dctx->cctx->settings.dsoprefix,
 				dctx->cctx->libname,
-				dctx->cctx->settings.dsosuffix)
-			+ sizeof('\0');
+				dctx->cctx->settings.dsosuffix);
+		ch++;
 
 		/* deffilename */
 		ictx->ctx.deffilename = ch;
@@ -307,8 +307,8 @@ int  slbt_get_exec_ctx(
 				ictx->ctx.ldirname,
 				dctx->cctx->settings.dsoprefix,
 				dctx->cctx->libname,
-				dctx->cctx->settings.dsosuffix)
-			+ sizeof('\0');
+				dctx->cctx->settings.dsosuffix);
+		ch++;
 
 		/* default implib file name */
 		ictx->ctx.dimpfilename = ch;
@@ -316,8 +316,8 @@ int  slbt_get_exec_ctx(
 				ictx->ctx.ldirname,
 				dctx->cctx->settings.impprefix,
 				dctx->cctx->libname,
-				dctx->cctx->settings.impsuffix)
-			+ sizeof('\0');
+				dctx->cctx->settings.impsuffix);
+		ch++;
 
 
 		/* primary implib file name */
@@ -327,8 +327,8 @@ int  slbt_get_exec_ctx(
 				dctx->cctx->settings.impprefix,
 				dctx->cctx->libname,
 				dctx->cctx->verinfo.major,
-				dctx->cctx->settings.impsuffix)
-			+ sizeof('\0');
+				dctx->cctx->settings.impsuffix);
+		ch++;
 
 		/* versioned implib file name */
 		ictx->ctx.vimpfilename = ch;
@@ -339,8 +339,8 @@ int  slbt_get_exec_ctx(
 				dctx->cctx->verinfo.major,
 				dctx->cctx->verinfo.minor,
 				dctx->cctx->verinfo.revision,
-				dctx->cctx->settings.impsuffix)
-			+ sizeof('\0');
+				dctx->cctx->settings.impsuffix);
+		ch++;
 	}
 
 	/* linking: exefilename */
@@ -351,10 +351,9 @@ int  slbt_get_exec_ctx(
 			strcpy(ch,dctx->cctx->output);
 			mark = ch + (slash - dctx->cctx->output);
 			sprintf(++mark,".libs/%s",++slash);
-			ch += strlen(ch) + sizeof('\0');
+			ch += strlen(ch) + 1;
 		} else
-			ch += sprintf(ch,".libs/%s",dctx->cctx->output)
-				+ sizeof('\0');
+			ch += sprintf(ch,".libs/%s",dctx->cctx->output) + 1;
 	}
 
 	/* argument strings shadow copy */
