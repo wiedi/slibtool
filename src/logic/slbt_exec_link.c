@@ -324,7 +324,8 @@ static int slbt_exec_link_adjust_argument_vector(
 
 			while (fscanf(fdeps,"%s\n",darg) == 1) {
 				*aarg++ = darg;
-				darg   += strlen(darg) + sizeof('\0');
+				darg   += strlen(darg);
+				darg++;
 			}
 
 			if (ferror(fdeps)) {
