@@ -192,13 +192,13 @@ int  slbt_get_exec_ctx(
 	if (ref && (dctx->cctx->mode == SLBT_MODE_COMPILE)) {
 		if ((ch[-4] == '.') && (ch[-3] == 'l') && (ch[-2] == 'o')) {
 			ch[-3] = 'o';
-			ch[-2] = '\0';
+			ch[-2] = 0;
 			ch--;
 		} else if (ictx->ctx.csrc) {
 			if ((mark = strrchr(ictx->ctx.lbasename,'.'))) {
 				ch    = mark;
 				*++ch = 'o';
-				*++ch = '\0';
+				*++ch = 0;
 				ch++;
 			}
 		}
@@ -212,7 +212,7 @@ int  slbt_get_exec_ctx(
 
 			for (; *ch; ch++)
 				if (*ch == ',') {
-					*ch++ = '\0';
+					*ch++ = 0;
 					ictx->ctx.argv[i++] = ch;
 				}
 		} else {
