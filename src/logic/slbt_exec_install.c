@@ -69,7 +69,7 @@ static int slbt_exec_install_init_dstdir(
 	len = strlen(dstdir);
 
 	if (dstdir[--len] == '/')
-		dstdir[len] = '\0';
+		dstdir[len] = 0;
 
 	/* -t DSTDIR? */
 	if (dest)
@@ -82,7 +82,7 @@ static int slbt_exec_install_init_dstdir(
 
 	/* remove last path component */
 	if ((slash = strrchr(dstdir,'/')))
-		*slash = '\0';
+		*slash = 0;
 
 	return 0;
 }
@@ -130,7 +130,7 @@ static int slbt_exec_install_import_libraries(
 		return -1;
 	else {
 		strcpy(rev,dot);
-		*dot = '\0';
+		*dot = 0;
 	}
 
 	/* minor */
@@ -140,7 +140,7 @@ static int slbt_exec_install_import_libraries(
 		return -1;
 	else {
 		strcpy(minor,dot);
-		*dot = '\0';
+		*dot = 0;
 	}
 
 	/* major */
@@ -150,7 +150,7 @@ static int slbt_exec_install_import_libraries(
 		return -1;
 	else {
 		strcpy(major,dot);
-		*dot = '\0';
+		*dot = 0;
 	}
 
 	if (!(dot = strrchr(srcbuf,'.')))
@@ -264,7 +264,7 @@ static int slbt_exec_install_entry(
 	strcpy(lasource,entry->arg);
 
 	if ((slash = strrchr(lasource,'/'))) {
-		*slash++ = '\0';
+		*slash++ = 0;
 		sprintf(srcfile,"%s/.libs/%s",lasource,slash);
 	} else
 		sprintf(srcfile,".libs/%s",lasource);
@@ -362,12 +362,12 @@ static int slbt_exec_install_entry(
 	strcpy(slnkname,target);
 
 	if ((dot = strrchr(slnkname,'.')))
-		*dot = '\0';
+		*dot = 0;
 	else
 		return -1;
 
 	if ((dot = strrchr(slnkname,'.')))
-		*dot = '\0';
+		*dot = 0;
 	else
 		return -1;
 
