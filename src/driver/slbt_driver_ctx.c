@@ -214,7 +214,7 @@ static int slbt_split_argv(
 		else if (argv[i][1] == 'o') {
 			*targv++ = argv[i];
 
-			if (argv[i][2] == '\0')
+			if (argv[i][2] == 0)
 				*targv++ = argv[++i];
 		}
 
@@ -231,7 +231,7 @@ static int slbt_split_argv(
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
 
-		} else if ((argv[i][1] == 'R')  && (argv[i][2] == '\0')) {
+		} else if ((argv[i][1] == 'R')  && (argv[i][2] == 0)) {
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
 
@@ -304,7 +304,7 @@ static int slbt_init_host_params(
 			return -1;
 
 		slash         = strrchr(drvhost->host,'-');
-		*slash        = '\0';
+		*slash        = 0;
 		host->host    = drvhost->host;
 		cfgmeta->host = cfgcompiler;
 		fcompiler     = true;
@@ -616,7 +616,7 @@ static int slbt_init_link_params(struct slbt_driver_ctx_impl * ctx)
 		return -1;
 
 	dot  = strrchr(ctx->libname,'.');
-	*dot = '\0';
+	*dot = 0;
 
 	ctx->cctx.libname = ctx->libname;
 
