@@ -73,6 +73,7 @@ enum slbt_tag {
 	SLBT_TAG_UNKNOWN,
 	SLBT_TAG_CC,
 	SLBT_TAG_CXX,
+	SLBT_TAG_NASM,
 };
 
 enum slbt_warning_level {

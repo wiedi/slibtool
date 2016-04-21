@@ -21,7 +21,7 @@ const struct argv_option slbt_default_options[] = {
 				"do not make any changes to the file system"},
 
 	{"tag",			0,TAG_TAG,ARGV_OPTARG_REQUIRED,0,
-				"CC|CXX",0,
+				"CC|CXX|NASM",0,
 				"a universal playground game"},
 
 	{"config",		0,TAG_CONFIG,ARGV_OPTARG_NONE,0,0,0,

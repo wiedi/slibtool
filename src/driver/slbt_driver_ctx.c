@@ -699,6 +699,9 @@ int slbt_get_driver_ctx(
 
 					else if (!strcmp("CXX",entry->arg))
 						cctx.tag = SLBT_TAG_CXX;
+
+					else if (!strcmp("NASM",entry->arg))
+						cctx.tag = SLBT_TAG_NASM;
 					break;
 
 				case TAG_CONFIG:
