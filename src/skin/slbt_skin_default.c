@@ -114,6 +114,12 @@ const struct argv_option slbt_default_options[] = {
 				"object name need not follow the platform's "
 				"library naming conventions"},
 
+	{"all-static",		0,TAG_ALL_STATIC,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"for programs, create a zero-dependency, "
+				"statically linked binary; for libraries, "
+				"only create an archive of non-pic objects"},
+
 	{"avoid-version",	0,TAG_AVOID_VERSION,ARGV_OPTARG_NONE,
 				ARGV_OPTION_HYBRID_ONLY,0,0,
 				"do not store version information, "
