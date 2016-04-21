@@ -331,6 +331,10 @@ static int slbt_exec_install_entry(
 		return 0;
 	}
 
+	/* -all-static? */
+	if (!strcmp(target,"/dev/null"))
+		return 0;
+
 	/* srcfile: .libs/libfoo.so.x.y.z */
 	slash = strrchr(srcfile,'/');
 	strcpy(++slash,target);
