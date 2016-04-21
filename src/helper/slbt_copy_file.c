@@ -14,6 +14,7 @@ int slbt_copy_file(
 	char *				dst)
 {
 	char **	oargv;
+	char *	oprogram;
 	char *	cp[4];
 	int	ret;
 
@@ -24,6 +25,7 @@ int slbt_copy_file(
 	cp[3] = 0;
 
 	/* alternate argument vector */
+	oprogram      = ectx->program;
 	oargv         = ectx->argv;
 	ectx->argv    = cp;
 	ectx->program = "cp";
@@ -33,11 +35,13 @@ int slbt_copy_file(
 		if (dctx->cctx->mode == SLBT_MODE_LINK) {
 			if (slbt_output_link(dctx,ectx)) {
 				ectx->argv = oargv;
+				ectx->program = oprogram;
 				return -1;
 			}
 		} else {
 			if (slbt_output_install(dctx,ectx)) {
 				ectx->argv = oargv;
+				ectx->program = oprogram;
 				return -1;
 			}
 		}
@@ -48,5 +52,6 @@ int slbt_copy_file(
 		? -1 : 0;
 
 	ectx->argv = oargv;
+	ectx->program = oprogram;
 	return ret;
 }
