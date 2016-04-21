@@ -288,7 +288,16 @@ static int slbt_exec_install_entry(
 			? -1 : 0;
 	}
 
-	/* libfoo.la --> libfoo.so */
+	/* libfoo.a */
+	dot = strrchr(srcfile,'.');
+	strcpy(dot,dctx->cctx->settings.arsuffix);
+
+	if (slbt_copy_file(dctx,ectx,
+			srcfile,
+			dest ? (char *)dest->arg : (char *)last->arg))
+		return -1;
+
+	/* libfoo.a --> libfoo.so */
 	strcpy(slnkname,srcfile);
 	dot = strrchr(slnkname,'.');
 	strcpy(dot,dctx->cctx->settings.dsosuffix);
