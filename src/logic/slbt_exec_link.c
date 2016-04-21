@@ -637,9 +637,13 @@ static int slbt_exec_link_create_library(
 		*ectx->symfile = symfile;
 	}
 
-	/* shared object */
-	*ectx->dpic = "-shared";
-	*ectx->fpic = "-fPIC";
+	/* shared/static */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_ALL_STATIC) {
+		*ectx->dpic = "-static";
+	} else {
+		*ectx->dpic = "-shared";
+		*ectx->fpic = "-fPIC";
+	}
 
 	/* output */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION) {
@@ -697,6 +701,7 @@ static int slbt_exec_link_create_executable(
 	char	wrapper[PATH_MAX];
 	char	wraplnk[PATH_MAX];
 	bool	fabspath;
+	bool	fpic;
 	struct slbt_deps_meta depsmeta = {0};
 
 	/* initial state */
@@ -705,9 +710,12 @@ static int slbt_exec_link_create_executable(
 	/* placeholders */
 	slbt_reset_placeholders(ectx);
 
+	/* fpic */
+	fpic = !(dctx->cctx->drvflags & SLBT_DRIVER_ALL_STATIC);
+
 	/* input argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
-		slbt_adjust_input_argument(*parg,".lo",".o",true);
+		slbt_adjust_input_argument(*parg,".lo",".o",fpic);
 
 	/* linker argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
@@ -856,6 +864,8 @@ int slbt_exec_link(
 	char *			dot;
 	FILE *			fout;
 	struct slbt_exec_ctx *	actx;
+	bool			fpic;
+	bool			fstaticonly;
 	char			soname[PATH_MAX];
 
 	/* context */
@@ -887,18 +897,39 @@ int slbt_exec_link(
 			return -1;
 		}
 
+	/* fpic, fstaticonly */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_ALL_STATIC) {
+		fstaticonly = true;
+		fpic        = false;
+	} else if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED) {
+		fstaticonly = false;
+		fpic        = true;
+	} else {
+		fstaticonly = false;
+		fpic        = false;
+	}
+
 	/* pic libfoo.a */
 	if (dot && !strcmp(dot,".la"))
 		if (slbt_exec_link_create_archive(
 				dctx,ectx,
 				ectx->arfilename,
-				dctx->cctx->drvflags & SLBT_DRIVER_SHARED)) {
+				fpic)) {
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
 
+	/* -all-static library */
+	if (fstaticonly && dctx->cctx->libname)
+		if (slbt_create_symlink(
+				dctx,ectx,
+				"/dev/null",
+				ectx->dsofilename,
+				false))
+			return -1;
+
 	/* dynamic library */
-	if (dot && !strcmp(dot,".la") && dctx->cctx->rpath) {
+	if (dot && !strcmp(dot,".la") && dctx->cctx->rpath && !fstaticonly) {
 		/* linking: libfoo.so.x.y.z */
 		if (slbt_exec_link_create_library(
 				dctx,ectx,

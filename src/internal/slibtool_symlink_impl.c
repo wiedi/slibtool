@@ -27,7 +27,10 @@ int slbt_create_symlink(
 	char		atarget[PATH_MAX];
 
 	/* atarget */
-	if ((slash = strrchr(target,'/')))
+	if ((dctx->cctx->drvflags & SLBT_DRIVER_ALL_STATIC)
+			&& !strcmp(target,"/dev/null"))
+		slash = target;
+	else if ((slash = strrchr(target,'/')))
 		slash++;
 	else
 		slash = target;
