@@ -223,6 +223,7 @@ static int slbt_exec_link_adjust_argument_vector(
 	char *	dot;
 	FILE *	fdeps;
 	char *	dpath;
+	bool	freqd;
 	int	argc;
 	char	arg[PATH_MAX];
 	char	lib[PATH_MAX];
@@ -246,6 +247,7 @@ static int slbt_exec_link_adjust_argument_vector(
 
 	for (; *carg; ) {
 		dpath = 0;
+		freqd = false;
 
 		if (!strcmp(*carg,"-Wl,--whole-archive"))
 			fwholearchive = true;
@@ -279,6 +281,7 @@ static int slbt_exec_link_adjust_argument_vector(
 			*aarg++ = *carg++;
 		} else {
 			dpath = lib;
+			freqd = true;
 			sprintf(lib,"%s.slibtool.deps",*carg);
 
 			/* account for {'-','L','-','l'} */
@@ -319,25 +322,25 @@ static int slbt_exec_link_adjust_argument_vector(
 		if (dpath) {
 			*aarg = darg;
 
-			if (!(fdeps = fopen(dpath,"r"))) {
+			if ((fdeps = fopen(dpath,"r"))) {
+				while (fscanf(fdeps,"%s\n",darg) == 1) {
+					*aarg++ = darg;
+					darg   += strlen(darg);
+					darg++;
+				}
+
+				if (ferror(fdeps)) {
+					free(depsmeta->altv);
+					free(depsmeta->args);
+					fclose(fdeps);
+					return -1;
+				} else {
+					fclose(fdeps);
+				}
+			} else if (freqd) {
 				free(depsmeta->altv);
 				free(depsmeta->args);
 				return -1;
-			}
-
-			while (fscanf(fdeps,"%s\n",darg) == 1) {
-				*aarg++ = darg;
-				darg   += strlen(darg);
-				darg++;
-			}
-
-			if (ferror(fdeps)) {
-				free(depsmeta->altv);
-				free(depsmeta->args);
-				fclose(fdeps);
-				return -1;
-			} else {
-				fclose(fdeps);
 			}
 		}
 	}
