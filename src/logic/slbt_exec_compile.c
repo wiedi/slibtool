@@ -13,6 +13,21 @@
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
 
+static int slbt_exec_compile_remove_file(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	const char *			target)
+{
+	/* remove target (if any) */
+	if (!(unlink(target)) || (errno == ENOENT))
+		return 0;
+
+	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+		strerror(errno);
+
+	return -1;
+}
+
 int  slbt_exec_compile(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx)
@@ -29,6 +44,10 @@ int  slbt_exec_compile(
 		return ret;
 	else
 		actx = ectx;
+
+	/* remove old .lo wrapper */
+	if (slbt_exec_compile_remove_file(dctx,ectx,ectx->ltobjname))
+		return -1;
 
 	/* .libs directory */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED) {
