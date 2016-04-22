@@ -238,6 +238,10 @@ static int slbt_split_argv(
 		} else if (argv[i][1] == 'R') {
 			*targv++ = argv[i];
 
+		} else if (!(strcmp("bindir",&argv[i][1]))) {
+			*targv++ = argv[i++];
+			*targv++ = argv[i];
+
 		} else if (!(strcmp("rpath",&argv[i][1]))) {
 			*targv++ = argv[i++];
 			*targv++ = argv[i];

@@ -86,6 +86,12 @@ const struct argv_option slbt_default_options[] = {
 				"encode library path into the executable image "
 				"[currently a no-op]"},
 
+	{"bindir",		0,TAG_BINDIR,ARGV_OPTARG_REQUIRED,
+				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,0,
+				"override destination directory when installing "
+				"PE shared libraries. Not needed, ignored for "
+				"compatibility"},
+
 	{"rpath",		0,TAG_RPATH,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,0,
 				"where a library should eventually be "
