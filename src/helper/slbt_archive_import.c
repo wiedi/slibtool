@@ -7,11 +7,43 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <sys/wait.h>
 
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
+
+static char * slbt_mri_argument(
+	char *	arg,
+	char *	buf)
+{
+	int	i;
+	char *	lnk;
+	char 	mricwd[PATH_MAX];
+	char 	target[PATH_MAX];
+
+	if ((!(strchr(arg,'+'))) && (!(strchr(arg,'-'))))
+		return arg;
+
+	if (!(getcwd(mricwd,sizeof(mricwd))))
+		return 0;
+
+	if ((size_t)snprintf(target,sizeof(target),"%s/%s",
+			mricwd,arg) >= sizeof(target))
+		return 0;
+
+	for (i=0,lnk=0; i<1024 && !lnk; i++) {
+		if (!(tmpnam(buf)))
+			return 0;
+
+		if (!(symlink(target,buf)))
+			lnk = buf;
+	}
+
+	return lnk;
+}
 
 static int slbt_archive_import_child(
 	char *	program,
@@ -44,6 +76,10 @@ int slbt_archive_import(
 	int	code;
 	int	fd[2];
 	FILE *	fout;
+	char *	dst;
+	char *	src;
+	char	mridst [L_tmpnam];
+	char	mrisrc [L_tmpnam];
 	char	program[PATH_MAX];
 
 	if ((size_t)snprintf(program,sizeof(program),"%s",
@@ -66,6 +102,9 @@ int slbt_archive_import(
 
 	ectx->pid = pid;
 
+	dst = slbt_mri_argument(dstarchive,mridst);
+	src = slbt_mri_argument(srcarchive,mrisrc);
+
 	if ((fout = fdopen(fd[1],"a"))) {
 		ret = (fprintf(
 				fout,
@@ -73,8 +112,8 @@ int slbt_archive_import(
 				"ADDLIB %s\n"
 				"SAVE\n"
 				"END\n",
-				dstarchive,
-				srcarchive) < 0)
+				dst,
+				src) < 0)
 			? -1 : 0;
 
 		fclose(fout);
@@ -89,6 +128,12 @@ int slbt_archive_import(
 		pid,
 		&ectx->exitcode,
 		0);
+
+	if (dst == mridst)
+		unlink(dst);
+
+	if (src == mrisrc)
+		unlink(src);
 
 	return ret || (code != pid) || ectx->exitcode
 		? -1 : 0;
