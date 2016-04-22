@@ -289,11 +289,18 @@ static int slbt_init_host_params(
 {
 	size_t		toollen;
 	char *		dash;
+	char *		base;
 	const char *	machine;
 	bool		ftarget       = false;
 	bool		fhost         = false;
 	bool		fcompiler     = false;
 	bool		fnative       = false;
+
+	/* base */
+	if ((base = strrchr(cctx->cargv[0],'/')))
+		base++;
+	else
+		base = cctx->cargv[0];
 
 	/* host */
 	if (host->host) {
@@ -303,7 +310,7 @@ static int slbt_init_host_params(
 		host->host    = cctx->target;
 		cfgmeta->host = cfgtarget;
 		ftarget       = true;
-	} else if (strrchr(cctx->cargv[0],'-')) {
+	} else if (strrchr(base,'-')) {
 		if (!(drvhost->host = strdup(cctx->cargv[0])))
 			return -1;
 
