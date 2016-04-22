@@ -702,6 +702,9 @@ int slbt_get_driver_ctx(
 
 					else if (!strcmp("NASM",entry->arg))
 						cctx.tag = SLBT_TAG_NASM;
+
+					else if (!strcmp("disable-static",entry->arg))
+						cctx.drvflags |= SLBT_DRIVER_DISABLE_STATIC;
 					break;
 
 				case TAG_CONFIG:
@@ -809,6 +812,10 @@ int slbt_get_driver_ctx(
 
 				case TAG_ALL_STATIC:
 					cctx.drvflags |= SLBT_DRIVER_ALL_STATIC;
+					break;
+
+				case TAG_DISABLE_STATIC:
+					cctx.drvflags |= SLBT_DRIVER_DISABLE_STATIC;
 					break;
 
 				case TAG_AVOID_VERSION:
