@@ -21,7 +21,7 @@ const struct argv_option slbt_default_options[] = {
 				"do not make any changes to the file system"},
 
 	{"tag",			0,TAG_TAG,ARGV_OPTARG_REQUIRED,0,
-				"CC|CXX|NASM|disable-static",0,
+				"CC|CXX|NASM|disable-static|disable-shared",0,
 				"a universal playground game"},
 
 	{"config",		0,TAG_CONFIG,ARGV_OPTARG_NONE,0,0,0,
@@ -125,6 +125,13 @@ const struct argv_option slbt_default_options[] = {
 				"for libraries, only create a shared library, "
 				"and accordingly do not create an archive "
 				"containing the individual object files. "
+				"[currently a no-op]"},
+
+	{"disable-shared",	0,TAG_DISABLE_SHARED,ARGV_OPTARG_NONE,
+				ARGV_OPTION_HYBRID_ONLY,0,0,
+				"for libraries, only create an archive "
+				"containing the individual object files, and "
+				"accordingly do not create a shared library. "
 				"[currently a no-op]"},
 
 	{"avoid-version",	0,TAG_AVOID_VERSION,ARGV_OPTARG_NONE,

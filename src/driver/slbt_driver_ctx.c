@@ -705,6 +705,9 @@ int slbt_get_driver_ctx(
 
 					else if (!strcmp("disable-static",entry->arg))
 						cctx.drvflags |= SLBT_DRIVER_DISABLE_STATIC;
+
+					else if (!strcmp("disable-shared",entry->arg))
+						cctx.drvflags |= SLBT_DRIVER_DISABLE_SHARED;
 					break;
 
 				case TAG_CONFIG:
@@ -816,6 +819,10 @@ int slbt_get_driver_ctx(
 
 				case TAG_DISABLE_STATIC:
 					cctx.drvflags |= SLBT_DRIVER_DISABLE_STATIC;
+					break;
+
+				case TAG_DISABLE_SHARED:
+					cctx.drvflags |= SLBT_DRIVER_DISABLE_SHARED;
 					break;
 
 				case TAG_AVOID_VERSION:
