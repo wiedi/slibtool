@@ -146,6 +146,8 @@ int  slbt_get_exec_ctx(
 	char *				ch;
 	char *				mark;
 	char *				slash;
+	const char *			arprefix;
+	const char *			dsoprefix;
 	const char *			ref;
 	int				i;
 
@@ -268,11 +270,20 @@ int  slbt_get_exec_ctx(
 
 	/* linking: arfilename, lafilename, dsofilename */
 	if (dctx->cctx->mode == SLBT_MODE_LINK && dctx->cctx->libname) {
+		/* arprefix, dsoprefix */
+		if (dctx->cctx->drvflags & SLBT_DRIVER_MODULE) {
+			arprefix  = "";
+			dsoprefix = "";
+		} else {
+			arprefix  = dctx->cctx->settings.arprefix;
+			dsoprefix = dctx->cctx->settings.dsoprefix;
+		}
+
 		/* arfilename */
 		ictx->ctx.arfilename = ch;
 		ch += sprintf(ch,"%s%s%s%s",
 				ictx->ctx.ldirname,
-				dctx->cctx->settings.arprefix,
+				arprefix,
 				dctx->cctx->libname,
 				dctx->cctx->settings.arsuffix);
 		ch++;
@@ -283,9 +294,7 @@ int  slbt_get_exec_ctx(
 		ictx->ctx.lafilename = ch;
 		ch += sprintf(ch,"%s%s%s.la",
 				ictx->ctx.ldirname,
-				(dctx->cctx->drvflags & SLBT_DRIVER_MODULE)
-					? ""
-					: dctx->cctx->settings.dsoprefix,
+				dsoprefix,
 				dctx->cctx->libname);
 		ch++;
 
@@ -294,9 +303,7 @@ int  slbt_get_exec_ctx(
 		ictx->ctx.dsofilename = ch;
 		ch += sprintf(ch,"%s%s%s%s",
 				ictx->ctx.ldirname,
-				(dctx->cctx->drvflags & SLBT_DRIVER_MODULE)
-					? ""
-					: dctx->cctx->settings.dsoprefix,
+				dsoprefix,
 				dctx->cctx->libname,
 				dctx->cctx->settings.dsosuffix);
 		ch++;
@@ -305,7 +312,7 @@ int  slbt_get_exec_ctx(
 		ictx->ctx.deffilename = ch;
 		ch += sprintf(ch,"%s%s%s%s.def",
 				ictx->ctx.ldirname,
-				dctx->cctx->settings.dsoprefix,
+				dsoprefix,
 				dctx->cctx->libname,
 				dctx->cctx->settings.dsosuffix);
 		ch++;
