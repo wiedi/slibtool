@@ -288,7 +288,7 @@ static int slbt_init_host_params(
 	struct slbt_host_params *	cfgmeta)
 {
 	size_t		toollen;
-	char *		slash;
+	char *		dash;
 	const char *	machine;
 	bool		ftarget       = false;
 	bool		fhost         = false;
@@ -307,8 +307,8 @@ static int slbt_init_host_params(
 		if (!(drvhost->host = strdup(cctx->cargv[0])))
 			return -1;
 
-		slash         = strrchr(drvhost->host,'-');
-		*slash        = 0;
+		dash          = strrchr(drvhost->host,'-');
+		*dash         = 0;
 		host->host    = drvhost->host;
 		cfgmeta->host = cfgcompiler;
 		fcompiler     = true;
@@ -336,24 +336,24 @@ static int slbt_init_host_params(
 			cfgmeta->flavor = cfgmachine;
 		}
 
-		slash = strrchr(machine,'-');
+		dash = strrchr(machine,'-');
 		cfgmeta->flavor = cfghost;
 
-		if ((slash && !strcmp(slash,"-bsd")) || strstr(machine,"-bsd-"))
+		if ((dash && !strcmp(dash,"-bsd")) || strstr(machine,"-bsd-"))
 			host->flavor = "bsd";
-		else if ((slash && !strcmp(slash,"-cygwin")) || strstr(machine,"-cygwin-"))
+		else if ((dash && !strcmp(dash,"-cygwin")) || strstr(machine,"-cygwin-"))
 			host->flavor = "cygwin";
-		else if ((slash && !strcmp(slash,"-darwin")) || strstr(machine,"-darwin-"))
+		else if ((dash && !strcmp(dash,"-darwin")) || strstr(machine,"-darwin-"))
 			host->flavor = "darwin";
-		else if ((slash && !strcmp(slash,"-linux")) || strstr(machine,"-linux-"))
+		else if ((dash && !strcmp(dash,"-linux")) || strstr(machine,"-linux-"))
 			host->flavor = "linux";
-		else if ((slash && !strcmp(slash,"-midipix")) || strstr(machine,"-midipix-"))
+		else if ((dash && !strcmp(dash,"-midipix")) || strstr(machine,"-midipix-"))
 			host->flavor = "midipix";
-		else if ((slash && !strcmp(slash,"-mingw")) || strstr(machine,"-mingw-"))
+		else if ((dash && !strcmp(dash,"-mingw")) || strstr(machine,"-mingw-"))
 			host->flavor = "mingw";
-		else if ((slash && !strcmp(slash,"-mingw32")) || strstr(machine,"-mingw32-"))
+		else if ((dash && !strcmp(dash,"-mingw32")) || strstr(machine,"-mingw32-"))
 			host->flavor = "mingw";
-		else if ((slash && !strcmp(slash,"-mingw64")) || strstr(machine,"-mingw64-"))
+		else if ((dash && !strcmp(dash,"-mingw64")) || strstr(machine,"-mingw64-"))
 			host->flavor = "mingw";
 		else {
 			host->flavor   = "default";
