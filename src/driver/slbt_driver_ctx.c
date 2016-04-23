@@ -295,12 +295,17 @@ static int slbt_init_host_params(
 	bool		fhost         = false;
 	bool		fcompiler     = false;
 	bool		fnative       = false;
+	bool		fdumpmachine  = false;
+	char		buf[256];
 
 	/* base */
 	if ((base = strrchr(cctx->cargv[0],'/')))
 		base++;
 	else
 		base = cctx->cargv[0];
+
+	if ((cctx->mode == SLBT_MODE_COMPILE) || (cctx->mode == SLBT_MODE_LINK))
+		fdumpmachine = true;
 
 	/* host */
 	if (host->host) {
@@ -319,6 +324,16 @@ static int slbt_init_host_params(
 		host->host    = drvhost->host;
 		cfgmeta->host = cfgcompiler;
 		fcompiler     = true;
+	} else if (fdumpmachine && !(slbt_dump_machine(
+				cctx->cargv[0],
+				buf,sizeof(buf)))) {
+		if (!(drvhost->host = strdup(buf)))
+			return -1;
+
+		host->host    = drvhost->host;
+		cfgmeta->host = cfgmachine;
+		fcompiler     = true;
+		fnative       = (!(strcmp(host->host,SLBT_MACHINE)));
 	} else {
 		host->host    = SLBT_MACHINE;
 		cfgmeta->host = cfgmachine;
