@@ -4,6 +4,7 @@ COMMON_SRCS = \
 	src/driver/slbt_unit_ctx.c \
 	src/helper/slbt_archive_import.c \
 	src/helper/slbt_copy_file.c \
+	src/helper/slbt_dump_machine.c \
 	src/logic/slbt_exec_compile.c \
 	src/logic/slbt_exec_ctx.c \
 	src/logic/slbt_exec_install.c \
