@@ -4,7 +4,7 @@
 /*  Released under the Standard MIT License; see COPYING.SLIBTOOL. */
 /*******************************************************************/
 
-#include <stdlib.h>
+#include <stdio.h>
 #include <limits.h>
 #include <unistd.h>
 #include <string.h>
@@ -71,9 +71,9 @@ int slbt_archive_import(
 	char *				dstarchive,
 	char *				srcarchive)
 {
-	pid_t	pid;
 	int	ret;
-	int	code;
+	pid_t	pid;
+	pid_t	rpid;
 	int	fd[2];
 	FILE *	fout;
 	char *	dst;
@@ -124,7 +124,7 @@ int slbt_archive_import(
 		close(fd[1]);
 	}
 
-	code = waitpid(
+	rpid = waitpid(
 		pid,
 		&ectx->exitcode,
 		0);
@@ -135,6 +135,6 @@ int slbt_archive_import(
 	if (src == mrisrc)
 		unlink(src);
 
-	return ret || (code != pid) || ectx->exitcode
+	return ret || (rpid != pid) || ectx->exitcode
 		? -1 : 0;
 }
