@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <slibtool/slibtool.h>
 #include "slibtool_version.h"
 #include "slibtool_driver_impl.h"
@@ -50,9 +51,12 @@ static int slibtool_exit(struct slbt_driver_ctx * dctx, int nerrors)
 int slibtool_main(int argc, char ** argv, char ** envp)
 {
 	int				ret;
+	uint64_t			flags;
 	struct slbt_driver_ctx *	dctx;
 	struct slbt_unit_ctx *		uctx;
 	const char **			unit;
+	char *				program;
+	char *				dash;
 	char *				sargv[5];
 
 	/* --version only? */
@@ -69,7 +73,28 @@ int slibtool_main(int argc, char ** argv, char ** envp)
 				: slibtool_exit(dctx,0);
 	}
 
-	if ((ret = slbt_get_driver_ctx(argv,envp,SLBT_DRIVER_FLAGS,&dctx)))
+	/* program */
+	if ((program = strrchr(argv[0],'/')))
+		program++;
+	else
+		program = argv[0];
+
+	/* dash */
+	if ((dash = strrchr(program,'-')))
+		dash++;
+
+	/* flags */
+	if (dash == 0)
+		flags = SLBT_DRIVER_FLAGS;
+
+	else if (!(strcmp(dash,"shared")))
+		flags = SLBT_DRIVER_FLAGS | SLBT_DRIVER_DISABLE_STATIC;
+
+	else if (!(strcmp(dash,"static")))
+		flags = SLBT_DRIVER_FLAGS | SLBT_DRIVER_DISABLE_SHARED;
+
+	/* driver context */
+	if ((ret = slbt_get_driver_ctx(argv,envp,flags,&dctx)))
 		return (ret == SLBT_USAGE) ? !--argc : 2;
 
 	if (dctx->cctx->drvflags & SLBT_DRIVER_VERSION)
