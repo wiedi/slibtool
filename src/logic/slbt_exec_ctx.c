@@ -268,7 +268,7 @@ int  slbt_get_exec_ctx(
 				+ 1;
 	}
 
-	/* linking: arfilename, lafilename, dsofilename */
+	/* linking: arfilename, lafilename, laifilename, dsofilename */
 	if (dctx->cctx->mode == SLBT_MODE_LINK && dctx->cctx->libname) {
 		/* arprefix, dsoprefix */
 		if (dctx->cctx->drvflags & SLBT_DRIVER_MODULE) {
@@ -293,6 +293,15 @@ int  slbt_get_exec_ctx(
 		/* lafilename */
 		ictx->ctx.lafilename = ch;
 		ch += sprintf(ch,"%s%s%s.la",
+				ictx->ctx.ldirname,
+				dsoprefix,
+				dctx->cctx->libname);
+		ch++;
+
+
+		/* laifilename */
+		ictx->ctx.laifilename = ch;
+		ch += sprintf(ch,"%s%s%s.lai",
 				ictx->ctx.ldirname,
 				dsoprefix,
 				dctx->cctx->libname);

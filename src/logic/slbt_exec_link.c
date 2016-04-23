@@ -1126,6 +1126,14 @@ int slbt_exec_link(
 				ectx->lafilename,
 				true));
 
+	/* .lai wrapper symlink */
+	if (ret == 0)
+		ret = (slbt_create_symlink(
+				dctx,ectx,
+				output,
+				ectx->laifilename,
+				true));
+
 	/* all done */
 	fclose(fout);
 	slbt_free_exec_ctx(actx);
