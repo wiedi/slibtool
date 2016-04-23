@@ -14,6 +14,7 @@
 
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
+#include "slibtool_readlink_impl.h"
 #include "slibtool_symlink_impl.h"
 
 struct slbt_deps_meta {
@@ -167,6 +168,7 @@ static int slbt_adjust_linker_argument(
 	char *	slash;
 	char *	dot;
 	char	base[PATH_MAX];
+	char	slnk[PATH_MAX];
 
 	if (*arg == '-')
 		return 0;
@@ -195,7 +197,10 @@ static int slbt_adjust_linker_argument(
 	if (fpic) {
 		sprintf(dot,"%s",dsosuffix);
 
-		if ((fdlib = open(arg,O_RDONLY)) >= 0)
+		if (!slbt_readlink(arg,slnk,sizeof(slnk))
+				&& !(strcmp(slnk,"/dev/null")))
+			sprintf(dot,"%s",arsuffix);
+		else if ((fdlib = open(arg,O_RDONLY)) >= 0)
 			close(fdlib);
 		else
 			sprintf(dot,"%s",arsuffix);
