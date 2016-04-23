@@ -11,6 +11,9 @@
 
 #include "slibtool_symlink_impl.h"
 
+#define SLBT_DEV_NULL_FLAGS	(SLBT_DRIVER_ALL_STATIC \
+				| SLBT_DRIVER_DISABLE_SHARED)
+
 int slbt_create_symlink(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -27,7 +30,7 @@ int slbt_create_symlink(
 	char		atarget[PATH_MAX];
 
 	/* atarget */
-	if ((dctx->cctx->drvflags & SLBT_DRIVER_ALL_STATIC)
+	if ((dctx->cctx->drvflags & SLBT_DEV_NULL_FLAGS)
 			&& !strcmp(target,"/dev/null"))
 		slash = target;
 	else if ((slash = strrchr(target,'/')))
