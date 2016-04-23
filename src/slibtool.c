@@ -60,7 +60,10 @@ int slibtool_main(int argc, char ** argv, char ** envp)
 	char *				sargv[5];
 
 	/* --version only? */
-	if ((argc == 2) && !strcmp(argv[1],"--version")) {
+	if ((argc == 2) && (!strcmp(argv[1],"--version")
+				|| !strcmp(argv[1],"--help-all")
+				|| !strcmp(argv[1],"--help")
+				|| !strcmp(argv[1],"-h"))) {
 		sargv[0] = argv[0];
 		sargv[1] = argv[1];
 		sargv[2] = "--mode=compile";
