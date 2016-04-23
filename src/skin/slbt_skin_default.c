@@ -137,8 +137,7 @@ const struct argv_option slbt_default_options[] = {
 				ARGV_OPTION_HYBRID_ONLY,0,0,
 				"for libraries, only create an archive "
 				"containing the individual object files, and "
-				"accordingly do not create a shared library. "
-				"[currently a no-op]"},
+				"accordingly do not create a shared library"},
 
 	{"avoid-version",	0,TAG_AVOID_VERSION,ARGV_OPTARG_NONE,
 				ARGV_OPTION_HYBRID_ONLY,0,0,
