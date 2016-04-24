@@ -11,9 +11,17 @@
 #define ARGV_DRIVER
 
 #include <slibtool/slibtool.h>
+#include "slibtool_version.h"
 #include "slibtool_driver_impl.h"
 #include "argv/argv.h"
 
+/* package info */
+static const struct slbt_source_version slbt_src_version = {
+	SLBT_TAG_VER_MAJOR,
+	SLBT_TAG_VER_MINOR,
+	SLBT_TAG_VER_PATCH,
+	SLIBTOOL_GIT_VERSION
+};
 
 /* flavor settings */
 #define SLBT_FLAVOR_SETTINGS(flavor,bfmt,arp,ars,dsop,dsos,exep,exes,impp,imps,ldenv) \
@@ -1020,4 +1028,9 @@ int  slbt_set_alternate_host(
 		&ictx->ctx.cctx.asettings);
 
 	return 0;
+}
+
+const struct slbt_source_version * slbt_source_version(void)
+{
+	return &slbt_src_version;
 }

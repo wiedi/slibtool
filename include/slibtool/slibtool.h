@@ -87,6 +87,13 @@ enum slbt_warning_level {
 	SLBT_WARNING_LEVEL_NONE,
 };
 
+struct slbt_source_version {
+	int		major;
+	int		minor;
+	int		revision;
+	const char *	commit;
+};
+
 struct slbt_input {
 	void *	addr;
 	size_t	size;
@@ -203,6 +210,9 @@ struct slbt_unit_ctx {
 	int				status;
 	int				nerrors;
 };
+
+/* package info */
+slbt_api				const struct slbt_source_version * slbt_source_version(void);
 
 /* driver api */
 slbt_api int  slbt_get_driver_ctx	(char ** argv, char ** envp, uint32_t flags, struct slbt_driver_ctx **);
