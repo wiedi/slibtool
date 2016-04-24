@@ -208,10 +208,17 @@ static int slbt_split_argv(
 	cargv = sargv->cargv;
 
 	for (; i<argc; i++) {
-		if (argv[i][0] != '-')
-			*cargv++ = argv[i];
+		if (argv[i][0] != '-') {
+			if (argv[i+1] && (argv[i+1][0] == '+')
+					&& (argv[i+1][1] == '=')
+					&& (argv[i+1][2] == 0)
+					&& !(strrchr(argv[i],'.')))
+				/* libfoo_la_LDFLAGS += -Wl,.... */
+				i++;
+			else
+				*cargv++ = argv[i];
 
-		else if (argv[i][1] == 'o') {
+		} else if (argv[i][1] == 'o') {
 			*targv++ = argv[i];
 
 			if (argv[i][2] == 0)
