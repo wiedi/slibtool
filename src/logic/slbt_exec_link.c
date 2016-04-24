@@ -596,7 +596,7 @@ static int slbt_exec_link_create_library(
 	char	output [PATH_MAX];
 	char	soname [PATH_MAX];
 	char	symfile[PATH_MAX];
-	struct slbt_deps_meta depsmeta = {0};
+	struct slbt_deps_meta depsmeta = {0,0,0,0};
 
 	/* initial state */
 	slbt_reset_arguments(ectx);
@@ -724,7 +724,7 @@ static int slbt_exec_link_create_executable(
 	char	wraplnk[PATH_MAX];
 	bool	fabspath;
 	bool	fpic;
-	struct slbt_deps_meta depsmeta = {0};
+	struct slbt_deps_meta depsmeta = {0,0,0,0};
 
 	/* initial state */
 	slbt_reset_arguments(ectx);
