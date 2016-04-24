@@ -32,7 +32,8 @@ static const char cfgexplicit[] = "command-line argument";
 static const char cfghost[]     = "derived from <host>";
 static const char cfgtarget[]   = "derived from <target>";
 static const char cfgcompiler[] = "derived from <compiler>";
-static const char cfgmachine[]  = "native (derived from -dumpmachine)";
+static const char cfgnmachine[] = "native (derived from -dumpmachine)";
+static const char cfgxmachine[] = "foreign (derived from -dumpmachine)";
 static const char cfgnative[]   = "native";
 
 struct slbt_split_vector {
@@ -338,12 +339,12 @@ static int slbt_init_host_params(
 			return -1;
 
 		host->host    = drvhost->host;
-		cfgmeta->host = cfgmachine;
 		fcompiler     = true;
 		fnative       = (!(strcmp(host->host,SLBT_MACHINE)));
+		cfgmeta->host = fnative ? cfgnmachine : cfgxmachine;
 	} else {
 		host->host    = SLBT_MACHINE;
-		cfgmeta->host = cfgmachine;
+		cfgmeta->host = cfgnmachine;
 		fnative       = true;
 	}
 
@@ -362,7 +363,7 @@ static int slbt_init_host_params(
 			cfgmeta->flavor = cfgcompiler;
 		} else {
 			machine         = SLBT_MACHINE;
-			cfgmeta->flavor = cfgmachine;
+			cfgmeta->flavor = cfgnmachine;
 		}
 
 		dash = strrchr(machine,'-');
