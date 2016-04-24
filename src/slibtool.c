@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <slibtool/slibtool.h>
-#include "slibtool_version.h"
 #include "slibtool_driver_impl.h"
 
 #ifndef SLBT_DRIVER_FLAGS
@@ -16,11 +15,19 @@
 				| SLBT_DRIVER_VERBOSITY_USAGE
 #endif
 
-static const char vermsg[] = "%s (git://midipix.org/slibtool): commit %s.\n";
+static const char vermsg[] = "%s (git://midipix.org/slibtool): "
+			     "version %d.%d.%d.\n"
+			     "[commit reference: %s]\n";
 
 static ssize_t slibtool_version(struct slbt_driver_ctx * dctx)
 {
-	return fprintf(stdout,vermsg,dctx->program,SLIBTOOL_GIT_VERSION);
+	const struct slbt_source_version * verinfo;
+
+	verinfo = slbt_source_version();
+
+	return fprintf(stdout,vermsg,dctx->program,
+			verinfo->major,verinfo->minor,verinfo->revision,
+			verinfo->commit);
 }
 
 static void slibtool_perform_driver_actions(struct slbt_driver_ctx * dctx)
