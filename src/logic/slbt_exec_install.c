@@ -233,6 +233,7 @@ static int slbt_exec_install_entry(
 	char		lasource[PATH_MAX];
 	bool		fexe = false;
 	bool		fpe;
+	bool		frelease;
 	struct stat	st;
 
 	/* executable wrapper? */
@@ -297,9 +298,15 @@ static int slbt_exec_install_entry(
 			dest ? (char *)dest->arg : (char *)last->arg))
 		return -1;
 
-	/* libfoo.a --> libfoo.so */
+	/* dot/suffix */
 	strcpy(slnkname,srcfile);
 	dot = strrchr(slnkname,'.');
+
+	/* libfoo.a --> libfoo.so.release */
+	sprintf(dot,"%s.release",dctx->cctx->settings.dsosuffix);
+	frelease = stat(slnkname,&st) ? false : true;
+
+	/* libfoo.a --> libfoo.so */
 	strcpy(dot,dctx->cctx->settings.dsosuffix);
 
 	/* PE support: does .libs/libfoo.so.def exist? */
@@ -376,6 +383,9 @@ static int slbt_exec_install_entry(
 			target,dlnkname,
 			false))
 		return -1;
+
+	if (frelease)
+		return 0;
 
 	/* libfoo.so.x.y.z --> libfoo.so.x */
 	strcpy(slnkname,target);

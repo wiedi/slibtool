@@ -588,7 +588,8 @@ static int slbt_exec_link_create_archive(
 static int slbt_exec_link_create_library(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
-	const char *			dsofilename)
+	const char *			dsofilename,
+	const char *			relfilename)
 {
 	char ** parg;
 	char	cwd    [PATH_MAX];
@@ -632,6 +633,17 @@ static int slbt_exec_link_create_library(
 
 		*ectx->soname  = "-Wl,-soname";
 		*ectx->lsoname = soname;
+	} else if (relfilename) {
+		if ((size_t)snprintf(soname,sizeof(soname),"-Wl,%s%s-%s%s",
+					dctx->cctx->settings.dsoprefix,
+					dctx->cctx->libname,
+					dctx->cctx->release,
+					dctx->cctx->settings.dsosuffix)
+				>= sizeof(soname))
+			return -1;
+
+		*ectx->soname  = "-Wl,-soname";
+		*ectx->lsoname = soname;
 	}
 
 	/* PE: --output-def */
@@ -654,7 +666,9 @@ static int slbt_exec_link_create_library(
 	}
 
 	/* output */
-	if (dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION) {
+	if (relfilename) {
+		strcpy(output,relfilename);
+	} else if (dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION) {
 		strcpy(output,dsofilename);
 	} else {
 		if ((size_t)snprintf(output,sizeof(output),"%s.%d.%d.%d",
@@ -841,11 +855,21 @@ static int slbt_exec_link_create_library_symlink(
 	char	target[PATH_MAX];
 	char	lnkname[PATH_MAX];
 
-	sprintf(target,"%s.%d.%d.%d",
-		ectx->dsofilename,
-		dctx->cctx->verinfo.major,
-		dctx->cctx->verinfo.minor,
-		dctx->cctx->verinfo.revision);
+	if (ectx->relfilename) {
+		strcpy(target,ectx->relfilename);
+		sprintf(lnkname,"%s.release",ectx->dsofilename);
+
+		if (slbt_create_symlink(
+				dctx,ectx,
+				target,lnkname,
+				false))
+			return -1;
+	} else
+		sprintf(target,"%s.%d.%d.%d",
+			ectx->dsofilename,
+			dctx->cctx->verinfo.major,
+			dctx->cctx->verinfo.minor,
+			dctx->cctx->verinfo.revision);
 
 	if (fmajor)
 		sprintf(lnkname,"%s.%d",
@@ -986,7 +1010,8 @@ int slbt_exec_link(
 		/* linking: libfoo.so.x.y.z */
 		if (slbt_exec_link_create_library(
 				dctx,ectx,
-				ectx->dsofilename)) {
+				ectx->dsofilename,
+				ectx->relfilename)) {
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
@@ -1001,6 +1026,14 @@ int slbt_exec_link(
 			}
 
 			/* symlink: libfoo.so --> libfoo.so.x.y.z */
+			if (slbt_exec_link_create_library_symlink(
+					dctx,ectx,
+					false)) {
+				slbt_free_exec_ctx(actx);
+				return -1;
+			}
+		} else if (ectx->relfilename) {
+			/* symlink: libfoo.so --> libfoo-x.y.z.so */
 			if (slbt_exec_link_create_library_symlink(
 					dctx,ectx,
 					false)) {

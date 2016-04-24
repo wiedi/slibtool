@@ -357,6 +357,18 @@ int  slbt_get_exec_ctx(
 				dctx->cctx->verinfo.revision,
 				dctx->cctx->settings.impsuffix);
 		ch++;
+
+		/* relfilename */
+		if (dctx->cctx->release) {
+			ictx->ctx.relfilename = ch;
+			ch += sprintf(ch,"%s%s%s-%s%s",
+					ictx->ctx.ldirname,
+					dsoprefix,
+					dctx->cctx->libname,
+					dctx->cctx->release,
+					dctx->cctx->settings.dsosuffix);
+			ch++;
+		}
 	}
 
 	/* linking: exefilename */

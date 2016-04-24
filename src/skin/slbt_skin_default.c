@@ -99,7 +99,10 @@ const struct argv_option slbt_default_options[] = {
 
 	{"release",		0,TAG_RELEASE,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,0,
-				"specify release information"},
+				"specify release information; this will result "
+				"in the generation of libfoo-x.y.z.so, "
+				"followed by the creation of libfoo.so "
+				"as a symlink thereto"},
 
 	{"export-symbols",	0,TAG_EXPSYM_FILE,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,
