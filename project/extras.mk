@@ -12,11 +12,11 @@ install-app-extras:	app
 install-app-extras:
 	mkdir -p $(DESTDIR)$(BINDIR)
 
-	rm -f bin/$(PACKAGE)-shared$(OS_APP_SUFFIX).tmp
-	rm -f bin/$(PACKAGE)-static$(OS_APP_SUFFIX).tmp
+	rm -f bin/$(NICKNAME)-shared$(OS_APP_SUFFIX).tmp
+	rm -f bin/$(NICKNAME)-static$(OS_APP_SUFFIX).tmp
 
-	ln -s ./$(PACKAGE)$(OS_APP_SUFFIX) bin/$(PACKAGE)-shared$(OS_APP_SUFFIX).tmp
-	ln -s ./$(PACKAGE)$(OS_APP_SUFFIX) bin/$(PACKAGE)-static$(OS_APP_SUFFIX).tmp
+	ln -s ./$(NICKNAME)$(OS_APP_SUFFIX) bin/$(NICKNAME)-shared$(OS_APP_SUFFIX).tmp
+	ln -s ./$(NICKNAME)$(OS_APP_SUFFIX) bin/$(NICKNAME)-static$(OS_APP_SUFFIX).tmp
 
-	mv bin/$(PACKAGE)-shared$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(PACKAGE)-shared$(OS_APP_SUFFIX)
-	mv bin/$(PACKAGE)-static$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(PACKAGE)-static$(OS_APP_SUFFIX)
+	mv bin/$(NICKNAME)-shared$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(NICKNAME)-shared$(OS_APP_SUFFIX)
+	mv bin/$(NICKNAME)-static$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(NICKNAME)-static$(OS_APP_SUFFIX)
