@@ -264,6 +264,12 @@ static int slbt_exec_install_entry(
 			? -1 : 0;
 	}
 
+	/* *dst: consider: cp libfoo.la /dest/dir/libfoo.la */
+	if ((*dst = dest ? 0 : (char *)last->arg))
+		if ((dot = strrchr(last->arg,'.')))
+			if (!(strcmp(dot,".la")))
+				*dst = dstdir;
+
 	/* srcfile */
 	if (strlen(entry->arg) + strlen(".libs/") >= (PATH_MAX-1))
 		return -1;
@@ -279,7 +285,6 @@ static int slbt_exec_install_entry(
 	/* executable? */
 	if (fexe) {
 		*src = srcfile;
-		*dst = dest ? 0 : (char *)last->arg;
 
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 			if (slbt_output_install(dctx,ectx))
@@ -295,7 +300,7 @@ static int slbt_exec_install_entry(
 
 	if (slbt_copy_file(dctx,ectx,
 			srcfile,
-			dest ? (char *)dest->arg : (char *)last->arg))
+			dest ? (char *)dest->arg : *dst))
 		return -1;
 
 	/* dot/suffix */
