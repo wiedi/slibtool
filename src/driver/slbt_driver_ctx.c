@@ -695,6 +695,9 @@ int slbt_get_driver_ctx(
 	/* shared and static objects: enable by default, disable by ~switch */
 	cctx.drvflags = flags | SLBT_DRIVER_SHARED | SLBT_DRIVER_STATIC;
 
+	/* full annotation when annotation is on; */
+	cctx.drvflags |= SLBT_DRIVER_ANNOTATE_FULL;
+
 	/* get options, count units */
 	for (entry=meta->entries; entry->fopt || entry->arg; entry++) {
 		if (entry->fopt) {
@@ -773,6 +776,24 @@ int slbt_get_driver_ctx(
 
 					else if (!strcmp("none",entry->arg))
 						cctx.warnings = SLBT_WARNING_LEVEL_NONE;
+					break;
+
+				case TAG_ANNOTATE:
+					if (!strcmp("always",entry->arg)) {
+						cctx.drvflags |= SLBT_DRIVER_ANNOTATE_ALWAYS;
+						cctx.drvflags &= ~(uint64_t)SLBT_DRIVER_ANNOTATE_NEVER;
+
+					} else if (!strcmp("never",entry->arg)) {
+						cctx.drvflags |= SLBT_DRIVER_ANNOTATE_NEVER;
+						cctx.drvflags &= ~(uint64_t)SLBT_DRIVER_ANNOTATE_ALWAYS;
+
+					} else if (!strcmp("minimal",entry->arg)) {
+						cctx.drvflags &= ~(uint64_t)SLBT_DRIVER_ANNOTATE_FULL;
+
+					} else if (!strcmp("full",entry->arg)) {
+						cctx.drvflags |= SLBT_DRIVER_ANNOTATE_FULL;
+					}
+
 					break;
 
 				case TAG_DEPS:

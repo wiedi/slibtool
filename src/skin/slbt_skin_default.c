@@ -38,6 +38,13 @@ const struct argv_option slbt_default_options[] = {
 	{"preserve-dup-deps",	0,TAG_DEPS,ARGV_OPTARG_NONE,0,0,0,
 				"leave the dependency list alone"},
 
+	{"annotate",		0,TAG_ANNOTATE,ARGV_OPTARG_REQUIRED,0,
+				"always|never|minimal|full",0,
+				"modify default annotation options; "
+				"the defautls are full annotation when "
+				"stdout is a tty, and no annotation "
+				"at all otherwise"},
+
 	{"quiet",		0,TAG_SILENT,ARGV_OPTARG_NONE,0,0,0,
 				"do not say anything"},
 
