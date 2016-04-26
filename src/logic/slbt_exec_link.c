@@ -622,7 +622,9 @@ static int slbt_exec_link_create_library(
 		*ectx->noundef = "-Wl,--no-undefined";
 
 	/* -soname */
-	if (!(dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION)) {
+	if ((dctx->cctx->drvflags & SLBT_DRIVER_IMAGE_MACHO)) {
+		(void)0;
+	} else if (!(dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION)) {
 		if ((size_t)snprintf(soname,sizeof(soname),"-Wl,%s%s%s.%d",
 					dctx->cctx->settings.dsoprefix,
 					dctx->cctx->libname,
