@@ -381,7 +381,7 @@ static int slbt_init_host_params(
 			host->flavor = "bsd";
 		else if ((dash && !strcmp(dash,"-cygwin")) || strstr(machine,"-cygwin-"))
 			host->flavor = "cygwin";
-		else if ((dash && !strcmp(dash,"-darwin")) || strstr(machine,"-darwin-"))
+		else if ((dash && !strcmp(dash,"-darwin")) || strstr(machine,"-darwin"))
 			host->flavor = "darwin";
 		else if ((dash && !strcmp(dash,"-linux")) || strstr(machine,"-linux-"))
 			host->flavor = "linux";
