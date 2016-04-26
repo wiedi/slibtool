@@ -514,7 +514,7 @@ static void slbt_init_flavor_settings(
 		else if (!strcmp(settings->imagefmt,"pe"))
 			cctx->drvflags |= SLBT_DRIVER_IMAGE_PE;
 		else if (!strcmp(settings->imagefmt,"macho"))
-			cctx->drvflags |= SLBT_DRIVER_IMAGE_PE;
+			cctx->drvflags |= SLBT_DRIVER_IMAGE_MACHO;
 	}
 
 	memcpy(psettings,settings,sizeof(*settings));
