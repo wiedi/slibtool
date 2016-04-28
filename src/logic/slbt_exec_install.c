@@ -442,6 +442,7 @@ int slbt_exec_install(
 {
 	int				ret;
 	char **				argv;
+	char **				iargv;
 	char **				src;
 	char **				dst;
 	struct slbt_exec_ctx *		actx;
@@ -464,15 +465,19 @@ int slbt_exec_install(
 	/* initial state, install mode skin */
 	slbt_reset_arguments(ectx);
 	slbt_disable_placeholders(ectx);
-	argv = ectx->cargv;
+	iargv = ectx->cargv;
+
+	/* work around non-conforming uses of --mode=install */
+	if (!(strcmp(iargv[0],"/bin/sh")) || !strcmp(iargv[0],"/bin/bash"))
+		iargv++;
 
 	/* missing arguments? */
-	if (!argv[1] && (dctx->cctx->drvflags & SLBT_DRIVER_VERBOSITY_USAGE))
+	if (!iargv[1] && (dctx->cctx->drvflags & SLBT_DRIVER_VERBOSITY_USAGE))
 		return slbt_install_usage(dctx->program,0,options,0);
 
 	/* <install> argv meta */
 	if (!(meta = argv_get(
-			argv,
+			iargv,
 			options,
 			dctx->cctx->drvflags & SLBT_DRIVER_VERBOSITY_ERRORS
 				? ARGV_VERBOSITY_ERRORS
@@ -485,7 +490,7 @@ int slbt_exec_install(
 	dest = 0;
 	last = 0;
 
-	*argv++ = ectx->cargv[0];
+	*argv++ = iargv[0];
 
 	for (entry=meta->entries; entry->fopt || entry->arg; entry++) {
 		if (entry->fopt) {
