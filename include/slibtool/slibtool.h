@@ -193,6 +193,7 @@ struct slbt_common_ctx {
 	const char *			release;
 	const char *			symfile;
 	const char *			regex;
+	const char *			user;
 	char **				targv;
 	char **				cargv;
 };

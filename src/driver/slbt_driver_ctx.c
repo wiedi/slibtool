@@ -916,6 +916,12 @@ int slbt_get_driver_ctx(
 			nunits++;
 	}
 
+	/* -o in install mode means USER */
+	if ((cctx.mode == SLBT_MODE_INSTALL) && cctx.output) {
+		cctx.user   = cctx.output;
+		cctx.output = 0;
+	}
+
 	/* driver context */
 	if (!(ctx = slbt_driver_ctx_alloc(meta,&cctx,nunits)))
 		return slbt_get_driver_ctx_fail(meta);
