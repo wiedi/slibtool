@@ -119,6 +119,7 @@ struct slbt_exec_ctx {
 	char ** symdefs;
 	char ** symfile;
 	char ** lout[2];
+	char ** rpath[2];
 	char ** sentinel;
 	FILE *	fwrapper;
 	FILE *	fdeps;

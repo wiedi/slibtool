@@ -447,6 +447,10 @@ void slbt_reset_placeholders(struct slbt_exec_ctx * ectx)
 
 	*ectx->lout[0] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_SWITCH";
 	*ectx->lout[1] = "-USLIBTOOL_PLACEHOLDER_OUTPUT_FILE";
+
+	*ectx->rpath[0] = "-USLIBTOOL_PLACEHOLDER_RPATH_SWITCH";
+	*ectx->rpath[1] = "-USLIBTOOL_PLACEHOLDER_RPATH_DIR";
+
 	*ectx->sentinel= 0;
 }
 
@@ -464,5 +468,9 @@ void slbt_disable_placeholders(struct slbt_exec_ctx * ectx)
 
 	*ectx->lout[0] = 0;
 	*ectx->lout[1] = 0;
+
+	*ectx->rpath[0] = 0;
+	*ectx->rpath[1] = 0;
+
 	*ectx->sentinel= 0;
 }
