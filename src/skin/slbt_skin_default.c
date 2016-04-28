@@ -99,6 +99,13 @@ const struct argv_option slbt_default_options[] = {
 				"PE shared libraries. Not needed, ignored for "
 				"compatibility"},
 
+	{"shrext",		0,TAG_SHREXT,ARGV_OPTARG_REQUIRED,
+				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,0,
+				"shared library extention, including the dot, that "
+				"should override the default for the target system. "
+				"regardless of build target and type (native/cross), "
+				"you should never need to use this option."},
+
 	{"rpath",		0,TAG_RPATH,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,0,
 				"where a library should eventually be "

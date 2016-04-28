@@ -258,6 +258,10 @@ static int slbt_split_argv(
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
 
+		} else if (!(strcmp("shrext",&argv[i][1]))) {
+			*targv++ = argv[i++];
+			*targv++ = argv[i];
+
 		} else if (!(strcmp("rpath",&argv[i][1]))) {
 			*targv++ = argv[i++];
 			*targv++ = argv[i];
@@ -518,6 +522,9 @@ static void slbt_init_flavor_settings(
 	}
 
 	memcpy(psettings,settings,sizeof(*settings));
+
+	if (cctx->shrext)
+		psettings->dsosuffix = cctx->shrext;
 }
 
 static int slbt_init_version_info(
@@ -830,6 +837,10 @@ int slbt_get_driver_ctx(
 
 				case TAG_OUTPUT:
 					cctx.output = entry->arg;
+					break;
+
+				case TAG_SHREXT:
+					cctx.shrext = entry->arg;
 					break;
 
 				case TAG_RPATH:
