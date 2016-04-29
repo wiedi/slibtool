@@ -88,6 +88,19 @@ static int slbt_get_deps_meta(
 	char		depfile[4*PATH_MAX];
 	char *		deplibs = depfile;
 
+	/* -rpath */
+	if ((size_t)snprintf(depfile,sizeof(depfile),"%s.slibtool.rpath",
+				libfilename)
+			>= sizeof(depfile))
+		return -1;
+
+	if (!(lstat(depfile,&st))) {
+		/* -Wl,%s */
+		depsmeta->infolen += st.st_size + 4;
+		depsmeta->infolen++;
+	}
+
+	/* .deps */
 	if ((size_t)snprintf(depfile,sizeof(depfile),"%s.slibtool.deps",
 				libfilename)
 			>= sizeof(depfile))
@@ -232,7 +245,10 @@ static int slbt_exec_link_adjust_argument_vector(
 	int	argc;
 	char	arg[PATH_MAX];
 	char	lib[PATH_MAX];
+	char	rpathdir[PATH_MAX];
+	char	rpathlnk[PATH_MAX];
 	bool	fwholearchive = false;
+	struct	stat st;
 
 	for (argc=0,carg=ectx->cargv; *carg; carg++)
 		argc++;
@@ -285,6 +301,23 @@ static int slbt_exec_link_adjust_argument_vector(
 			/* ^^^hoppla^^^ */
 			*aarg++ = *carg++;
 		} else {
+			/* -rpath */
+			sprintf(rpathlnk,"%s.slibtool.rpath",*carg);
+
+			if (!(lstat(rpathlnk,&st))) {
+				if (slbt_readlink(
+						rpathlnk,\
+						rpathdir,
+						sizeof(rpathdir)))
+					return -1;
+
+				sprintf(darg,"-Wl,%s",rpathdir);
+				*aarg++ = "-Wl,-rpath";
+				*aarg++ = darg;
+				darg   += strlen(darg);
+				darg++;
+			}
+
 			dpath = lib;
 			freqd = true;
 			sprintf(lib,"%s.slibtool.deps",*carg);
@@ -684,6 +717,15 @@ static int slbt_exec_link_create_library(
 
 	*ectx->lout[0] = "-o";
 	*ectx->lout[1] = output;
+
+	/* ldrpath */
+	if (dctx->cctx->host.ldrpath) {
+		if (slbt_exec_link_remove_file(dctx,ectx,ectx->rpathfilename))
+			return -1;
+
+		if (symlink(dctx->cctx->host.ldrpath,ectx->rpathfilename))
+			return -1;
+	}
 
 	/* cwd */
 	if (!getcwd(cwd,sizeof(cwd)))
