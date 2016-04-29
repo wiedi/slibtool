@@ -119,6 +119,9 @@ int slibtool_main(int argc, char ** argv, char ** envp)
 	else if (!(strcmp(dash,"static")))
 		flags = SLBT_DRIVER_FLAGS | SLBT_DRIVER_DISABLE_SHARED;
 
+	else
+		flags = SLBT_DRIVER_FLAGS;
+
 	/* driver context */
 	if ((ret = slbt_get_driver_ctx(argv,envp,flags,&dctx)))
 		return (ret == SLBT_USAGE) ? !--argc : 2;
