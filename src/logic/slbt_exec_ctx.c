@@ -72,7 +72,7 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 
 	/* clerical [worst-case] buffer size (guard, .libs, version) */
 	size  = strlen(".lo") + 1;
-	size +=  8 * (strlen(".libs/") + 1);
+	size += 12 * (strlen(".libs/") + 1);
 	size += 36 * (strlen(".0000") + 1);
 
 	/* buffer size (cargv, -Wc) */
@@ -237,6 +237,10 @@ int  slbt_get_exec_ctx(
 
 	ictx->ctx.lout[0] = &ictx->ctx.argv[i++];
 	ictx->ctx.lout[1] = &ictx->ctx.argv[i++];
+
+	ictx->ctx.rpath[0] = &ictx->ctx.argv[i++];
+	ictx->ctx.rpath[1] = &ictx->ctx.argv[i++];
+
 	ictx->ctx.sentinel= &ictx->ctx.argv[i++];
 
 	slbt_reset_placeholders(&ictx->ctx);
@@ -320,6 +324,15 @@ int  slbt_get_exec_ctx(
 		/* deffilename */
 		ictx->ctx.deffilename = ch;
 		ch += sprintf(ch,"%s%s%s%s.def",
+				ictx->ctx.ldirname,
+				dsoprefix,
+				dctx->cctx->libname,
+				dctx->cctx->settings.dsosuffix);
+		ch++;
+
+		/* rpathfilename */
+		ictx->ctx.rpathfilename = ch;
+		ch += sprintf(ch,"%s%s%s%s.slibtool.rpath",
 				ictx->ctx.ldirname,
 				dsoprefix,
 				dctx->cctx->libname,
