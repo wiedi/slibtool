@@ -157,6 +157,7 @@ struct slbt_host_params {
 	const char *			ar;
 	const char *			ranlib;
 	const char *			dlltool;
+	const char *			ldrpath;
 };
 
 struct slbt_flavor_settings {

@@ -44,6 +44,16 @@ static const char cfgnmachine[] = "native (derived from -dumpmachine)";
 static const char cfgxmachine[] = "foreign (derived from -dumpmachine)";
 static const char cfgnative[]   = "native";
 
+/* elf rpath */
+static const char*ldrpath_elf[] = {
+	"/lib",
+	"/lib/64",
+	"/usr/lib",
+	"/usr/lib64",
+	"/usr/local/lib",
+	"usr/local/lib64",
+	0};
+
 struct slbt_split_vector {
 	char **		targv;
 	char **		cargv;
@@ -527,6 +537,53 @@ static void slbt_init_flavor_settings(
 		psettings->dsosuffix = cctx->shrext;
 }
 
+static int slbt_init_ldrpath(
+	struct slbt_common_ctx *  cctx,
+	struct slbt_host_params * host)
+{
+	char *         buf;
+	const char **  ldrpath;
+
+	if (!cctx->rpath || !(cctx->drvflags & SLBT_DRIVER_IMAGE_ELF)) {
+		host->ldrpath = 0;
+		return 0;
+	}
+
+	/* common? */
+	for (ldrpath=ldrpath_elf; *ldrpath; ldrpath ++)
+		if (!(strcmp(cctx->rpath,*ldrpath))) {
+			host->ldrpath = 0;
+			return 0;
+		}
+
+	/* buf */
+	if (!(buf = malloc(12 + strlen(cctx->host.host))))
+		return -1;
+
+	/* /usr/{host}/lib */
+	sprintf(buf,"/usr/%s/lib",cctx->host.host);
+
+	if (!(strcmp(cctx->rpath,buf))) {
+		host->ldrpath = 0;
+		free(buf);
+		return 0;
+	}
+
+	/* /usr/{host}/lib64 */
+	sprintf(buf,"/usr/%s/lib64",cctx->host.host);
+
+	if (!(strcmp(cctx->rpath,buf))) {
+		host->ldrpath = 0;
+		free(buf);
+		return 0;
+	}
+
+	host->ldrpath = cctx->rpath;
+
+	free(buf);
+	return 0;
+}
+
 static int slbt_init_version_info(
 	struct slbt_driver_ctx_impl *	ictx,
 	struct slbt_version_info *	verinfo)
@@ -951,6 +1008,12 @@ int slbt_get_driver_ctx(
 				&ctx->cctx.settings);
 	}
 
+	/* ldpath */
+	if (slbt_init_ldrpath(&ctx->cctx,&ctx->cctx.host)) {
+		slbt_free_driver_ctx(&ctx->ctx);
+		return -1;
+	}
+
 	/* version info */
 	if (slbt_init_version_info(ctx,&ctx->cctx.verinfo)) {
 		slbt_free_driver_ctx(&ctx->ctx);
@@ -1064,6 +1127,13 @@ int  slbt_set_alternate_host(
 		&ictx->ctx.cctx,
 		&ictx->ctx.cctx.ahost,
 		&ictx->ctx.cctx.asettings);
+
+	if (slbt_init_ldrpath(
+			&ictx->ctx.cctx,
+			&ictx->ctx.cctx.ahost)) {
+		slbt_free_host_params(&ictx->ctx.ahost);
+		return -1;
+	}
 
 	return 0;
 }
