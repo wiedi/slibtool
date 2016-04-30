@@ -102,6 +102,13 @@ int slbt_output_compile(
 	return slbt_output_exec(dctx,ectx,"compile");
 }
 
+int slbt_output_execute(
+	const struct slbt_driver_ctx *	dctx,
+	const struct slbt_exec_ctx *	ectx)
+{
+	return slbt_output_exec(dctx,ectx,"execute");
+}
+
 int slbt_output_install(
 	const struct slbt_driver_ctx *	dctx,
 	const struct slbt_exec_ctx *	ectx)
