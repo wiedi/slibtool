@@ -798,6 +798,7 @@ static int slbt_exec_link_create_executable(
 	const char *			exefilename)
 {
 	char ** parg;
+	char *	base;
 	char	cwd    [PATH_MAX];
 	char	output [PATH_MAX];
 	char	wrapper[PATH_MAX];
@@ -888,15 +889,26 @@ static int slbt_exec_link_create_executable(
 	ectx->argv    = depsmeta.altv;
 	ectx->program = depsmeta.altv[0];
 
+	/* executable wrapper: base name */
+	if ((base = strrchr(dctx->cctx->output,'/')))
+		base++;
+	else
+		base = wrapper;
+
 	/* executable wrapper: footer */
 	fabspath = (exefilename[0] == '/');
 
 	if (fprintf(ectx->fwrapper,
 			"DL_PATH=\"$DL_PATH$LCOLON$%s\"\n\n"
 			"export %s=$DL_PATH\n\n"
+			"if [ `basename \"$0\"` = \"%s.exe.wrapper\" ]; then\n"
+			"\tprogram=\"$1\"; shift\n"
+			"\texec \"$program\" \"$@\"\n"
+			"fi\n\n"
 			"exec %s/%s \"$@\"\n",
 			dctx->cctx->settings.ldpathenv,
 			dctx->cctx->settings.ldpathenv,
+			base,
 			fabspath ? "" : cwd,
 			fabspath ? &exefilename[1] : exefilename) < 0)
 		return slbt_exec_link_exit(&depsmeta,-1);
