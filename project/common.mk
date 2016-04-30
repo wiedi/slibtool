@@ -7,6 +7,7 @@ COMMON_SRCS = \
 	src/helper/slbt_dump_machine.c \
 	src/logic/slbt_exec_compile.c \
 	src/logic/slbt_exec_ctx.c \
+	src/logic/slbt_exec_execute.c \
 	src/logic/slbt_exec_install.c \
 	src/logic/slbt_exec_link.c \
 	src/logic/slbt_map_input.c \

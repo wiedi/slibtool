@@ -239,6 +239,7 @@ slbt_api void slbt_reset_placeholders	(struct slbt_exec_ctx *);
 slbt_api void slbt_disable_placeholders	(struct slbt_exec_ctx *);
 
 slbt_api int  slbt_exec_compile		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);
+slbt_api int  slbt_exec_execute		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);
 slbt_api int  slbt_exec_install		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);
 slbt_api int  slbt_exec_link		(const struct slbt_driver_ctx *, struct slbt_exec_ctx *);
 
