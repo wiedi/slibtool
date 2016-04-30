@@ -8,13 +8,13 @@
 #include <stdio.h>
 #include <slibtool/slibtool.h>
 
-const char aclr_null[]    = "";
-const char aclr_reset[]   = "\x1b[0m";
-const char aclr_bold[]    = "\x1b[1m";
+static const char aclr_null[]    = "";
+static const char aclr_reset[]   = "\x1b[0m";
+static const char aclr_bold[]    = "\x1b[1m";
 
-const char aclr_green[]   = "\x1b[32m";
-const char aclr_blue[]    = "\x1b[34m";
-const char aclr_magenta[] = "\x1b[35m";
+static const char aclr_green[]   = "\x1b[32m";
+static const char aclr_blue[]    = "\x1b[34m";
+static const char aclr_magenta[] = "\x1b[35m";
 
 static int slbt_output_exec_annotated(
 	const struct slbt_driver_ctx *	dctx,
