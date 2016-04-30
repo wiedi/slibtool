@@ -540,13 +540,19 @@ static int slbt_exec_link_create_archive(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
 	const char *			arfilename,
-	bool				fpic)
+	bool				fpic,
+	bool				fprimary)
 {
 	char ** 	aarg;
 	char ** 	parg;
+	char *		base;
+	char *		mark;
+	char *		slash;
 	char *		ranlib[3];
 	char		program[PATH_MAX];
 	char		output [PATH_MAX];
+	char		arfile [PATH_MAX];
+	char		arlink [PATH_MAX];
 
 	/* initial state */
 	slbt_reset_arguments(ectx);
@@ -621,6 +627,29 @@ static int slbt_exec_link_create_archive(
 	/* ranlib spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
 		return -1;
+
+	if (fprimary && (dctx->cctx->drvflags & SLBT_DRIVER_DISABLE_SHARED)) {
+		strcpy(arlink,output);
+		mark  = strrchr(arlink,'/');
+		*mark = 0;
+
+		base  = output + (mark - arlink);
+		base++;
+
+		if ((slash = strrchr(arlink,'/')))
+			slash++;
+		else
+			slash = arlink;
+
+		strcpy(slash,base);
+		sprintf(arfile,".libs/%s",base);
+
+		if (slbt_exec_link_remove_file(dctx,ectx,arlink))
+			return -1;
+
+		if (symlink(arfile,arlink))
+			return -1;
+	}
 
 	return 0;
 }
@@ -1024,7 +1053,7 @@ int slbt_exec_link(
 
 	/* non-pic libfoo.a */
 	if (dot && !strcmp(dot,".a"))
-		if (slbt_exec_link_create_archive(dctx,ectx,output,false)) {
+		if (slbt_exec_link_create_archive(dctx,ectx,output,false,false)) {
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
@@ -1049,7 +1078,7 @@ int slbt_exec_link(
 		if (slbt_exec_link_create_archive(
 				dctx,ectx,
 				ectx->arfilename,
-				fpic)) {
+				fpic,true)) {
 			slbt_free_exec_ctx(actx);
 			return -1;
 		}
