@@ -16,7 +16,7 @@
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
 
-static int slbt_dump_machine_child(
+static void slbt_dump_machine_child(
 	char *	program,
 	int	fd[2])
 {
@@ -43,7 +43,6 @@ static int slbt_dump_machine_child(
 		execvp(program,argv);
 
 	exit(EXIT_FAILURE);
-	return -1;
 }
 
 int slbt_dump_machine(
@@ -77,7 +76,7 @@ int slbt_dump_machine(
 	}
 
 	if (pid == 0)
-		return slbt_dump_machine_child(
+		slbt_dump_machine_child(
 			program,
 			fd);
 
