@@ -45,7 +45,7 @@ static char * slbt_mri_argument(
 	return lnk;
 }
 
-static int slbt_archive_import_child(
+static void slbt_archive_import_child(
 	char *	program,
 	int	fd[2])
 {
@@ -62,7 +62,6 @@ static int slbt_archive_import_child(
 		execvp(program,argv);
 
 	exit(EXIT_FAILURE);
-	return -1;
 }
 
 int slbt_archive_import(
@@ -96,7 +95,7 @@ int slbt_archive_import(
 	}
 
 	if (pid == 0)
-		return slbt_archive_import_child(
+		slbt_archive_import_child(
 			program,
 			fd);
 
