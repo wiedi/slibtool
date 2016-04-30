@@ -1019,7 +1019,9 @@ int slbt_exec_link(
 
 	/* libfoo.so */
 	sprintf(solnk,"%s%s%s",
-		dctx->cctx->settings.dsoprefix,
+		(dctx->cctx->drvflags & SLBT_DRIVER_MODULE)
+			? ""
+			: dctx->cctx->settings.dsoprefix,
 		dctx->cctx->libname,
 		dctx->cctx->settings.dsosuffix);
 
