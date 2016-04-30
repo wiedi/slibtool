@@ -464,6 +464,9 @@ void slbt_reset_placeholders(struct slbt_exec_ctx * ectx)
 	*ectx->rpath[0] = "-USLIBTOOL_PLACEHOLDER_RPATH_SWITCH";
 	*ectx->rpath[1] = "-USLIBTOOL_PLACEHOLDER_RPATH_DIR";
 
+	ectx->mout[0]  = 0;
+	ectx->mout[1]  = 0;
+
 	*ectx->sentinel= 0;
 }
 

@@ -277,6 +277,13 @@ static int slbt_exec_link_adjust_argument_vector(
 
 
 
+		/* output annotation */
+		if (carg == ectx->lout[0]) {
+			ectx->mout[0] = &aarg[0];
+			ectx->mout[1] = &aarg[1];
+		}
+
+		/* argument translation */
 		if (**carg == '-') {
 			*aarg++ = *carg++;
 

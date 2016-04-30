@@ -33,7 +33,7 @@ static int slbt_output_exec_annotated(
 		return -1;
 
 	for (parg=ectx->argv; *parg; parg++) {
-		if (parg == ectx->lout[0]) {
+		if ((parg == ectx->lout[0]) || (parg == ectx->mout[0])) {
 			aclr_set      = aclr_bold;
 			aclr_color    = aclr_blue;
 			aclr_unset    = aclr_null;
