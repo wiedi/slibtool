@@ -54,6 +54,15 @@ static const char*ldrpath_elf[] = {
 	"usr/local/lib64",
 	0};
 
+static const char aclr_reset [] = "\x1b[0m";
+static const char aclr_bold  [] = "\x1b[1m";
+static const char aclr_red   [] = "\x1b[31m";
+static const char aclr_green [] = "\x1b[32m";
+static const char aclr_yellow[] = "\x1b[33m";
+static const char aclr_blue  [] = "\x1b[34m";
+static const char aclr_cyan  [] = "\x1b[36m";
+static const char aclr_white [] = "\x1b[37m";
+
 struct slbt_split_vector {
 	char **		targv;
 	char **		cargv;
@@ -65,6 +74,38 @@ struct slbt_driver_ctx_alloc {
 	uint64_t			guard;
 	const char *			units[];
 };
+
+static void slbt_output_raw_vector(char ** argv, char ** envp)
+{
+	char **		parg;
+	char *		dot;
+	const char *	color;
+	bool		fcolor;
+
+	if ((fcolor = isatty(STDOUT_FILENO)))
+		fprintf(stderr,"%s%s",aclr_bold,aclr_red);
+
+	fprintf(stderr,"\n\n\n%s",argv[0]);
+
+	for (parg=&argv[1]; *parg; parg++) {
+		if (!fcolor)
+			color = "";
+		else if (*parg[0] == '-')
+			color = aclr_blue;
+		else if (!(dot = strrchr(*parg,'.')))
+			color = aclr_green;
+		else if (!(strcmp(dot,".lo")))
+			color = aclr_cyan;
+		else if (!(strcmp(dot,".la")))
+			color = aclr_yellow;
+		else
+			color = aclr_white;
+
+		fprintf(stderr," %s%s",color,*parg);
+	}
+
+	fprintf(stderr,"%s\n\n",fcolor ? aclr_reset : "");
+}
 
 static uint32_t slbt_argv_flags(uint32_t flags)
 {
@@ -972,6 +1013,10 @@ int slbt_get_driver_ctx(
 		} else
 			nunits++;
 	}
+
+	/* debug: raw argument vector */
+	if (cctx.drvflags & SLBT_DRIVER_DEBUG)
+		slbt_output_raw_vector(argv,envp);
 
 	/* -o in install mode means USER */
 	if ((cctx.mode == SLBT_MODE_INSTALL) && cctx.output) {
