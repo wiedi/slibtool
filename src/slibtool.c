@@ -128,6 +128,14 @@ int slibtool_main(int argc, char ** argv, char ** envp)
 	else
 		flags = SLBT_DRIVER_FLAGS;
 
+	/* debug */
+	if (!(strcmp(program,"dlibtool")))
+		flags |= SLBT_DRIVER_DEBUG;
+
+	else if (!(strncmp(program,"dlibtool",8)))
+		if ((program[8] == '-') || (program[8] == '.'))
+			flags |= SLBT_DRIVER_DEBUG;
+
 	/* driver context */
 	if ((ret = slbt_get_driver_ctx(argv,envp,flags,&dctx)))
 		return (ret == SLBT_USAGE) ? !--argc : 2;
