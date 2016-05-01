@@ -14,7 +14,13 @@ const struct argv_option slbt_default_options[] = {
 	{"mode",		0,TAG_MODE,ARGV_OPTARG_REQUIRED,0,
 				"clean|compile|execute|finish"
 				"|install|link|uninstall",0,
-				"set the execution mode"},
+				"set the execution mode, where <mode> "
+				"is one of {%s}. of the above modes, "
+				"'finish' is not needed and is therefore "
+				"a no-op; 'clean' and 'uninstall' are "
+				"currently not implemented, however "
+				"their addition is expected before "
+				"the next release"},
 
 	{"dry-run",		'n',TAG_DRY_RUN,ARGV_OPTARG_NONE,0,0,0,
 				"do not spawn any processes, "
@@ -22,7 +28,8 @@ const struct argv_option slbt_default_options[] = {
 
 	{"tag",			0,TAG_TAG,ARGV_OPTARG_REQUIRED,0,
 				"CC|CXX|NASM|disable-static|disable-shared",0,
-				"a universal playground game"},
+				"a universal playground game; "
+				"currently accepted tags are {%s}"},
 
 	{"config",		0,TAG_CONFIG,ARGV_OPTARG_NONE,0,0,0,
 				"display configuration information"},
@@ -43,7 +50,8 @@ const struct argv_option slbt_default_options[] = {
 				"modify default annotation options; "
 				"the defautls are full annotation when "
 				"stdout is a tty, and no annotation "
-				"at all otherwise"},
+				"at all otherwise; accepted modes "
+				"are {%s}"},
 
 	{"quiet",		0,TAG_SILENT,ARGV_OPTARG_NONE,0,0,0,
 				"do not say anything"},
@@ -60,7 +68,8 @@ const struct argv_option slbt_default_options[] = {
 
 	{"flavor",		0,TAG_FLAVOR,ARGV_OPTARG_REQUIRED,0,
 				"bsd|cygwin|darwin|linux|midipix|mingw",
-				0,"explicitly specify the host's flavor"},
+				0,"explicitly specify the host's flavor; "
+				"currently accepted flavors are {%s}"},
 
 	{"ar",			0,TAG_AR,ARGV_OPTARG_REQUIRED,0,0,"<ar>",
 				"explicitly specify the archiver to be used"},
@@ -74,7 +83,8 @@ const struct argv_option slbt_default_options[] = {
 
 	{"warnings",		0,TAG_WARNINGS,ARGV_OPTARG_REQUIRED,0,
 				"all|none|error",0,
-				"set the warning reporting level"},
+				"set the warning reporting level; "
+				"accepted levels are {%s}"},
 
 	{"W",			0,TAG_WARNINGS,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_JOINED,
@@ -164,12 +174,12 @@ const struct argv_option slbt_default_options[] = {
 	{"version-info",	0,TAG_VERSION_INFO,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,
 				"<current>[:<revision>[:<age>]]",
-				"specify version information"},
+				"specify version information using a %s syntax"},
 
 	{"version-number",	0,TAG_VERSION_NUMBER,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,0,
 				"<major>[:<minor>[:<revision>]]",
-				"specify version information"},
+				"specify version information using a %s syntax"},
 
 	{"no-suppress",		0,TAG_NO_SUPPRESS,ARGV_OPTARG_NONE,
 				ARGV_OPTION_HYBRID_ONLY,0,0,
@@ -201,7 +211,8 @@ const struct argv_option slbt_default_options[] = {
 	{"Wc",			0,TAG_COMPILER_FLAG,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_COMMA,
 				0,"<flag>[,<flag]...",
-				"pass comma-separated flags to the compiler"},
+				"pass comma-separated flags to the compiler; "
+				"syntax: -Wc,%s"},
 
 	{"Xcompiler",		0,TAG_VERBATIM_FLAG,ARGV_OPTARG_REQUIRED,
 				ARGV_OPTION_HYBRID_ONLY|ARGV_OPTION_HYBRID_SPACE,
