@@ -66,6 +66,7 @@ static void slibtool_perform_driver_actions(struct slbt_driver_ctx * dctx)
 
 static void slibtool_perform_unit_actions(struct slbt_unit_ctx * uctx)
 {
+	(void)uctx;
 }
 
 static int slibtool_exit(struct slbt_driver_ctx * dctx, int nerrors)

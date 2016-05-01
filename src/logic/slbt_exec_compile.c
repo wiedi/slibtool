@@ -18,6 +18,8 @@ static int slbt_exec_compile_remove_file(
 	struct slbt_exec_ctx *		ectx,
 	const char *			target)
 {
+	(void)ectx;
+
 	/* remove target (if any) */
 	if (!(unlink(target)) || (errno == ENOENT))
 		return 0;

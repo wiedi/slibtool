@@ -18,7 +18,6 @@ int  slbt_exec_execute(
 	struct slbt_exec_ctx *		ectx)
 {
 	int			ret;
-	char **			parg;
 	char *			program;
 	char *			script;
 	char *			base;
