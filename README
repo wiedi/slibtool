@@ -1,1 +1,106 @@
-slibtool: a skinny libtool implementation, written in C
+# slibtool
+
+`slibtool` is an independent reimplementation of the commonly used libtool,
+written in C. `slibtool` is designed to be a clean, fast, easy-to-use
+libtool drop-in replacement, and is accordingly aimed at package authors,
+distro developers, and system integrators. `slibtool` maintains compatibility
+with libtool in nearly every aspect of the tool's functionality as well as
+semantics, leaving out (or turning into no-ops) only a small number of
+features that are no longer needed on modern systems.
+
+Being a compiled binary, and although not primarily written for the sake of
+performance, building a package with `slibtool` is often faster than with its
+script-based counterpart. The resulting performance gain would normally vary
+between packages, and is most noticeable in builds that invoke libtool a large
+number of times, and which are characterized by the short compilation time of
+individual translation units.
+
+## Requirements for building slibtool
+
+- a C toolchain, consisting of...
+    - a C compiler such as gcc, clang, or [cparser].
+    - The compiler should support -std=c99.
+    - The system's libc should support -D_XOPEN_SOURCE=700.
+
+## Usage
+
+With most packages, simply adding `LIBTOOL=slibtool` to the `make` invocation
+should suffice. To have `slibtool` operate in debug mode (outputting a colorized
+raw argument vector), use `LIBTOOL=dlibtool` instead, or alternatively add
+`--debug` to the libtool flags inside of your Makefile.
+
+### Corner cases
+
+Some programs which make heavy use of recursive `make` are known to drop the
+`LIBTOOL` value at some point in the process, and as such you may additionally
+need to export the environment variable; `export MAKE="make LIBTOOL=slibtool"`.
+
+`slibtool` additionally installs two symlinks that are the equivalent of
+`-disable-shared` and `-disable-static`, named `slibtool-static` and
+`slibtool-shared`, respectively. These symlinks should be used when building
+packages that have the above switches hard-coded into the generated libtool
+script; two examples of such packages are `binutils` and `gdb`, which both have
+shared library builds disabled by default. A quick way to determine whether this
+invocation form is appropriate is to run `./libtool --features` from the build
+directory, then check whether the output has either shared or static library
+builds disabled.
+
+## Differences from GNU libtool
+
+While `slibtool` aims to be compatible with all common usages of libtool, there
+are a few differences at the implementation level that should be noted.
+
+- `-rpath` argument values are passed to the compiler and linker as needed only;
+  `-rpath` is often [mis]used by libtool to add redundant paths to a program's
+  linker search path. When using slibtool, `-rpath` argument values are only
+  forwarded to the compiler and linker when pointing to non-default linker
+  directories, and are accordingly filtered out when pointing to default library
+  locations (i.e. `/usr/lib`, `/lib`, and so on).
+
+- no-ops
+    - `-R`, which adds a path to the generated program's run-time search path;
+      this switch is currently not needed, and is accordingly ignored.
+    - `-export-symbols`, which exports symbols listed in a given file, and
+      `-export-symbols-regex`, which exports symbols matching a regex;
+      both are unimplemented because similar functionality has long been
+      provided by the compiler or toolchain; `gcc` has supported setting ELF
+      visibility since v4.0, for instance, and PE import library support is
+      provided by slibtool via the --output-def linker switch and a subsequent
+      invocation of dlltool.
+    - `-no-install`, which considers the executable wrapper to be optional;
+      this switch is not needed on modern systems, and is accordingly ignored.
+
+- No `libltdl`.
+  libltdl is nowadays no longer needed; it serves to provide a `dlopen()`
+  functionality on systems which do not offer it, i.e. HP-UX and BeOS,
+  however since neither HP-UX nor BeOS is currently supported by slibtool,
+  there exists no urgent need to provide equivalent functionality.
+
+## Development
+
+Major changes to slibtool should be discussed on [#midipix] prior to pursuing
+a considerable effort, and patches should be sent, gpg-signed, to the project
+maintainer; before hacking on slibtool, please take a moment of your time and
+read the [CONTRIB] document.
+
+Before finalizing your changes, please consider building at least once with
+`cparser` as the compiler. cparser is excellent at catching logical errors
+and semantic flaws, and at the time of this writing is capable of spotting
+some errors that go unnoticed by the other major open source compilers.
+For a few examples of such errors, see commits [94d109f], [1142bf2], and
+[55c95a8].
+
+## License
+
+`slibtool` is distributed under a permissive [MIT license].
+
+[MIT license]:  http://git.midipix.org/cgit.cgi/slibtool/tree/COPYING.SLIBTOOL
+[libltdl]:      https://www.gnu.org/software/libtool/manual/html_node/Using-libltdl.html#Using-libltdl
+[dlopen()]:     http://pubs.opengroup.org/onlinepubs/9699919799/functions/dlopen.html
+[CONTRIB]:      http://git.midipix.org/cgit.cgi/slibtool/tree/CONTRIB
+[libtool]:      https://www.gnu.org/software/libtool/
+[#midipix]:     irc://irc.freenode.net/#midipix
+[cparser]:      http://pp.ipd.kit.edu/git/cparser/
+[94d109f]:      http://git.midipix.org/cgit.cgi/slibtool/commit/?id=94d109fa418c024c214a50d645624e2e2935e6d1
+[1142bf2]:      http://git.midipix.org/cgit.cgi/slibtool/commit/?id=1142bf2e13f411cf967c1ed8b4060d7829eb13bb
+[55c95a8]:      http://git.midipix.org/cgit.cgi/slibtool/commit/?id=55c95a829928ae9f053678a58a2145276cad9c08
