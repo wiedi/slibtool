@@ -1011,6 +1011,10 @@ int slbt_exec_link(
 	char			arname[PATH_MAX];
 	const struct slbt_source_version * verinfo;
 
+	/* dry run */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_DRY_RUN)
+		return 0;
+
 	/* libfoo.so.x.y.z */
 	if ((size_t)snprintf(soxyz,sizeof(soxyz),"%s%s%s.%d.%d.%d",
 				dctx->cctx->settings.dsoprefix,

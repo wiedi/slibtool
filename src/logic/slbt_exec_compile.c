@@ -38,6 +38,10 @@ int  slbt_exec_compile(
 	struct slbt_exec_ctx *	actx = 0;
 	const struct slbt_source_version * verinfo;
 
+	/* dry run */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_DRY_RUN)
+		return 0;
+
 	/* context */
 	if (ectx)
 		slbt_reset_placeholders(ectx);

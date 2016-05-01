@@ -454,6 +454,10 @@ int slbt_exec_install(
 	char				dstdir[PATH_MAX];
 	const struct argv_option *	options = slbt_install_options;
 
+	/* dry run */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_DRY_RUN)
+		return 0;
+
 	/* context */
 	if (ectx)
 		actx = 0;

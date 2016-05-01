@@ -27,6 +27,10 @@ int  slbt_exec_execute(
 	char			wrapper[PATH_MAX];
 	struct slbt_exec_ctx *	actx = 0;
 
+	/* dry run */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_DRY_RUN)
+		return 0;
+
 	/* context */
 	if (ectx)
 		slbt_disable_placeholders(ectx);
