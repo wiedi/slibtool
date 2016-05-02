@@ -1066,8 +1066,10 @@ int slbt_exec_link(
 		if ((fdlibs = open(ectx->ldirname,O_DIRECTORY)) >= 0)
 			close(fdlibs);
 		else if ((errno != ENOENT) || mkdir(ectx->ldirname,0777)) {
-			slbt_free_exec_ctx(actx);
-			return -1;
+			if (errno != EEXIST) {
+				slbt_free_exec_ctx(actx);
+				return -1;
+			}
 		}
 	}
 
