@@ -26,7 +26,7 @@ fname=`sha256sum contrib.patch | cut -f1 -d' '`		|| exit 2
 
 # prepare for submission, sign the patch
 mv   contrib.patch $fname.patch				|| exit 2
-head -n$bline $fname.patch | tail -n +2 > $fname.sig	|| exit 2
+head -n$bline $fname.patch > $fname.sig			|| exit 2
 
 [ -z "$PAGER" ] && PAGER='less'
 $PAGER $fname.patch					|| exit 2
