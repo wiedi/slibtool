@@ -1,0 +1,13 @@
+v0.5.0:
+
+This is the first tagged release of slibtool. It is the result of two months of
+intensive development, and follows rigorous testing on several systems. As of
+this initial release, slibtool is known to successfully build an entire Exherbo
+Linux system from source, build the midipix cross compilation toolchain from
+source, and likewise build many other packages.
+
+Support for the ELF/default host flavor is complete, and does not appear to have
+any errors. Support for the PE/midipix flavor is also complete, and includes not
+only static archives and shared libraries, but also import libraries with
+version support. Support for the Darwin host flavor already exists too, yet it
+is currently semantically incorrect, and so will be fixed in the next release.

@@ -1,0 +1,14 @@
+v0.5.0:
+
+The initial rapid development of slibtool, and likewise the
+relatively short time from inception to first release, would not have
+been possible without the shared wisdom and tremendous help that was
+provided by Kylie McClain, a renowned Exherbo Linux developer and build
+system wizard. Kylie tirelessly tested slibtool by running the Exherbo
+world build time and again around the clock until there no more visible
+failures (read: until she finally stopped jinxing it), handling the
+tediousness of the task with a cool spirit and a great sense of humor.
+
+Thanks also to Ørjan Malde (the one and only), who readily turned
+himself into a Somemulator and helped debugging a race condition in
+slibtool's compile mode translation unit (commit cd7387f).
