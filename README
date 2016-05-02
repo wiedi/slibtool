@@ -1,23 +1,23 @@
 # slibtool
 
-`slibtool` is an independent reimplementation of the commonly used libtool,
+`slibtool` is an independent reimplementation of the widely used libtool,
 written in C. `slibtool` is designed to be a clean, fast, easy-to-use
 libtool drop-in replacement, and is accordingly aimed at package authors,
 distro developers, and system integrators. `slibtool` maintains compatibility
 with libtool in nearly every aspect of the tool's functionality as well as
-semantics, leaving out (or turning into no-ops) only a small number of
+semantics, leaving out (or turning into a no-op) only a small number of
 features that are no longer needed on modern systems.
 
 Being a compiled binary, and although not primarily written for the sake of
 performance, building a package with `slibtool` is often faster than with its
 script-based counterpart. The resulting performance gain would normally vary
 between packages, and is most noticeable in builds that invoke libtool a large
-number of times, and which are characterized by the short compilation time of
-individual translation units.
+number of times, and which are characterized by the short compilation duration
+of individual translation units.
 
 ## why reimplement libtool?
 
-Midipix targets use the PE binary format and so require import library
+Midipix targets use the PE binary format, and so require import library
 integration on the one hand, yet follow ELF naming conventions
 (i.e. libfoo.so.x.y.z) on the other. In consequence, midipix shared
 libraries are not fully supported by existing libtool implementations.
@@ -42,10 +42,10 @@ effort, ease of customization, and long-term maintenance.
 
 ## Requirements for building slibtool
 
-- a C toolchain, consisting of...
-    - a C compiler such as gcc, clang, or [cparser].
-    - The compiler should support -std=c99.
-    - The system's libc should support -D_XOPEN_SOURCE=700.
+- a C toolchain, consisting of
+    - a C compiler such as gcc, clang, or [cparser];
+    - the compiler should support -std=c99;
+    - the system's libc should support -D_XOPEN_SOURCE=700.
 
 ## Usage
 
@@ -64,23 +64,24 @@ need to export the environment variable; `export MAKE="make LIBTOOL=slibtool"`.
 `-disable-shared` and `-disable-static`, named `slibtool-static` and
 `slibtool-shared`, respectively. These symlinks should be used when building
 packages that have the above switches hard-coded into the generated libtool
-script; two examples of such packages are `binutils` and `gdb`, which both have
-shared library builds disabled by default. A quick way to determine whether this
-invocation form is appropriate is to run `./libtool --features` from the build
-directory, then check whether the output has either shared or static library
-builds disabled.
+script; two examples of such packages are `binutils` and `gdb`, which both
+have shared library builds disabled by default. A quick way to determine
+whether this invocation form is appropriate with a specific package is to
+run `./libtool --features` from the build directory, then check whether the
+output has either shared or static library builds disabled.
 
 ## Differences from GNU libtool
 
-While `slibtool` aims to be compatible with all common usages of libtool, there
-are a few differences at the implementation level that should be noted.
+While `slibtool` aims to be compatible with all common usages of libtool at the
+build system level, there exist several differences at the implementation level
+that should be noted.
 
 - `-rpath` argument values are passed to the compiler and linker as needed only;
   `-rpath` is often [mis]used by libtool to add redundant paths to a program's
   linker search path. When using slibtool, `-rpath` argument values are only
   forwarded to the compiler and linker when pointing to non-default linker
-  directories, and are accordingly filtered out when pointing to default library
-  locations (i.e. `/usr/lib`, `/lib`, and so on).
+  directories, and are accordingly filtered out when pointing to default
+  library locations (i.e. `/usr/lib`, `/lib`, and so on).
 
 - no-ops
     - `-R`, which adds a path to the generated program's run-time search path;
@@ -108,12 +109,11 @@ a considerable effort, and patches should be sent, gpg-signed, to the project
 maintainer; before hacking on slibtool, please take a moment of your time and
 read the [CONTRIB] document.
 
-Before finalizing your changes, please consider building at least once with
-`cparser` as the compiler. cparser is excellent at catching logical errors
-and semantic flaws, and at the time of this writing is capable of spotting
-some errors that go unnoticed by the other major open source compilers.
-For a few examples of such errors, see commits [94d109f], [1142bf2], and
-[55c95a8].
+As you finalize your changes to the code, please consider building at least
+once with `cparser` as the compiler. cparser is excellent at catching logical
+errors and semantic flaws, and as of the time of this writing is capable of
+spotting bugs that go unnoticed by other major compilers. For a few examples
+of such hidden bugs, see commits [94d109f], [1142bf2], and [55c95a8].
 
 ## License
 
