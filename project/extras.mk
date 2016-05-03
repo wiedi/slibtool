@@ -9,6 +9,7 @@ src/driver/slbt_driver_ctx.lo:	CFLAGS += $(CFLAGS_MACHINE)
 
 install-app-extras:	app
 install-app-extras:	DBGNAME = dlibtool
+install-app-extras:	LEGABITS = clibtool
 
 install-app-extras:
 	mkdir -p $(DESTDIR)$(BINDIR)
@@ -17,10 +18,22 @@ install-app-extras:
 	rm -f bin/$(NICKNAME)-shared$(OS_APP_SUFFIX).tmp
 	rm -f bin/$(NICKNAME)-static$(OS_APP_SUFFIX).tmp
 
+	rm -f bin/$(LEGABITS)$(OS_APP_SUFFIX).tmp
+	rm -f bin/$(LEGABITS)-shared$(OS_APP_SUFFIX).tmp
+	rm -f bin/$(LEGABITS)-static$(OS_APP_SUFFIX).tmp
+
 	ln -s ./$(NICKNAME)$(OS_APP_SUFFIX) bin/$(DBGNAME)$(OS_APP_SUFFIX).tmp
 	ln -s ./$(NICKNAME)$(OS_APP_SUFFIX) bin/$(NICKNAME)-shared$(OS_APP_SUFFIX).tmp
 	ln -s ./$(NICKNAME)$(OS_APP_SUFFIX) bin/$(NICKNAME)-static$(OS_APP_SUFFIX).tmp
 
+	ln -s ./$(NICKNAME)$(OS_APP_SUFFIX) bin/$(LEGABITS)$(OS_APP_SUFFIX).tmp
+	ln -s ./$(NICKNAME)$(OS_APP_SUFFIX) bin/$(LEGABITS)-shared$(OS_APP_SUFFIX).tmp
+	ln -s ./$(NICKNAME)$(OS_APP_SUFFIX) bin/$(LEGABITS)-static$(OS_APP_SUFFIX).tmp
+
 	mv bin/$(DBGNAME)$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(DBGNAME)$(OS_APP_SUFFIX)
 	mv bin/$(NICKNAME)-shared$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(NICKNAME)-shared$(OS_APP_SUFFIX)
 	mv bin/$(NICKNAME)-static$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(NICKNAME)-static$(OS_APP_SUFFIX)
+
+	mv bin/$(LEGABITS)$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(LEGABITS)$(OS_APP_SUFFIX)
+	mv bin/$(LEGABITS)-shared$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(LEGABITS)-shared$(OS_APP_SUFFIX)
+	mv bin/$(LEGABITS)-static$(OS_APP_SUFFIX).tmp $(DESTDIR)$(BINDIR)/$(LEGABITS)-static$(OS_APP_SUFFIX)
