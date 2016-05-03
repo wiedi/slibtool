@@ -874,6 +874,16 @@ int slbt_get_driver_ctx(
 					cctx.drvflags |= SLBT_DRIVER_FEATURES;
 					break;
 
+				case TAG_LEGABITS:
+					if (!entry->arg)
+						cctx.drvflags |= SLBT_DRIVER_LEGABITS;
+
+					else if (!strcmp("enabled",entry->arg))
+						cctx.drvflags |= SLBT_DRIVER_LEGABITS;
+
+					else
+						cctx.drvflags &= ~(uint64_t)SLBT_DRIVER_LEGABITS;
+
 				case TAG_WARNINGS:
 					if (!strcmp("all",entry->arg))
 						cctx.warnings = SLBT_WARNING_LEVEL_ALL;

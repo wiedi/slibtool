@@ -40,6 +40,14 @@ const struct argv_option slbt_default_options[] = {
 	{"features",		0,TAG_FEATURES,ARGV_OPTARG_NONE,0,0,0,
 				"show feature information"},
 
+	{"legabits",		0,TAG_LEGABITS,ARGV_OPTARG_OPTIONAL,0,
+				"enabled|disabled",0,
+				"enable/disable legacy bits, i.e. "
+				"the installation of an .la wrapper "
+				"along with its associated shared library "
+				"and/or static archive. option syntax is "
+				"--legabits[=%s]"},
+
 	{"no-warnings",		0,TAG_WARNINGS,ARGV_OPTARG_NONE,0,0,0,""},
 
 	{"preserve-dup-deps",	0,TAG_DEPS,ARGV_OPTARG_NONE,0,0,0,
