@@ -12,6 +12,7 @@
 
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
+#include "slibtool_mkdir_impl.h"
 
 static int slbt_exec_compile_remove_file(
 	const struct slbt_driver_ctx *	dctx,
@@ -35,7 +36,6 @@ int  slbt_exec_compile(
 	struct slbt_exec_ctx *		ectx)
 {
 	int			ret;
-	int			fdlibs;
 	FILE *			fout;
 	struct slbt_exec_ctx *	actx = 0;
 	const struct slbt_source_version * verinfo;
@@ -57,16 +57,11 @@ int  slbt_exec_compile(
 		return -1;
 
 	/* .libs directory */
-	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED) {
-		if ((fdlibs = open(ectx->ldirname,O_DIRECTORY)) >= 0)
-			close(fdlibs);
-		else if ((errno != ENOENT) || mkdir(ectx->ldirname,0777)) {
-			if (errno != EEXIST) {
-				slbt_free_exec_ctx(actx);
-				return -1;
-			}
+	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED)
+		if (slbt_mkdir(ectx->ldirname)) {
+			slbt_free_exec_ctx(actx);
+			return -1;
 		}
-	}
 
 	/* compile mode */
 	ectx->program = ectx->compiler;

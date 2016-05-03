@@ -14,6 +14,7 @@
 
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
+#include "slibtool_mkdir_impl.h"
 #include "slibtool_readlink_impl.h"
 #include "slibtool_symlink_impl.h"
 
@@ -995,7 +996,6 @@ int slbt_exec_link(
 	struct slbt_exec_ctx *		ectx)
 {
 	int			ret;
-	int			fdlibs;
 	const char *		output;
 	char *			dot;
 	FILE *			fout;
@@ -1062,16 +1062,11 @@ int slbt_exec_link(
 	dot    = strrchr(output,'.');
 
 	/* .libs directory */
-	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED) {
-		if ((fdlibs = open(ectx->ldirname,O_DIRECTORY)) >= 0)
-			close(fdlibs);
-		else if ((errno != ENOENT) || mkdir(ectx->ldirname,0777)) {
-			if (errno != EEXIST) {
-				slbt_free_exec_ctx(actx);
-				return -1;
-			}
+	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED)
+		if (slbt_mkdir(ectx->ldirname)) {
+			slbt_free_exec_ctx(actx);
+			return -1;
 		}
-	}
 
 	/* non-pic libfoo.a */
 	if (dot && !strcmp(dot,".a"))
