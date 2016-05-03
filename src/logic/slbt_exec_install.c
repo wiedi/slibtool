@@ -264,6 +264,19 @@ static int slbt_exec_install_entry(
 			? -1 : 0;
 	}
 
+	/* legabits? */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_LEGABITS) {
+		*src = (char *)entry->arg;
+		*dst = dest ? 0 : (char *)last->arg;
+
+		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
+			if (slbt_output_install(dctx,ectx))
+				return -1;
+
+		if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
+			return -1;
+	}
+
 	/* *dst: consider: cp libfoo.la /dest/dir/libfoo.la */
 	if ((*dst = dest ? 0 : (char *)last->arg))
 		if ((dot = strrchr(last->arg,'.')))
