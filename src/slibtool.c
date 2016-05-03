@@ -17,7 +17,7 @@
 
 static const char vermsg[] = "%s%s%s (git://midipix.org/slibtool): "
 			     "version %s%d.%d.%d%s.\n"
-			     "[commit reference: %s%s%s]\n";
+			     "%s%s%s%s%s\n";
 
 static const char * const slbt_ver_color[6] = {
 		"\x1b[1m\x1b[35m","\x1b[0m",
@@ -35,15 +35,19 @@ static ssize_t slibtool_version(struct slbt_driver_ctx * dctx)
 {
 	const struct slbt_source_version * verinfo;
 	const char * const * verclr;
+	bool gitver;
 
 	verinfo = slbt_source_version();
 	verclr  = isatty(STDOUT_FILENO) ? slbt_ver_color : slbt_ver_plain;
+	gitver  = strcmp(verinfo->commit,"unknown");
 
 	return fprintf(stdout,vermsg,
 			verclr[0],dctx->program,verclr[1],
 			verclr[2],verinfo->major,verinfo->minor,
 			verinfo->revision,verclr[3],
-			verclr[4],verinfo->commit,verclr[5]);
+			gitver ? "[commit reference: " : "",
+			verclr[4],gitver ? verinfo->commit : "",
+			verclr[5],gitver ? "]" : "");
 }
 
 static void slibtool_perform_driver_actions(struct slbt_driver_ctx * dctx)
