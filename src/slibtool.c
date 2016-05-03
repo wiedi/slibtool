@@ -137,6 +137,14 @@ int slibtool_main(int argc, char ** argv, char ** envp)
 		if ((program[8] == '-') || (program[8] == '.'))
 			flags |= SLBT_DRIVER_DEBUG;
 
+	/* legabits */
+	if (!(strcmp(program,"clibtool")))
+		flags |= SLBT_DRIVER_LEGABITS;
+
+	else if (!(strncmp(program,"clibtool",8)))
+		if ((program[8] == '-') || (program[8] == '.'))
+			flags |= SLBT_DRIVER_LEGABITS;
+
 	/* driver context */
 	if ((ret = slbt_get_driver_ctx(argv,envp,flags,&dctx)))
 		return (ret == SLBT_USAGE) ? !--argc : 2;
