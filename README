@@ -76,6 +76,25 @@ While `slibtool` aims to be compatible with all common usages of libtool at the
 build system level, there exist several differences at the implementation level
 that should be noted.
 
+- `.la wrappers` are always generated, but by default are never installed;
+  `.la wrappers` contain key information that is provided to libtool when
+  generating a shared library or static archive, and which is needed when
+  passing the archive or library as an input argument in .la form to the
+  compiler driver in subsequent link steps. Since `slibtool` is entirely
+  independent of the above wrappers with respect to its own functionality,
+  and given its announced goal to remain compatible with the script-based
+  libtool as much as possible, `slibtool`'s behavior is to always produce
+  `.la wrappers` on the one hand, yet fully ignore their content on the
+  other.
+
+  Despite their internal nature, installed .la wrappers are often [ab]used
+  in strange and mysterious ways by distro-related tools other than libtool
+  itself. For the sake of distributions that depend on the aforementioned
+  wrappers, slibtool comes with three special symlinks named `clibtool`,
+  `clibtool-shared`, and `clibtool-static`, respectively. The `'c'` in
+  `clibtool` stands for `compatible`, and accordingly indicates an end-user's
+  preference towards perfect emulation of legacy behavior.
+
 - `-rpath` argument values are passed to the compiler and linker as needed only;
   `-rpath` is often [mis]used by libtool to add redundant paths to a program's
   linker search path. When using slibtool, `-rpath` argument values are only
