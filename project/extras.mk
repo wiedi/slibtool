@@ -7,7 +7,6 @@ CFLAGS_MACHINE		:= -DSLBT_MACHINE=\"$(shell $(CC) $(CFLAGS) -dumpmachine)\"
 src/driver/slbt_driver_ctx.o:	CFLAGS += $(CFLAGS_MACHINE)
 src/driver/slbt_driver_ctx.lo:	CFLAGS += $(CFLAGS_MACHINE)
 
-install-app-extras:	app
 install-app-extras:	DBGNAME  = dlibtool
 install-app-extras:	LEGABITS = clibtool
 
