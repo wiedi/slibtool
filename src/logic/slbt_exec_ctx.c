@@ -49,6 +49,7 @@ static char * slbt_source_file(char ** argv)
 					|| (!(strcmp(ch,"asm")))
 					|| (!(strcmp(ch,"c")))
 					|| (!(strcmp(ch,"cc")))
+					|| (!(strcmp(ch,"cpp")))
 					|| (!(strcmp(ch,"cxx"))))
 				return *parg;
 	return 0;
