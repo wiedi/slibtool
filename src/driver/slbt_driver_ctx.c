@@ -884,6 +884,8 @@ int slbt_get_driver_ctx(
 					else
 						cctx.drvflags &= ~(uint64_t)SLBT_DRIVER_LEGABITS;
 
+					break;
+
 				case TAG_WARNINGS:
 					if (!strcmp("all",entry->arg))
 						cctx.warnings = SLBT_WARNING_LEVEL_ALL;
