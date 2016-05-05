@@ -346,9 +346,21 @@ static int slbt_exec_install_entry(
 	if (!fexe && dot && !strcmp(dot,".lai"))
 		dot[3] = 0;
 
-	/* .la ? */
-	if (!fexe && (!dot || strcmp(dot,".la"))) {
-		*src = (char *)entry->arg;
+	/* srcfile */
+	if (strlen(entry->arg) + strlen(".libs/") >= (PATH_MAX-1))
+		return -1;
+
+	strcpy(lasource,entry->arg);
+
+	if ((slash = strrchr(lasource,'/'))) {
+		*slash++ = 0;
+		sprintf(srcfile,"%s/.libs/%s",lasource,slash);
+	} else
+		sprintf(srcfile,".libs/%s",lasource);
+
+	/* executable? ordinary file? */
+	if (fexe || !dot || strcmp(dot,".la")) {
+		*src = fexe ? srcfile : (char *)entry->arg;
 		*dst = dest ? 0 : (char *)last->arg;
 
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
@@ -369,30 +381,6 @@ static int slbt_exec_install_entry(
 		if ((dot = strrchr(last->arg,'.')))
 			if (!(strcmp(dot,".la")))
 				*dst = dstdir;
-
-	/* srcfile */
-	if (strlen(entry->arg) + strlen(".libs/") >= (PATH_MAX-1))
-		return -1;
-
-	strcpy(lasource,entry->arg);
-
-	if ((slash = strrchr(lasource,'/'))) {
-		*slash++ = 0;
-		sprintf(srcfile,"%s/.libs/%s",lasource,slash);
-	} else
-		sprintf(srcfile,".libs/%s",lasource);
-
-	/* executable? */
-	if (fexe) {
-		*src = srcfile;
-
-		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
-			if (slbt_output_install(dctx,ectx))
-				return -1;
-
-		return (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode)
-			? -1 : 0;
-	}
 
 	/* libfoo.a */
 	dot = strrchr(srcfile,'.');
