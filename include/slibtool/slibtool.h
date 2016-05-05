@@ -190,17 +190,17 @@ struct slbt_common_ctx {
 	enum slbt_mode			mode;
 	enum slbt_tag			tag;
 	enum slbt_warning_level		warnings;
+	char **				cargv;
+	char **				targv;
+	char *				libname;
 	const char *			target;
 	const char *			output;
 	const char *			shrext;
-	char *				libname;
 	const char *			rpath;
 	const char *			release;
 	const char *			symfile;
 	const char *			regex;
 	const char *			user;
-	char **				targv;
-	char **				cargv;
 };
 
 struct slbt_driver_ctx {
