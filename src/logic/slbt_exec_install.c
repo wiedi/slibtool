@@ -211,6 +211,101 @@ static int slbt_exec_install_import_libraries(
 	return 0;
 }
 
+static int slbt_exec_install_library_wrapper(
+	const struct slbt_driver_ctx *	dctx,
+	struct slbt_exec_ctx *		ectx,
+	struct argv_entry *		entry,
+	char *				dstdir)
+{
+	int		ret;
+	FILE *		fsrc;
+	FILE *		fdst;
+	const char *	base;
+	char *		cfgline;
+	char *		srcline;
+	char *		dstline;
+	char		clainame[PATH_MAX];
+	char		instname[PATH_MAX];
+	char		cfgbuf  [PATH_MAX*4];
+	struct stat	st;
+
+	/* base libfoo.la */
+	if ((base = strrchr(entry->arg,'/')))
+		base++;
+	else
+		base = entry->arg;
+
+	/* /dstdir/libfoo.la */
+	if ((size_t)snprintf(instname,sizeof(instname),"%s/%s",
+			dstdir,base) >= sizeof(instname))
+		return -1;
+
+	/* libfoo.la.slibtool.install */
+	if ((size_t)snprintf(clainame,sizeof(clainame),"%s.slibtool.install",
+			entry->arg) >= sizeof(clainame))
+		return -1;
+
+	/* fdst (libfoo.la.slibtool.install, build directory) */
+	if (!(fdst = fopen(clainame,"w")))
+		return -1;
+
+	/* fsrc (libfoo.la, build directory) */
+	if ((stat(entry->arg,&st))) {
+		fclose(fdst);
+		return -1;
+	}
+
+	if (!(fsrc = fopen(entry->arg,"r"))) {
+		fclose(fdst);
+		return -1;
+	}
+
+	if ((size_t)st.st_size < sizeof(cfgbuf))
+		srcline = cfgbuf;
+	else if (!(srcline = malloc(st.st_size+1))) {
+		fclose(fdst);
+		fclose(fsrc);
+		return -1;
+	}
+
+	/* copy config, install=no --> install=yes */
+	cfgline = fgets(srcline,st.st_size+1,fsrc);
+	ret     = 0;
+
+	while (cfgline && (ret == 0)) {
+		dstline = !(strcmp(srcline,"installed=no\n"))
+			? "installed=yes\n"
+			: srcline;
+
+		if (fprintf(fdst,"%s",dstline) < 0)
+			ret = -1;
+		else
+			cfgline = fgets(srcline,st.st_size+1,fsrc);
+	}
+
+	/* free, flush, verify */
+	if (srcline != cfgbuf)
+		free(srcline);
+
+	if (ret) {
+		fclose(fdst);
+		fclose(fsrc);
+	} else {
+		fflush(fdst);
+		ret = ferror(fdst) ? -1 : 0;
+		fclose(fdst);
+
+		ret = ferror(fsrc) ? -1 : ret;
+		fclose(fsrc);
+	}
+
+	/* cp libfoo.la.slibtool.instal /dstdir/libfoo.la */
+	if (slbt_copy_file(dctx,ectx,clainame,instname))
+		return -1;
+
+	return 0;
+}
+
 static int slbt_exec_install_entry(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *		ectx,
@@ -265,17 +360,9 @@ static int slbt_exec_install_entry(
 	}
 
 	/* legabits? */
-	if (dctx->cctx->drvflags & SLBT_DRIVER_LEGABITS) {
-		*src = (char *)entry->arg;
-		*dst = dest ? 0 : (char *)last->arg;
-
-		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
-			if (slbt_output_install(dctx,ectx))
-				return -1;
-
-		if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
+	if (dctx->cctx->drvflags & SLBT_DRIVER_LEGABITS)
+		if (slbt_exec_install_library_wrapper(dctx,ectx,entry,dstdir))
 			return -1;
-	}
 
 	/* *dst: consider: cp libfoo.la /dest/dir/libfoo.la */
 	if ((*dst = dest ? 0 : (char *)last->arg))
