@@ -892,11 +892,16 @@ static int slbt_exec_link_create_executable(
 	ectx->argv    = depsmeta.altv;
 	ectx->program = depsmeta.altv[0];
 
+	/* executable wrapper symlink */
+	if ((size_t)snprintf(wraplnk,sizeof(wraplnk),"%s.exe.wrapper",
+			dctx->cctx->output) >= sizeof(wraplnk))
+		return slbt_exec_link_exit(&depsmeta,-1);
+
 	/* executable wrapper: base name */
-	if ((base = strrchr(dctx->cctx->output,'/')))
+	if ((base = strrchr(wraplnk,'/')))
 		base++;
 	else
-		base = wrapper;
+		base = wraplnk;
 
 	/* executable wrapper: footer */
 	fabspath = (exefilename[0] == '/');
@@ -904,7 +909,7 @@ static int slbt_exec_link_create_executable(
 	if (fprintf(ectx->fwrapper,
 			"DL_PATH=\"$DL_PATH$LCOLON$%s\"\n\n"
 			"export %s=$DL_PATH\n\n"
-			"if [ `basename \"$0\"` = \"%s.exe.wrapper\" ]; then\n"
+			"if [ `basename \"$0\"` = \"%s\" ]; then\n"
 			"\tprogram=\"$1\"; shift\n"
 			"\texec \"$program\" \"$@\"\n"
 			"fi\n\n"
@@ -928,10 +933,6 @@ static int slbt_exec_link_create_executable(
 	/* executable wrapper: finalize */
 	fclose(ectx->fwrapper);
 	ectx->fwrapper = 0;
-
-	if ((size_t)snprintf(wraplnk,sizeof(wraplnk),"%s.exe.wrapper",
-			dctx->cctx->output) >= sizeof(wraplnk))
-		return slbt_exec_link_exit(&depsmeta,-1);
 
 	if (slbt_create_symlink(
 			dctx,ectx,
