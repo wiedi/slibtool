@@ -1,4 +1,4 @@
-v0.5.1:
+0.5.1:
 
 This patch release includes several small fixes, as well as the addition of
 an optional (opt-in at runtime) yet important compatibility feature, namely
@@ -10,7 +10,7 @@ the installation of .la wrappers. Changes in this release include:
 - build system: removed the endian.h test.
 - build system: proper use of any-os.mk.
 
-v0.5.0:
+0.5.0:
 
 This is the first tagged release of slibtool. It is the result of two months of
 intensive development, and follows rigorous testing on several systems. As of
