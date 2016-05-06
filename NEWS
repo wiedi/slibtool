@@ -1,3 +1,17 @@
+0.5.2:
+
+This patch release includes several fixes of bugs that were discovered while
+testing slibtool as the primary libtool in a pkgsrc comprehensive build. In
+addition, the release includes several improvements to slibtool's own build
+system.
+
+- link mode: legabits: generate a perfectly compatible wrapper.
+- install mode: legabits: install a perfectly compatible wrapper.
+- project: by default, slibtool is now an application-only package.
+- build system: added support of --disable-shared and --disable-static.
+- build system: added support of --all-shared and --all-static.
+- build system: properly handle user inclusion of -static in LDFLAGS.
+
 0.5.1:
 
 This patch release includes several small fixes, as well as the addition of
