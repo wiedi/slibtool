@@ -1065,11 +1065,10 @@ int slbt_exec_link(
 	dot    = strrchr(output,'.');
 
 	/* .libs directory */
-	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED)
-		if (slbt_mkdir(ectx->ldirname)) {
-			slbt_free_exec_ctx(actx);
-			return -1;
-		}
+	if (slbt_mkdir(ectx->ldirname)) {
+		slbt_free_exec_ctx(actx);
+		return -1;
+	}
 
 	/* non-pic libfoo.a */
 	if (dot && !strcmp(dot,".a"))
