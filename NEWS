@@ -1,3 +1,15 @@
+0.5.3:
+
+This patch release includes a few minor fixes and several improvements, all
+related to slibtool's own build system.
+
+- build system: app.tag: avoid unconditional step execution.
+- build system: configure: added --strict, --ccstrict, --ldstrict support.
+- build system: Makefile: added the .conf convenience target.
+- build system: Makefile: added the .display_cc convenience target.
+- build system: Makefile: added the -display_cflags convenience target.
+- build system: Makefile: added custom header installation support.
+
 0.5.2:
 
 This patch release includes several fixes of bugs that were discovered while
