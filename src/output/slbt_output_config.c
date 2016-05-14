@@ -92,5 +92,5 @@ int slbt_output_config(const struct slbt_driver_ctx * dctx)
 	if (slbt_output_config_line("dlltool",cctx->host.dlltool,cctx->cfgmeta.dlltool,midwidth))
 		return -1;
 
-	return 0;
+	return fflush(stdout);
 }

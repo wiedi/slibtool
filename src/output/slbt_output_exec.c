@@ -54,7 +54,7 @@ static int slbt_output_exec_annotated(
 	if (fputc('\n',stdout) < 0)
 		return -1;
 
-	return 0;
+	return fflush(stdout);
 }
 
 static int slbt_output_exec_plain(
@@ -74,7 +74,7 @@ static int slbt_output_exec_plain(
 	if (fputc('\n',stdout) < 0)
 		return -1;
 
-	return 0;
+	return fflush(stdout);
 }
 
 int slbt_output_exec(
