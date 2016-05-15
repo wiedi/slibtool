@@ -51,7 +51,7 @@ static const char*ldrpath_elf[] = {
 	"/usr/lib",
 	"/usr/lib64",
 	"/usr/local/lib",
-	"usr/local/lib64",
+	"/usr/local/lib64",
 	0};
 
 static const char aclr_reset [] = "\x1b[0m";
