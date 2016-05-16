@@ -1,3 +1,15 @@
+0.5.4:
+
+This patch release includes a few fixes to the program logic and output,
+as well as several improvements in slibtool's own build system.
+
+- link mode: always create the .libs directory.
+- output: flush stdout upon return from output functions.
+- build system: remove generic dependency of object files on version.tag.
+- build system: moved core definition files to a designated folder.
+- build system: PE targets: handle subsystem setting in pe.mk.
+- build system: added --avoid-version support.
+
 0.5.3:
 
 This patch release includes a few minor fixes and several improvements, all
