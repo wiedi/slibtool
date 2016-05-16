@@ -4,6 +4,9 @@ CFLAGS_APP_ATTR		+= -DSLBT_APP
 
 CFLAGS_MACHINE		:= -DSLBT_MACHINE=\"$(shell $(CC) $(CFLAGS) -dumpmachine)\"
 
+src/driver/slbt_driver_ctx.o:	version.tag
+src/driver/slbt_driver_ctx.lo:	version.tag
+
 src/driver/slbt_driver_ctx.o:	CFLAGS += $(CFLAGS_MACHINE)
 src/driver/slbt_driver_ctx.lo:	CFLAGS += $(CFLAGS_MACHINE)
 
