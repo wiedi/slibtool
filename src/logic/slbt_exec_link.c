@@ -1286,7 +1286,7 @@ int slbt_exec_link(
 		"","",
 
 		/* libdir */
-		dctx->cctx->rpath);
+		dctx->cctx->rpath ? dctx->cctx->rpath : "");
 
 	/* wrapper symlink */
 	if (ret > 0)
