@@ -243,6 +243,7 @@ static int slbt_exec_link_adjust_argument_vector(
 	char *	mark;
 	char *	darg;
 	char *	dot;
+	char *	dep;
 	FILE *	fdeps;
 	char *	dpath;
 	bool	freqd;
@@ -369,13 +370,20 @@ static int slbt_exec_link_adjust_argument_vector(
 		}
 
 		if (dpath) {
-			*aarg = darg;
+			if (!stat(dpath,&st) && (fdeps = fopen(dpath,"r"))) {
+				dep   = fgets(darg,st.st_size+1,fdeps);
+				*aarg = darg;
 
-			if ((fdeps = fopen(dpath,"r"))) {
-				while (fscanf(fdeps,"%s\n",darg) == 1) {
+				for (; dep; ) {
 					*aarg++ = darg;
-					darg   += strlen(darg);
-					darg++;
+					darg   += strlen(dep);
+
+					if (*--darg == '\n')
+						*darg = 0;
+					else
+						darg++;
+
+					dep = fgets(darg,st.st_size+1,fdeps);
 				}
 
 				if (ferror(fdeps)) {
