@@ -86,6 +86,7 @@ static int slbt_get_deps_meta(
 	int		ret;
 	FILE *		fdeps;
 	struct stat	st;
+	char *		deplib;
 	char		depfile[4*PATH_MAX];
 	char *		deplibs = depfile;
 
@@ -122,8 +123,10 @@ static int slbt_get_deps_meta(
 	depsmeta->infolen += st.st_size;
 	depsmeta->infolen++;
 
-	while (fscanf(fdeps,"%s\n",deplibs) == 1)
+	for (deplib=fgets(deplibs,st.st_size+1,fdeps); deplib; ) {
 		depsmeta->depscnt++;
+		deplib = fgets(deplibs,st.st_size+1,fdeps);
+	}
 
 	if (deplibs != depfile)
 		free(deplibs);
