@@ -378,8 +378,8 @@ static int slbt_exec_link_adjust_argument_vector(
 					*aarg++ = darg;
 					darg   += strlen(dep);
 
-					if (*--darg == '\n')
-						*darg = 0;
+					if (darg[-1] == '\n')
+						darg[-1] = 0;
 					else
 						darg++;
 
