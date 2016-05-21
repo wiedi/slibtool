@@ -495,11 +495,15 @@ static int slbt_exec_link_create_dep_file(
 				return -1;
 
 			for (deplib=fgets(deplibs,st.st_size+1,fdeps); deplib; ) {
-				if (fprintf(ectx->fdeps,"%s",deplib) < 0)
+				if (fprintf(ectx->fdeps,"%s",deplib) < 0) {
+					fclose(fdeps);
 					return -1;
+				}
 
 				deplib = fgets(deplibs,st.st_size+1,fdeps);
 			}
+
+			fclose(fdeps);
 		}
 
 		if (plib)
