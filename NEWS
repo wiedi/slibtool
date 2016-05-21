@@ -1,3 +1,13 @@
+0.5.5:
+
+This patch release contains a couple of important fixed to program logic,
+and a few minor improvements in slibtool's own build system.
+
+- link mode: support over-linking for an .la wrapper linker input argument.
+- execute mode: properly handle the current working directory.
+- build system: added support for [C|LD]FLAGS_LAST and [C|LD]FLAGS_ONCE.
+- build system: avoid side effects on the build system due to git-status.
+
 0.5.4:
 
 This patch release includes a few fixes to the program logic and output,
