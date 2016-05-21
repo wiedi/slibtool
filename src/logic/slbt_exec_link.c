@@ -430,7 +430,14 @@ static int slbt_exec_link_create_dep_file(
 	char **	parg;
 	char *	popt;
 	char *	plib;
+	char *	mark;
+	char *	base;
+	size_t	size;
+	FILE *	fdeps;
+	char *	deplib;
+	char	deplibs[PATH_MAX];
 	char	depfile[PATH_MAX];
+	struct  stat st;
 
 	if (ectx->fdeps)
 		fclose(ectx->fdeps);
@@ -459,6 +466,40 @@ static int slbt_exec_link_create_dep_file(
 		} else if (!strncmp(*parg,"--library=",10)) {
 			popt = *parg;
 			plib = popt + 10;
+		} else if ((popt = strrchr(*parg,'.')) && !strcmp(popt,".la")) {
+			/* import dependency list */
+			if ((base = strrchr(*parg,'/')))
+				base++;
+			else
+				base = *parg;
+
+			strcpy(depfile,*parg);
+			mark = depfile + (base - *parg);
+			size = sizeof(depfile) - (base - *parg);
+
+			if ((size_t)snprintf(mark,size,".libs/%s",base)
+					>= size)
+				return -1;
+
+			mark = strrchr(mark,'.');
+			size = sizeof(depfile) - (mark - depfile);
+
+			if ((size_t)snprintf(mark,size,".a.slibtool.deps")
+					>= size)
+				return -1;
+
+			if (stat(depfile,&st))
+				return -1;
+
+			if (!(fdeps = fopen(depfile,"r")))
+				return -1;
+
+			for (deplib=fgets(deplibs,st.st_size+1,fdeps); deplib; ) {
+				if (fprintf(ectx->fdeps,"%s",deplib) < 0)
+					return -1;
+
+				deplib = fgets(deplibs,st.st_size+1,fdeps);
+			}
 		}
 
 		if (plib)
