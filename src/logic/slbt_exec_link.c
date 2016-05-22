@@ -124,7 +124,11 @@ static int slbt_get_deps_meta(
 	depsmeta->infolen += st.st_size;
 	depsmeta->infolen++;
 
-	for (deplib=fgets(deplibs,st.st_size+1,fdeps); deplib; ) {
+	deplib = st.st_size
+		? fgets(deplibs,st.st_size+1,fdeps)
+		: 0;
+
+	for (; deplib; ) {
 		depsmeta->depscnt++;
 		deplib = fgets(deplibs,st.st_size+1,fdeps);
 	}
@@ -372,8 +376,9 @@ static int slbt_exec_link_adjust_argument_vector(
 
 		if (dpath) {
 			if (!stat(dpath,&st) && (fdeps = fopen(dpath,"r"))) {
-				dep   = fgets(darg,st.st_size+1,fdeps);
-				*aarg = darg;
+				dep = st.st_size
+					? fgets(darg,st.st_size+1,fdeps)
+					: 0;
 
 				for (; dep; ) {
 					*aarg++ = darg;
@@ -495,7 +500,11 @@ static int slbt_exec_link_create_dep_file(
 			if (!(fdeps = fopen(depfile,"r")))
 				return -1;
 
-			for (deplib=fgets(deplibs,st.st_size+1,fdeps); deplib; ) {
+			deplib = st.st_size
+				? fgets(deplibs,st.st_size+1,fdeps)
+				: 0;
+
+			for (; deplib; ) {
 				if (fprintf(ectx->fdeps,"%s",deplib) < 0) {
 					fclose(fdeps);
 					return -1;
