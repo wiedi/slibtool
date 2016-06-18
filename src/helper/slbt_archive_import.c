@@ -21,18 +21,25 @@ static char * slbt_mri_argument(
 {
 	int	i;
 	char *	lnk;
+	char *	target;
 	char 	mricwd[PATH_MAX];
-	char 	target[PATH_MAX];
+	char 	dstbuf[PATH_MAX];
 
 	if ((!(strchr(arg,'+'))) && (!(strchr(arg,'-'))))
 		return arg;
 
-	if (!(getcwd(mricwd,sizeof(mricwd))))
-		return 0;
+	if (arg[0] == '/')
+		target = arg;
+	else {
+		if (!(getcwd(mricwd,sizeof(mricwd))))
+			return 0;
 
-	if ((size_t)snprintf(target,sizeof(target),"%s/%s",
-			mricwd,arg) >= sizeof(target))
-		return 0;
+		if ((size_t)snprintf(dstbuf,sizeof(dstbuf),"%s/%s",
+				mricwd,arg) >= sizeof(dstbuf))
+			return 0;
+
+		target = dstbuf;
+	}
 
 	for (i=0,lnk=0; i<1024 && !lnk; i++) {
 		if (!(tmpnam(buf)))
