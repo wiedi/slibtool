@@ -192,6 +192,7 @@ static int slbt_split_argv(
 	struct argv_entry *		entry;
 	struct argv_entry *		mode;
 	struct argv_entry *		config;
+	struct argv_entry *		finish;
 	const struct argv_option *	option;
 	const struct argv_option *	options = slbt_default_options;
 	struct argv_ctx			ctx = {ARGV_VERBOSITY_NONE,
@@ -216,15 +217,6 @@ static int slbt_split_argv(
 		return -1;
 	}
 
-	/* missing compiler? */
-	if (!ctx.unitidx) {
-		if (flags & SLBT_DRIVER_VERBOSITY_ERRORS)
-			fprintf(stderr,
-				"%s: error: <compiler> is missing.\n",
-				program);
-		return -1;
-	}
-
 	/* obtain slibtool's own arguments */
 	compiler = argv[ctx.unitidx];
 	argv[ctx.unitidx] = 0;
@@ -232,19 +224,30 @@ static int slbt_split_argv(
 	meta = argv_get(argv,options,ARGV_VERBOSITY_NONE);
 	argv[ctx.unitidx] = compiler;
 
-	/* missing both --mode and --config? */
-	for (mode=0, config=0, entry=meta->entries; entry->fopt; entry++)
+	/* missing all of --mode, --config, and --finish? */
+	for (mode=0, config=0, finish=0, entry=meta->entries; entry->fopt; entry++)
 		if (entry->tag == TAG_MODE)
 			mode = entry;
 		else if (entry->tag == TAG_CONFIG)
 			config = entry;
+		else if (entry->tag == TAG_FINISH)
+			finish = entry;
 
 	argv_free(meta);
 
-	if (!mode && !config) {
+	if (!mode && !config && !finish) {
 		fprintf(stderr,
 			"%s: error: --mode must be specified.\n",
 			program);
+		return -1;
+	}
+
+	/* missing compiler? */
+	if (!ctx.unitidx && !finish) {
+		if (flags & SLBT_DRIVER_VERBOSITY_ERRORS)
+			fprintf(stderr,
+				"%s: error: <compiler> is missing.\n",
+				program);
 		return -1;
 	}
 
@@ -839,6 +842,10 @@ int slbt_get_driver_ctx(
 
 					else if (!strcmp("uninstall",entry->arg))
 						cctx.mode = SLBT_MODE_UNINSTALL;
+					break;
+
+				case TAG_FINISH:
+					cctx.mode = SLBT_MODE_FINISH;
 					break;
 
 				case TAG_DRY_RUN:

@@ -22,6 +22,9 @@ const struct argv_option slbt_default_options[] = {
 				"their addition is expected before "
 				"the next release"},
 
+	{"finish",		0,TAG_FINISH,ARGV_OPTARG_NONE,0,0,0,
+				"same as --mode=finish"},
+
 	{"dry-run",		'n',TAG_DRY_RUN,ARGV_OPTARG_NONE,0,0,0,
 				"do not spawn any processes, "
 				"do not make any changes to the file system"},
