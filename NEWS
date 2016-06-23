@@ -1,3 +1,13 @@
+0.5.6:
+
+This patch release contains a few important fixed to program logic,
+as well as one addition to slibtool's own build system.
+
+- driver: added --finish support.
+- link mode: properly handle empty dependency files.
+- link mode: properly handle absolute path when joining archives.
+- build system: support project-specific overrides of OS and toolchain defs.
+
 0.5.5:
 
 This patch release contains a couple of important fixed to program logic,
