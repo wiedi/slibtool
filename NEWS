@@ -1,3 +1,13 @@
+0.5.7:
+
+This patch release contains one future-looking change in the project's
+design, as well as a few improvements in slibtool's own build system.
+
+- utility: added slbt_main() as a public interface, refactored accordingly.
+- utility: improved box integration, removed need for build-time macro.
+- build system: warn only upon failure to detect native size of pointer.
+- build system: add a test for legacy gcc versions.
+
 0.5.6:
 
 This patch release contains a few important fixed to program logic,
