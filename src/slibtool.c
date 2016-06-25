@@ -31,7 +31,7 @@ static const char * const slbt_ver_plain[6] = {
 		"",""
 };
 
-static ssize_t slibtool_version(struct slbt_driver_ctx * dctx)
+static ssize_t slbt_version(struct slbt_driver_ctx * dctx)
 {
 	const struct slbt_source_version * verinfo;
 	const char * const * verclr;
@@ -50,7 +50,7 @@ static ssize_t slibtool_version(struct slbt_driver_ctx * dctx)
 			verclr[5],gitver ? "]" : "");
 }
 
-static void slibtool_perform_driver_actions(struct slbt_driver_ctx * dctx)
+static void slbt_perform_driver_actions(struct slbt_driver_ctx * dctx)
 {
 	if (dctx->cctx->drvflags & SLBT_DRIVER_CONFIG)
 		dctx->nerrors += (slbt_output_config(dctx) < 0);
@@ -68,12 +68,12 @@ static void slibtool_perform_driver_actions(struct slbt_driver_ctx * dctx)
 		dctx->nerrors += (slbt_exec_link(dctx,0) < 0);
 }
 
-static void slibtool_perform_unit_actions(struct slbt_unit_ctx * uctx)
+static void slbt_perform_unit_actions(struct slbt_unit_ctx * uctx)
 {
 	(void)uctx;
 }
 
-static int slibtool_exit(struct slbt_driver_ctx * dctx, int nerrors)
+static int slbt_exit(struct slbt_driver_ctx * dctx, int nerrors)
 {
 	if (nerrors && errno)
 		strerror(errno);
@@ -82,7 +82,7 @@ static int slibtool_exit(struct slbt_driver_ctx * dctx, int nerrors)
 	return nerrors ? 2 : 0;
 }
 
-int slibtool_main(int argc, char ** argv, char ** envp)
+int slbt_main(int argc, char ** argv, char ** envp)
 {
 	int				ret;
 	uint64_t			flags;
@@ -105,9 +105,9 @@ int slibtool_main(int argc, char ** argv, char ** envp)
 		sargv[4] = 0;
 
 		return (slbt_get_driver_ctx(sargv,envp,SLBT_DRIVER_FLAGS,&dctx))
-			? 2 : (slibtool_version(dctx) < 0)
-				? slibtool_exit(dctx,2)
-				: slibtool_exit(dctx,0);
+			? 2 : (slbt_version(dctx) < 0)
+				? slbt_exit(dctx,2)
+				: slbt_exit(dctx,0);
 	}
 
 	/* program */
@@ -154,28 +154,28 @@ int slibtool_main(int argc, char ** argv, char ** envp)
 		return (ret == SLBT_USAGE) ? !--argc : 2;
 
 	if (dctx->cctx->drvflags & SLBT_DRIVER_VERSION)
-		if ((slibtool_version(dctx)) < 0)
-			return slibtool_exit(dctx,2);
+		if ((slbt_version(dctx)) < 0)
+			return slbt_exit(dctx,2);
 
-	slibtool_perform_driver_actions(dctx);
+	slbt_perform_driver_actions(dctx);
 	ret += dctx->nerrors;
 
 	for (unit=dctx->units; *unit; unit++) {
 		if (!(slbt_get_unit_ctx(dctx,*unit,&uctx))) {
-			slibtool_perform_unit_actions(uctx);
+			slbt_perform_unit_actions(uctx);
 			ret += uctx->nerrors;
 			slbt_free_unit_ctx(uctx);
 		}
 	}
 
-	return slibtool_exit(dctx,ret);
+	return slbt_exit(dctx,ret);
 }
 
 #ifndef SLIBTOOL_IN_A_BOX
 
 int main(int argc, char ** argv, char ** envp)
 {
-	return slibtool_main(argc,argv,envp);
+	return slbt_main(argc,argv,envp);
 }
 
 #endif

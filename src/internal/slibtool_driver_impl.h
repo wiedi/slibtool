@@ -8,7 +8,6 @@
 #include <slibtool/slibtool.h>
 #include "argv/argv.h"
 
-extern int slibtool_main(int, char **, char **);
 extern const struct argv_option slbt_default_options[];
 
 enum app_tags {
