@@ -2,6 +2,7 @@ COMMON_SRCS = \
 	src/internal/slibtool_libmeta_impl.c \
 	src/internal/slibtool_objmeta_impl.c \
 	src/internal/slibtool_symlink_impl.c \
+	src/driver/slbt_amain.c \
 	src/driver/slbt_driver_ctx.c \
 	src/driver/slbt_unit_ctx.c \
 	src/helper/slbt_archive_import.c \
