@@ -244,6 +244,7 @@ static int slbt_exec_link_adjust_argument_vector(
 {
 	char ** carg;
 	char ** aarg;
+	char *	ldir;
 	char *	slash;
 	char *	mark;
 	char *	darg;
@@ -259,6 +260,7 @@ static int slbt_exec_link_adjust_argument_vector(
 	char	rpathlnk[PATH_MAX];
 	bool	fwholearchive = false;
 	struct	stat st;
+	int	fd;
 
 	for (argc=0,carg=ectx->cargv; *carg; carg++)
 		argc++;
@@ -294,7 +296,31 @@ static int slbt_exec_link_adjust_argument_vector(
 		}
 
 		/* argument translation */
-		if (**carg == '-') {
+		mark = *carg;
+
+		if ((mark[0] == '-') && (mark[1] == 'L')) {
+			if (mark[2]) {
+				ldir = &mark[2];
+			} else {
+				*aarg++ = *carg++;
+				ldir    = *carg;
+			}
+
+			mark = ldir + strlen(ldir);
+
+			if (mark[-1] == '/')
+				strcpy(mark,".libs");
+			else
+				strcpy(mark,"/.libs");
+
+			if ((fd = open(ldir,O_DIRECTORY,0)) < 0)
+				*mark = 0;
+			else
+				close(fd);
+
+			*aarg++ = *carg++;
+
+		} else if (**carg == '-') {
 			*aarg++ = *carg++;
 
 		} else if (!(dot = strrchr(*carg,'.'))) {
