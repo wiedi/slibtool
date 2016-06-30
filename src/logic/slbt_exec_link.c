@@ -1262,7 +1262,7 @@ int slbt_exec_link(
 	}
 
 	/* executable */
-	if (!dctx->cctx->rpath && !dctx->cctx->libname) {
+	if (!dctx->cctx->libname) {
 		/* linking: .libs/exefilename */
 		if (slbt_exec_link_create_executable(
 				dctx,ectx,
