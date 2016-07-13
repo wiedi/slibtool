@@ -498,6 +498,8 @@ static int slbt_exec_link_create_dep_file(
 		} else if (!strncmp(*parg,"--library=",10)) {
 			popt = *parg;
 			plib = popt + 10;
+		} else if (!strncmp(*parg,"-f",2)) {
+			(void)0;
 		} else if ((popt = strrchr(*parg,'.')) && !strcmp(popt,".la")) {
 			/* import dependency list */
 			if ((base = strrchr(*parg,'/')))
