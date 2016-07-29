@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include <slibtool/slibtool.h>
 #include "slibtool_driver_impl.h"
 
