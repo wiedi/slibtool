@@ -75,6 +75,10 @@ struct slbt_driver_ctx_impl {
 	char *			libname;
 	char **			targv;
 	char **			cargv;
+	struct slbt_error_info**errinfp;
+	struct slbt_error_info**erricap;
+	struct slbt_error_info *erriptr[64];
+	struct slbt_error_info	erribuf[64];
 };
 
 struct slbt_unit_ctx_impl {
