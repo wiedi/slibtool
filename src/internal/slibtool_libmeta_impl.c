@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <slibtool/slibtool.h>
+#include "slibtool_errinfo_impl.h"
 #include "slibtool_metafile_impl.h"
 
 static int  slbt_create_default_library_wrapper(
@@ -32,7 +33,7 @@ static int  slbt_create_default_library_wrapper(
 
 	/* create */
 	if (!(fout = fopen(dctx->cctx->output,"w")))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	/* version info */
 	current  = 0;
@@ -114,7 +115,8 @@ static int  slbt_create_default_library_wrapper(
 		dctx->cctx->rpath ? dctx->cctx->rpath : "");
 
 	return (ret <= 0) || fclose(fout)
-		? -1 : 0;
+		? SLBT_SYSTEM_ERROR(dctx)
+		: 0;
 }
 
 static int  slbt_create_compatible_library_wrapper(
