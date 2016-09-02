@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+#include "slibtool_errinfo_impl.h"
 #include "slibtool_symlink_impl.h"
 
 #define SLBT_DEV_NULL_FLAGS	(SLBT_DRIVER_ALL_STATIC \
@@ -42,12 +43,12 @@ int slbt_create_symlink(
 
 	if ((size_t)snprintf(atarget,sizeof(atarget),"%s%s",
 			dotdot,slash) >= sizeof(atarget))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* tmplnk */
 	if ((size_t)snprintf(tmplnk,sizeof(tmplnk),"%s.symlink.tmp",
 			lnkname) >= sizeof(tmplnk))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* lnkarg */
 	strcpy(lnkarg,lnkname);
@@ -67,12 +68,12 @@ int slbt_create_symlink(
 		if (dctx->cctx->mode == SLBT_MODE_LINK) {
 			if (slbt_output_link(dctx,ectx)) {
 				ectx->argv = oargv;
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 			}
 		} else {
 			if (slbt_output_install(dctx,ectx)) {
 				ectx->argv = oargv;
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 			}
 		}
 	}
@@ -82,7 +83,9 @@ int slbt_create_symlink(
 
 	/* create symlink */
 	if (symlink(atarget,tmplnk))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
-	return rename(tmplnk,lnkname);
+	return rename(tmplnk,lnkname)
+		? SLBT_SYSTEM_ERROR(dctx)
+		: 0;
 }
