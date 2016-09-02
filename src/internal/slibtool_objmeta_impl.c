@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <slibtool/slibtool.h>
+#include "slibtool_errinfo_impl.h"
 #include "slibtool_metafile_impl.h"
 
 static int  slbt_create_default_object_wrapper(
@@ -17,7 +18,7 @@ static int  slbt_create_default_object_wrapper(
 	const struct slbt_source_version *	verinfo;
 
 	if (!(fout = fopen(ectx->ltobjname,"w")))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	verinfo = slbt_source_version();
 
@@ -41,7 +42,8 @@ static int  slbt_create_default_object_wrapper(
 			: "none");
 
 	return (ret <= 0) || fclose(fout)
-		? -1 : 0;
+		? SLBT_SYSTEM_ERROR(dctx)
+		: 0;
 }
 
 static int  slbt_create_compatible_object_wrapper(
