@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <slibtool/slibtool.h>
+#include "slibtool_errinfo_impl.h"
 
 #define SLBT_ARGV_SPARE_PTRS	16
 
@@ -154,7 +155,7 @@ int  slbt_get_exec_ctx(
 
 	/* alloc */
 	if (!(ictx = slbt_exec_ctx_alloc(dctx)))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* init with guard for later .lo check */
 	ch                = ictx->args + strlen(".lo");
