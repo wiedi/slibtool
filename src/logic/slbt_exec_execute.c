@@ -12,6 +12,7 @@
 
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
+#include "slibtool_errinfo_impl.h"
 
 int  slbt_exec_execute(
 	const struct slbt_driver_ctx *	dctx,
@@ -50,7 +51,7 @@ int  slbt_exec_execute(
 				script)
 			>= sizeof(wrapper)) {
 		slbt_free_exec_ctx(actx);
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 	}
 
 	/* exeref */
@@ -76,11 +77,11 @@ int  slbt_exec_execute(
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_execute(dctx,ectx)) {
 			slbt_free_exec_ctx(actx);
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 		}
 
 	execvp(wrapper,ectx->argv);
 
 	slbt_free_exec_ctx(actx);
-	return -1;
+	return SLBT_SYSTEM_ERROR(dctx);
 }
