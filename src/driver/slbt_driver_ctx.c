@@ -13,6 +13,7 @@
 #include <slibtool/slibtool.h>
 #include "slibtool_version.h"
 #include "slibtool_driver_impl.h"
+#include "slibtool_errinfo_impl.h"
 #include "argv/argv.h"
 
 /* package info */
@@ -1177,11 +1178,11 @@ int  slbt_set_alternate_host(
 	slbt_free_host_params(&ictx->ctx.ahost);
 
 	if (!(ictx->ctx.ahost.host = strdup(host)))
-		return -1;
+		return SLBT_SYSTEM_ERROR(ctx);
 
 	if (!(ictx->ctx.ahost.flavor = strdup(flavor))) {
 		slbt_free_host_params(&ictx->ctx.ahost);
-		return -1;
+		return SLBT_SYSTEM_ERROR(ctx);
 	}
 
 	ictx->ctx.cctx.ahost.host   = ictx->ctx.ahost.host;
@@ -1193,7 +1194,7 @@ int  slbt_set_alternate_host(
 			&ictx->ctx.cctx.ahost,
 			&ictx->ctx.cctx.acfgmeta)) {
 		slbt_free_host_params(&ictx->ctx.ahost);
-		return -1;
+		return SLBT_CUSTOM_ERROR(ctx,0);
 	}
 
 	slbt_init_flavor_settings(
@@ -1205,7 +1206,7 @@ int  slbt_set_alternate_host(
 			&ictx->ctx.cctx,
 			&ictx->ctx.cctx.ahost)) {
 		slbt_free_host_params(&ictx->ctx.ahost);
-		return -1;
+		return SLBT_CUSTOM_ERROR(ctx,0);
 	}
 
 	return 0;
