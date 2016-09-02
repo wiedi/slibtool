@@ -13,6 +13,7 @@
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
 #include "slibtool_mkdir_impl.h"
+#include "slibtool_errinfo_impl.h"
 #include "slibtool_metafile_impl.h"
 
 static int slbt_exec_compile_remove_file(
@@ -29,7 +30,7 @@ static int slbt_exec_compile_remove_file(
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		strerror(errno);
 
-	return -1;
+	return SLBT_SYSTEM_ERROR(dctx);
 }
 
 int  slbt_exec_compile(
@@ -53,13 +54,13 @@ int  slbt_exec_compile(
 
 	/* remove old .lo wrapper */
 	if (slbt_exec_compile_remove_file(dctx,ectx,ectx->ltobjname))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* .libs directory */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_SHARED)
 		if (slbt_mkdir(ectx->ldirname)) {
 			slbt_free_exec_ctx(actx);
-			return -1;
+			return SLBT_SYSTEM_ERROR(dctx);
 		}
 
 	/* compile mode */
@@ -88,13 +89,13 @@ int  slbt_exec_compile(
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT)) {
 			if (slbt_output_compile(dctx,ectx)) {
 				slbt_free_exec_ctx(actx);
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 			}
 		}
 
 		if (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode) {
 			slbt_free_exec_ctx(actx);
-			return -1;
+			return SLBT_SYSTEM_ERROR(dctx);
 		}
 	}
 
@@ -122,18 +123,18 @@ int  slbt_exec_compile(
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT)) {
 			if (slbt_output_compile(dctx,ectx)) {
 				slbt_free_exec_ctx(actx);
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 			}
 		}
 
 		if (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode) {
 			slbt_free_exec_ctx(actx);
-			return -1;
+			return SLBT_SYSTEM_ERROR(dctx);
 		}
 	}
 
 	ret = slbt_create_object_wrapper(dctx,ectx);
 	slbt_free_exec_ctx(actx);
 
-	return ret;
+	return ret ? SLBT_NESTED_ERROR(dctx) : 0;
 }
