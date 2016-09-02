@@ -1,4 +1,5 @@
 COMMON_SRCS = \
+	src/internal/slibtool_errinfo_impl.c \
 	src/internal/slibtool_libmeta_impl.c \
 	src/internal/slibtool_objmeta_impl.c \
 	src/internal/slibtool_symlink_impl.c \
