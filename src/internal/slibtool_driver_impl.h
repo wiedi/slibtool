@@ -84,4 +84,16 @@ struct slbt_unit_ctx_impl {
 	struct slbt_unit_ctx	uctx;
 };
 
+static inline struct slbt_driver_ctx_impl * slbt_get_driver_ictx(const struct slbt_driver_ctx * dctx)
+{
+	uintptr_t addr;
+
+	if (dctx) {
+		addr = (uintptr_t)dctx - offsetof(struct slbt_driver_ctx_impl,ctx);
+		return (struct slbt_driver_ctx_impl *)addr;
+	}
+
+	return 0;
+}
+
 #endif
