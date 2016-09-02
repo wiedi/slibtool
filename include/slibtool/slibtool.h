@@ -66,6 +66,12 @@ extern "C" {
 #define SLBT_DRIVER_ANNOTATE_NEVER	0x20000000
 #define SLBT_DRIVER_ANNOTATE_FULL	0x40000000
 
+/* error flags */
+#define SLBT_ERROR_TOP_LEVEL		0x0001
+#define SLBT_ERROR_NESTED		0x0002
+#define SLBT_ERROR_CHILD		0x0004
+#define SLBT_ERROR_CUSTOM		0x0008
+
 /* execution modes */
 enum slbt_mode {
 	SLBT_MODE_UNKNOWN,
@@ -154,6 +160,15 @@ struct slbt_version_info {
 	const char *			vernumber;
 };
 
+struct slbt_error_info {
+	int				syserror;
+	int				liberror;
+	const char *			function;
+	int				line;
+	unsigned			flags;
+	void *				ctx;
+};
+
 struct slbt_host_params {
 	const char *			host;
 	const char *			flavor;
@@ -208,6 +223,7 @@ struct slbt_driver_ctx {
 	const char *			program;
 	const char *			module;
 	const struct slbt_common_ctx *	cctx;
+	struct slbt_error_info **	errv;
 	void *				any;
 	int				status;
 	int				nerrors;
