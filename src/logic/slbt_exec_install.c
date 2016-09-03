@@ -18,6 +18,7 @@
 #include "slibtool_readlink_impl.h"
 #include "slibtool_spawn_impl.h"
 #include "slibtool_symlink_impl.h"
+#include "slibtool_errinfo_impl.h"
 #include "argv/argv.h"
 
 static int slbt_install_usage(
@@ -41,14 +42,16 @@ static int slbt_install_usage(
 
 static int slbt_exec_install_fail(
 	struct slbt_exec_ctx *	actx,
-	struct argv_meta *	meta)
+	struct argv_meta *	meta,
+	int			ret)
 {
 	argv_free(meta);
 	slbt_free_exec_ctx(actx);
-	return -1;
+	return ret;
 }
 
 static int slbt_exec_install_init_dstdir(
+	const struct slbt_driver_ctx *	dctx,
 	struct argv_entry *	dest,
 	struct argv_entry *	last,
 	char *			dstdir)
@@ -57,13 +60,15 @@ static int slbt_exec_install_init_dstdir(
 	char *		slash;
 	size_t		len;
 
+	(void)dctx;
+
 	if (dest)
 		last = dest;
 
 	/* dstdir: initial string */
 	if ((size_t)snprintf(dstdir,PATH_MAX,"%s",
 			last->arg) >= PATH_MAX)
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* dstdir might end with a slash */
 	len = strlen(dstdir);
@@ -108,26 +113,26 @@ static int slbt_exec_install_import_libraries(
 	/* .libs/libfoo.so.x.y.z */
 	if ((size_t)snprintf(srcbuf,sizeof(srcbuf),"%s",
 			srcdso) >= sizeof(srcbuf))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* (dso is under .libs) */
 	if (!(slash = strrchr(srcbuf,'/')))
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 
 	/* libfoo.so.x.y.z */
 	if ((size_t)snprintf(implib,sizeof(implib),"%s",
 			++slash) >= sizeof(implib)
 				    - strlen(dctx->cctx->settings.impsuffix))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* guard againt an infinitely long version */
 	mark = srcbuf + strlen(srcbuf);
 
 	/* rev */
 	if (!(dot = strrchr(srcbuf,'.')))
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 	else if ((size_t)(mark - dot) > sizeof(rev))
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 	else {
 		strcpy(rev,dot);
 		*dot = 0;
@@ -135,9 +140,9 @@ static int slbt_exec_install_import_libraries(
 
 	/* minor */
 	if (!(dot = strrchr(srcbuf,'.')))
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 	else if ((size_t)(mark - dot) > sizeof(minor))
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 	else {
 		strcpy(minor,dot);
 		*dot = 0;
@@ -145,35 +150,35 @@ static int slbt_exec_install_import_libraries(
 
 	/* major */
 	if (!(dot = strrchr(srcbuf,'.')))
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 	else if ((size_t)(mark - dot) > sizeof(major))
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 	else {
 		strcpy(major,dot);
 		*dot = 0;
 	}
 
 	if (!(dot = strrchr(srcbuf,'.')))
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 
 	/* .libs/libfoo.so.def.host */
 	if ((size_t)snprintf(hostlnk,sizeof(hostlnk),"%s.def.host",
 			srcbuf) >= sizeof(hostlnk))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* libfoo.so.def.{flavor} */
 	if (slbt_readlink(hostlnk,hosttag,sizeof(hosttag)))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	/* host/flabor */
 	if (!(host = strrchr(hosttag,'.')))
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 	else
 		host++;
 
 	/* symlink-based alternate host */
 	if (slbt_set_alternate_host(dctx,host,host))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* .libs/libfoo.x.y.z.lib.a */
 	sprintf(dot,"%s%s%s%s",
@@ -182,7 +187,7 @@ static int slbt_exec_install_import_libraries(
 
 	/* copy: .libs/libfoo.x.y.z.lib.a --> dstdir */
 	if (slbt_copy_file(dctx,ectx,srcbuf,dstdir))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* .libs/libfoo.x.lib.a */
 	sprintf(dot,"%s%s",
@@ -191,7 +196,7 @@ static int slbt_exec_install_import_libraries(
 
 	/* copy: .libs/libfoo.x.lib.a --> dstdir */
 	if (slbt_copy_file(dctx,ectx,srcbuf,dstdir))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* /dstdir/libfoo.lib.a */
 	strcpy(implib,slash);
@@ -199,14 +204,14 @@ static int slbt_exec_install_import_libraries(
 
 	if ((size_t)snprintf(hostlnk,sizeof(hostlnk),"%s/%s",
 			dstdir,slash) >= sizeof(hostlnk))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	if (slbt_create_symlink(
 			dctx,ectx,
 			implib,
 			hostlnk,
 			false))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	return 0;
 }
@@ -238,26 +243,26 @@ static int slbt_exec_install_library_wrapper(
 	/* /dstdir/libfoo.la */
 	if ((size_t)snprintf(instname,sizeof(instname),"%s/%s",
 			dstdir,base) >= sizeof(instname))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* libfoo.la.slibtool.install */
 	if ((size_t)snprintf(clainame,sizeof(clainame),"%s.slibtool.install",
 			entry->arg) >= sizeof(clainame))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* fdst (libfoo.la.slibtool.install, build directory) */
 	if (!(fdst = fopen(clainame,"w")))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	/* fsrc (libfoo.la, build directory) */
 	if ((stat(entry->arg,&st))) {
 		fclose(fdst);
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 	}
 
 	if (!(fsrc = fopen(entry->arg,"r"))) {
 		fclose(fdst);
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 	}
 
 	if ((size_t)st.st_size < sizeof(cfgbuf))
@@ -265,7 +270,7 @@ static int slbt_exec_install_library_wrapper(
 	else if (!(srcline = malloc(st.st_size+1))) {
 		fclose(fdst);
 		fclose(fsrc);
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 	}
 
 	/* copy config, install=no --> install=yes */
@@ -278,7 +283,7 @@ static int slbt_exec_install_library_wrapper(
 			: srcline;
 
 		if (fprintf(fdst,"%s",dstline) < 0)
-			ret = -1;
+			ret = SLBT_SYSTEM_ERROR(dctx);
 		else
 			cfgline = fgets(srcline,st.st_size+1,fsrc);
 	}
@@ -301,7 +306,7 @@ static int slbt_exec_install_library_wrapper(
 
 	/* cp libfoo.la.slibtool.instal /dstdir/libfoo.la */
 	if (slbt_copy_file(dctx,ectx,clainame,instname))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	return 0;
 }
@@ -334,7 +339,7 @@ static int slbt_exec_install_entry(
 	/* executable wrapper? */
 	if ((size_t)snprintf(slnkname,sizeof(slnkname),"%s.exe.wrapper",
 			entry->arg) >= sizeof(slnkname))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	fexe = stat(slnkname,&st)
 		? false
@@ -348,7 +353,7 @@ static int slbt_exec_install_entry(
 
 	/* srcfile */
 	if (strlen(entry->arg) + strlen(".libs/") >= (PATH_MAX-1))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	strcpy(lasource,entry->arg);
 
@@ -365,16 +370,16 @@ static int slbt_exec_install_entry(
 
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 			if (slbt_output_install(dctx,ectx))
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 
 		return (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode)
-			? -1 : 0;
+			? SLBT_SPAWN_ERROR(dctx) : 0;
 	}
 
 	/* legabits? */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_LEGABITS)
 		if (slbt_exec_install_library_wrapper(dctx,ectx,entry,dstdir))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 	/* *dst: consider: cp libfoo.la /dest/dir/libfoo.la */
 	if ((*dst = dest ? 0 : (char *)last->arg))
@@ -389,7 +394,7 @@ static int slbt_exec_install_entry(
 	if (slbt_copy_file(dctx,ectx,
 			srcfile,
 			dest ? (char *)dest->arg : *dst))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* dot/suffix */
 	strcpy(slnkname,srcfile);
@@ -405,7 +410,7 @@ static int slbt_exec_install_entry(
 	/* PE support: does .libs/libfoo.so.def exist? */
 	if ((size_t)snprintf(dstfile,sizeof(dstfile),"%s.def",
 			slnkname) >= sizeof(dstfile))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	fpe = stat(dstfile,&st) ? false : true;
 
@@ -419,12 +424,12 @@ static int slbt_exec_install_entry(
 	if (slbt_readlink(slnkname,target,sizeof(target)) < 0) {
 		/* -avoid-version? */
 		if (stat(slnkname,&st))
-			return -1;
+			return SLBT_SYSTEM_ERROR(dctx);
 
 		/* dstfile */
 		if ((size_t)snprintf(dstfile,sizeof(dstfile),"%s/%s",
 				dstdir,base) >= sizeof(dstfile))
-			return -1;
+			return SLBT_BUFFER_ERROR(dctx);
 
 		/* single spawn, no symlinks */
 		*src = slnkname;
@@ -432,10 +437,10 @@ static int slbt_exec_install_entry(
 
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 			if (slbt_output_install(dctx,ectx))
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 
 		if (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode)
-			return -1;
+			return SLBT_SPAWN_ERROR(dctx);
 
 		return 0;
 	}
@@ -452,7 +457,7 @@ static int slbt_exec_install_entry(
 	if (!dest)
 		if ((size_t)snprintf(dstfile,sizeof(dstfile),"%s/%s",
 				dstdir,target) >= sizeof(dstfile))
-			return -1;
+			return SLBT_BUFFER_ERROR(dctx);
 
 	/* spawn */
 	*src = srcfile;
@@ -460,22 +465,22 @@ static int slbt_exec_install_entry(
 
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_install(dctx,ectx))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 	if (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode)
-		return -1;
+		return SLBT_SPAWN_ERROR(dctx);
 
 	/* destination symlink: dstdir/libfoo.so */
 	if ((size_t)snprintf(dlnkname,sizeof(dlnkname),"%s/%s",
 			dstdir,base) >= sizeof(dlnkname))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* create symlink: libfoo.so --> libfoo.so.x.y.z */
 	if (slbt_create_symlink(
 			dctx,ectx,
 			target,dlnkname,
 			false))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	if (frelease)
 		return 0;
@@ -486,17 +491,17 @@ static int slbt_exec_install_entry(
 	if ((dot = strrchr(slnkname,'.')))
 		*dot = 0;
 	else
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 
 	if ((dot = strrchr(slnkname,'.')))
 		*dot = 0;
 	else
-		return -1;
+		return SLBT_CUSTOM_ERROR(dctx,0);
 
 	/* destination symlink: dstdir/libfoo.so.x */
 	if ((size_t)snprintf(dlnkname,sizeof(dlnkname),"%s/%s",
 			dstdir,slnkname) >= sizeof(dlnkname))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	if (fpe) {
 		/* copy: .libs/libfoo.so.x.y.z --> libfoo.so.x */
@@ -504,21 +509,21 @@ static int slbt_exec_install_entry(
 				dctx,ectx,
 				srcfile,
 				dlnkname))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 		/* import libraries */
 		if (slbt_exec_install_import_libraries(
 				dctx,ectx,
 				srcfile,
 				dstdir))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 	} else {
 		/* create symlink: libfoo.so.x --> libfoo.so.x.y.z */
 		if (slbt_create_symlink(
 				dctx,ectx,
 				target,dlnkname,
 				false))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 	}
 
 	return 0;
@@ -574,7 +579,9 @@ int slbt_exec_install(
 			dctx->cctx->drvflags & SLBT_DRIVER_VERBOSITY_ERRORS
 				? ARGV_VERBOSITY_ERRORS
 				: ARGV_VERBOSITY_NONE)))
-		return slbt_exec_install_fail(actx,meta);
+		return slbt_exec_install_fail(
+			actx,meta,
+			SLBT_CUSTOM_ERROR(dctx,0));
 
 	/* dest, alternate argument vector options */
 	argv = ectx->altv;
@@ -645,8 +652,10 @@ int slbt_exec_install(
 		dst = argv++;
 
 		/* dstdir */
-		if (slbt_exec_install_init_dstdir(dest,last,dstdir))
-			return slbt_exec_install_fail(actx,meta);
+		if (slbt_exec_install_init_dstdir(dctx,dest,last,dstdir))
+			return slbt_exec_install_fail(
+				actx,meta,
+				SLBT_NESTED_ERROR(dctx));
 
 		/* install entries one at a time */
 		for (entry=meta->entries; entry->fopt || entry->arg; entry++)
@@ -656,7 +665,9 @@ int slbt_exec_install(
 						entry,last,
 						dest,dstdir,
 						src,dst))
-					return slbt_exec_install_fail(actx,meta);
+					return slbt_exec_install_fail(
+						actx,meta,
+						SLBT_NESTED_ERROR(dctx));
 	} else {
 		/* using original argument vector */
 		ectx->argv    = ectx->cargv;
@@ -665,10 +676,12 @@ int slbt_exec_install(
 		/* spawn */
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 			if (slbt_output_install(dctx,ectx))
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 
 		if (((ret = slbt_spawn(ectx,true)) < 0) || ectx->exitcode)
-			return slbt_exec_install_fail(actx,meta);
+			return slbt_exec_install_fail(
+				actx,meta,
+				SLBT_SPAWN_ERROR(dctx));
 	}
 
 	argv_free(meta);
