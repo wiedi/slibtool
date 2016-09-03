@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 #include <slibtool/slibtool.h>
+#include "slibtool_errinfo_impl.h"
 
 #ifndef SLBT_TAB_WIDTH
 #define SLBT_TAB_WIDTH 8
@@ -66,31 +67,33 @@ int slbt_output_config(const struct slbt_driver_ctx * dctx)
 	midwidth &= (~(SLBT_TAB_WIDTH-1));
 
 	if (slbt_output_config_line("key","value","annotation",midwidth))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if (slbt_output_config_line("---","-----","----------",midwidth))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if (slbt_output_config_line("compiler",cctx->cargv[0],"",midwidth))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if (slbt_output_config_line("target",cctx->target,"",midwidth))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if (slbt_output_config_line("host",cctx->host.host,cctx->cfgmeta.host,midwidth))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if (slbt_output_config_line("flavor",cctx->host.flavor,cctx->cfgmeta.flavor,midwidth))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if (slbt_output_config_line("ar",cctx->host.ar,cctx->cfgmeta.ar,midwidth))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if (slbt_output_config_line("ranlib",cctx->host.ranlib,cctx->cfgmeta.ranlib,midwidth))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if (slbt_output_config_line("dlltool",cctx->host.dlltool,cctx->cfgmeta.dlltool,midwidth))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
-	return fflush(stdout);
+	return fflush(stdout)
+		? SLBT_SYSTEM_ERROR(dctx)
+		: 0;
 }

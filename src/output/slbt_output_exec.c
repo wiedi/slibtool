@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <slibtool/slibtool.h>
+#include "slibtool_errinfo_impl.h"
 
 static const char aclr_null[]    = "";
 static const char aclr_reset[]   = "\x1b[0m";
@@ -30,7 +31,7 @@ static int slbt_output_exec_annotated(
 			aclr_bold,aclr_magenta,
 			dctx->program,aclr_reset,
 			aclr_bold,aclr_green,step,aclr_reset) < 0)
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	for (parg=ectx->argv; *parg; parg++) {
 		if ((parg == ectx->lout[0]) || (parg == ectx->mout[0])) {
@@ -47,12 +48,12 @@ static int slbt_output_exec_annotated(
 				aclr_set,aclr_color,
 				*parg,
 				aclr_unset) < 0)
-			return -1;
+			return SLBT_SYSTEM_ERROR(dctx);
 
 	}
 
 	if (fputc('\n',stdout) < 0)
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	return fflush(stdout);
 }
@@ -65,16 +66,18 @@ static int slbt_output_exec_plain(
 	char ** parg;
 
 	if (fprintf(stdout,"%s: %s:",dctx->program,step) < 0)
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	for (parg=ectx->argv; *parg; parg++)
 		if (fprintf(stdout," %s",*parg) < 0)
-			return -1;
+			return SLBT_SYSTEM_ERROR(dctx);
 
 	if (fputc('\n',stdout) < 0)
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
-	return fflush(stdout);
+	return fflush(stdout)
+		? SLBT_SYSTEM_ERROR(dctx)
+		: 0;
 }
 
 int slbt_output_exec(
