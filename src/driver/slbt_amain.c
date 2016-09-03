@@ -54,19 +54,19 @@ static ssize_t slbt_version(struct slbt_driver_ctx * dctx)
 static void slbt_perform_driver_actions(struct slbt_driver_ctx * dctx)
 {
 	if (dctx->cctx->drvflags & SLBT_DRIVER_CONFIG)
-		dctx->nerrors += (slbt_output_config(dctx) < 0);
+		slbt_output_config(dctx);
 
 	if (dctx->cctx->mode == SLBT_MODE_COMPILE)
-		dctx->nerrors += (slbt_exec_compile(dctx,0) < 0);
+		slbt_exec_compile(dctx,0);
 
 	if (dctx->cctx->mode == SLBT_MODE_EXECUTE)
-		dctx->nerrors += (slbt_exec_execute(dctx,0) < 0);
+		slbt_exec_execute(dctx,0);
 
 	if (dctx->cctx->mode == SLBT_MODE_INSTALL)
-		dctx->nerrors += (slbt_exec_install(dctx,0) < 0);
+		slbt_exec_install(dctx,0);
 
 	if (dctx->cctx->mode == SLBT_MODE_LINK)
-		dctx->nerrors += (slbt_exec_link(dctx,0) < 0);
+		slbt_exec_link(dctx,0);
 }
 
 static void slbt_perform_unit_actions(struct slbt_unit_ctx * uctx)
@@ -74,13 +74,11 @@ static void slbt_perform_unit_actions(struct slbt_unit_ctx * uctx)
 	(void)uctx;
 }
 
-static int slbt_exit(struct slbt_driver_ctx * dctx, int nerrors)
+static int slbt_exit(struct slbt_driver_ctx * dctx, int ret)
 {
-	if (nerrors && errno)
-		strerror(errno);
-
+	slbt_output_error_vector(dctx);
 	slbt_free_driver_ctx(dctx);
-	return nerrors ? 2 : 0;
+	return ret;
 }
 
 int slbt_main(int argc, char ** argv, char ** envp)
@@ -159,15 +157,13 @@ int slbt_main(int argc, char ** argv, char ** envp)
 			return slbt_exit(dctx,2);
 
 	slbt_perform_driver_actions(dctx);
-	ret += dctx->nerrors;
 
 	for (unit=dctx->units; *unit; unit++) {
 		if (!(slbt_get_unit_ctx(dctx,*unit,&uctx))) {
 			slbt_perform_unit_actions(uctx);
-			ret += uctx->nerrors;
 			slbt_free_unit_ctx(uctx);
 		}
 	}
 
-	return slbt_exit(dctx,ret);
+	return slbt_exit(dctx,dctx->errv[0] ? 2 : 0);
 }
