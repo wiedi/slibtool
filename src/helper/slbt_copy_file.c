@@ -6,6 +6,7 @@
 
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
+#include "slibtool_errinfo_impl.h"
 
 int slbt_copy_file(
 	const struct slbt_driver_ctx *	dctx,
@@ -36,20 +37,20 @@ int slbt_copy_file(
 			if (slbt_output_link(dctx,ectx)) {
 				ectx->argv = oargv;
 				ectx->program = oprogram;
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 			}
 		} else {
 			if (slbt_output_install(dctx,ectx)) {
 				ectx->argv = oargv;
 				ectx->program = oprogram;
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 			}
 		}
 	}
 
 	/* dlltool spawn */
 	ret = ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
-		? -1 : 0;
+		? SLBT_SYSTEM_ERROR(dctx) : 0;
 
 	ectx->argv = oargv;
 	ectx->program = oprogram;
