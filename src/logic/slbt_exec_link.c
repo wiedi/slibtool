@@ -15,6 +15,7 @@
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
 #include "slibtool_mkdir_impl.h"
+#include "slibtool_errinfo_impl.h"
 #include "slibtool_metafile_impl.h"
 #include "slibtool_readlink_impl.h"
 #include "slibtool_symlink_impl.h"
@@ -81,6 +82,7 @@ static int slbt_exec_link_exit(
 }
 
 static int slbt_get_deps_meta(
+	const struct slbt_driver_ctx *	dctx,
 	char *			libfilename,
 	struct slbt_deps_meta *	depsmeta)
 {
@@ -91,11 +93,13 @@ static int slbt_get_deps_meta(
 	char		depfile[4*PATH_MAX];
 	char *		deplibs = depfile;
 
+	(void)dctx;
+
 	/* -rpath */
 	if ((size_t)snprintf(depfile,sizeof(depfile),"%s.slibtool.rpath",
 				libfilename)
 			>= sizeof(depfile))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	if (!(lstat(depfile,&st))) {
 		/* -Wl,%s */
@@ -107,18 +111,18 @@ static int slbt_get_deps_meta(
 	if ((size_t)snprintf(depfile,sizeof(depfile),"%s.slibtool.deps",
 				libfilename)
 			>= sizeof(depfile))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	if ((stat(depfile,&st)))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if (!(fdeps = fopen(depfile,"r")))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if ((size_t)st.st_size >= sizeof(depfile))
 		if (!(deplibs = malloc(st.st_size+1))) {
 			fclose(fdeps);
-			return -1;
+			return SLBT_SYSTEM_ERROR(dctx);
 		}
 
 	depsmeta->infolen += st.st_size;
@@ -136,7 +140,7 @@ static int slbt_get_deps_meta(
 	if (deplibs != depfile)
 		free(deplibs);
 
-	ret = ferror(fdeps) ? -1 : 0;
+	ret = ferror(fdeps) ? SLBT_FILE_ERROR(dctx) : 0;
 	fclose(fdeps);
 
 	return ret;
@@ -180,6 +184,7 @@ static bool slbt_adjust_input_argument(
 }
 
 static int slbt_adjust_linker_argument(
+	const struct slbt_driver_ctx *	dctx,
 	char *		arg,
 	bool		fpic,
 	const char *	dsosuffix,
@@ -227,7 +232,7 @@ static int slbt_adjust_linker_argument(
 		else
 			sprintf(dot,"%s",arsuffix);
 
-		return slbt_get_deps_meta(arg,depsmeta);
+		return slbt_get_deps_meta(dctx,arg,depsmeta);
 	}
 
 	/* input archive */
@@ -266,13 +271,13 @@ static int slbt_exec_link_adjust_argument_vector(
 		argc++;
 
 	if (!(depsmeta->args = calloc(1,depsmeta->infolen)))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	argc *= 3;
 	argc += depsmeta->depscnt;
 
 	if (!(depsmeta->altv = calloc(argc,sizeof(char *))))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	carg = ectx->cargv;
 	aarg = depsmeta->altv;
@@ -352,7 +357,7 @@ static int slbt_exec_link_adjust_argument_vector(
 						rpathlnk,\
 						rpathdir,
 						sizeof(rpathdir)))
-					return -1;
+					return SLBT_SYSTEM_ERROR(dctx);
 
 				sprintf(darg,"-Wl,%s",rpathdir);
 				*aarg++ = "-Wl,-rpath";
@@ -368,7 +373,7 @@ static int slbt_exec_link_adjust_argument_vector(
 			/* account for {'-','L','-','l'} */
 			if ((size_t)snprintf(arg,sizeof(arg),"%s",
 					*carg) >= (sizeof(arg) - 4))
-				return -1;
+				return SLBT_BUFFER_ERROR(dctx);
 
 			if ((slash = strrchr(arg,'/'))) {
 				sprintf(*carg,"-L%s",arg);
@@ -383,7 +388,7 @@ static int slbt_exec_link_adjust_argument_vector(
 							"DL_PATH=\"$DL_PATH$COLON%s/%s\"\n"
 							"COLON=':'\n\n",
 							cwd,arg) < 0)
-						return -1;
+						return SLBT_SYSTEM_ERROR(dctx);
 				}
 
 				*aarg++ = *carg++;
@@ -422,14 +427,14 @@ static int slbt_exec_link_adjust_argument_vector(
 					free(depsmeta->altv);
 					free(depsmeta->args);
 					fclose(fdeps);
-					return -1;
+					return SLBT_FILE_ERROR(dctx);
 				} else {
 					fclose(fdeps);
 				}
 			} else if (freqd) {
 				free(depsmeta->altv);
 				free(depsmeta->args);
-				return -1;
+				return SLBT_CUSTOM_ERROR(dctx,0);
 			}
 		}
 	}
@@ -455,6 +460,7 @@ static int slbt_exec_link_remove_file(
 }
 
 static int slbt_exec_link_create_dep_file(
+	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *	ectx,
 	char **			altv,
 	const char *		libfilename)
@@ -471,16 +477,18 @@ static int slbt_exec_link_create_dep_file(
 	char	depfile[PATH_MAX];
 	struct  stat st;
 
+	(void)dctx;
+
 	if (ectx->fdeps)
 		fclose(ectx->fdeps);
 
 	if ((size_t)snprintf(depfile,sizeof(depfile),"%s.slibtool.deps",
 				libfilename)
 			>= sizeof(depfile))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	if (!(ectx->fdeps = fopen(depfile,"w")))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	for (parg=altv; *parg; parg++) {
 		popt = 0;
@@ -513,20 +521,20 @@ static int slbt_exec_link_create_dep_file(
 
 			if ((size_t)snprintf(mark,size,".libs/%s",base)
 					>= size)
-				return -1;
+				return SLBT_BUFFER_ERROR(dctx);
 
 			mark = strrchr(mark,'.');
 			size = sizeof(depfile) - (mark - depfile);
 
 			if ((size_t)snprintf(mark,size,".a.slibtool.deps")
 					>= size)
-				return -1;
+				return SLBT_BUFFER_ERROR(dctx);
 
 			if (stat(depfile,&st))
-				return -1;
+				return SLBT_SYSTEM_ERROR(dctx);
 
 			if (!(fdeps = fopen(depfile,"r")))
-				return -1;
+				return SLBT_SYSTEM_ERROR(dctx);
 
 			deplib = st.st_size
 				? fgets(deplibs,st.st_size+1,fdeps)
@@ -535,7 +543,7 @@ static int slbt_exec_link_create_dep_file(
 			for (; deplib; ) {
 				if (fprintf(ectx->fdeps,"%s",deplib) < 0) {
 					fclose(fdeps);
-					return -1;
+					return SLBT_SYSTEM_ERROR(dctx);
 				}
 
 				deplib = fgets(deplibs,st.st_size+1,fdeps);
@@ -546,11 +554,11 @@ static int slbt_exec_link_create_dep_file(
 
 		if (plib)
 			if (fprintf(ectx->fdeps,"-l%s\n",plib) < 0)
-				return -1;
+				return SLBT_SYSTEM_ERROR(dctx);
 	}
 
 	if (fflush(ectx->fdeps))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	return 0;
 }
@@ -574,39 +582,39 @@ static int slbt_exec_link_create_import_library(
 		if ((size_t)snprintf(hosttag,sizeof(hosttag),"%s.%s",
 				deffilename,
 				dctx->cctx->host.flavor) >= sizeof(hosttag))
-			return -1;
+			return SLBT_BUFFER_ERROR(dctx);
 
 		if ((size_t)snprintf(hostlnk,sizeof(hostlnk),"%s.host",
 				deffilename) >= sizeof(hostlnk))
-			return -1;
+			return SLBT_BUFFER_ERROR(dctx);
 
 		/* libfoo.so.def is under .libs/ */
 		if (!(slash = strrchr(deffilename,'/')))
-			return -1;
+			return SLBT_CUSTOM_ERROR(dctx,0);
 
 		if (slbt_create_symlink(
 				dctx,ectx,
 				deffilename,
 				hosttag,
 				false))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 		/* libfoo.so.def.{flavor} is under .libs/ */
 		if (!(slash = strrchr(hosttag,'/')))
-			return -1;
+			return SLBT_CUSTOM_ERROR(dctx,0);
 
 		if (slbt_create_symlink(
 				dctx,ectx,
 				++slash,
 				hostlnk,
 				false))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 	}
 
 	/* dlltool argv */
 	if ((size_t)snprintf(program,sizeof(program),"%s",
 			dctx->cctx->host.dlltool) >= sizeof(program))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	dlltool[0] = program;
 	dlltool[1] = "-l";
@@ -624,11 +632,11 @@ static int slbt_exec_link_create_import_library(
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 	/* dlltool spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
-		return -1;
+		return SLBT_SPAWN_ERROR(dctx);
 
 	return 0;
 }
@@ -663,12 +671,12 @@ static int slbt_exec_link_create_archive(
 	/* output */
 	if ((size_t)snprintf(output,sizeof(output),"%s",
 			arfilename) >= sizeof(output))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* ar alternate argument vector */
 	if ((size_t)snprintf(program,sizeof(program),"%s",
 			dctx->cctx->host.ar) >= sizeof(program))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	aarg    = ectx->altv;
 	*aarg++ = program;
@@ -686,30 +694,30 @@ static int slbt_exec_link_create_archive(
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 	/* remove old archive as needed */
 	if (slbt_exec_link_remove_file(dctx,ectx,output))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* .deps */
-	if (slbt_exec_link_create_dep_file(ectx,ectx->cargv,arfilename))
-		return -1;
+	if (slbt_exec_link_create_dep_file(dctx,ectx,ectx->cargv,arfilename))
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* ar spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
-		return -1;
+		return SLBT_SPAWN_ERROR(dctx);
 
 	/* input objects associated with .la archives */
 	for (parg=ectx->cargv; *parg; parg++)
 		if (slbt_adjust_input_argument(*parg,".la",".a",fpic))
 			if (slbt_archive_import(dctx,ectx,output,*parg))
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 
 	/* ranlib argv */
 	if ((size_t)snprintf(program,sizeof(program),"%s",
 			dctx->cctx->host.ranlib) >= sizeof(program))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	ranlib[0] = program;
 	ranlib[1] = output;
@@ -719,11 +727,11 @@ static int slbt_exec_link_create_archive(
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 	/* ranlib spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
-		return -1;
+		return SLBT_SPAWN_ERROR(dctx);
 
 	if (fprimary && (dctx->cctx->drvflags & SLBT_DRIVER_DISABLE_SHARED)) {
 		strcpy(arlink,output);
@@ -742,10 +750,10 @@ static int slbt_exec_link_create_archive(
 		sprintf(arfile,".libs/%s",base);
 
 		if (slbt_exec_link_remove_file(dctx,ectx,arlink))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 		if (symlink(arfile,arlink))
-			return -1;
+			return SLBT_SYSTEM_ERROR(dctx);
 	}
 
 	return 0;
@@ -777,11 +785,12 @@ static int slbt_exec_link_create_library(
 	/* linker argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
 		if (slbt_adjust_linker_argument(
+				dctx,
 				*parg,true,
 				dctx->cctx->settings.dsosuffix,
 				dctx->cctx->settings.arsuffix,
 				&depsmeta) < 0)
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 	/* --no-undefined */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_NO_UNDEFINED)
@@ -797,7 +806,7 @@ static int slbt_exec_link_create_library(
 					dctx->cctx->settings.dsosuffix,
 					dctx->cctx->verinfo.major)
 				>= sizeof(soname))
-			return -1;
+			return SLBT_BUFFER_ERROR(dctx);
 
 		*ectx->soname  = "-Wl,-soname";
 		*ectx->lsoname = soname;
@@ -808,7 +817,7 @@ static int slbt_exec_link_create_library(
 					dctx->cctx->release,
 					dctx->cctx->settings.dsosuffix)
 				>= sizeof(soname))
-			return -1;
+			return SLBT_BUFFER_ERROR(dctx);
 
 		*ectx->soname  = "-Wl,-soname";
 		*ectx->lsoname = soname;
@@ -819,7 +828,7 @@ static int slbt_exec_link_create_library(
 		if ((size_t)snprintf(symfile,sizeof(symfile),"-Wl,%s",
 					ectx->deffilename)
 				>= sizeof(output))
-			return -1;
+			return SLBT_BUFFER_ERROR(dctx);
 
 		*ectx->symdefs = "-Wl,--output-def";
 		*ectx->symfile = symfile;
@@ -845,7 +854,7 @@ static int slbt_exec_link_create_library(
 					dctx->cctx->verinfo.minor,
 					dctx->cctx->verinfo.revision)
 				>= sizeof(output))
-			return -1;
+			return SLBT_BUFFER_ERROR(dctx);
 	}
 
 	*ectx->lout[0] = "-o";
@@ -854,20 +863,20 @@ static int slbt_exec_link_create_library(
 	/* ldrpath */
 	if (dctx->cctx->host.ldrpath) {
 		if (slbt_exec_link_remove_file(dctx,ectx,ectx->rpathfilename))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 		if (symlink(dctx->cctx->host.ldrpath,ectx->rpathfilename))
-			return -1;
+			return SLBT_SYSTEM_ERROR(dctx);
 	}
 
 	/* cwd */
 	if (!getcwd(cwd,sizeof(cwd)))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	/* .libs/libfoo.so --> -L.libs -lfoo */
 	if (slbt_exec_link_adjust_argument_vector(
 			dctx,ectx,&depsmeta,cwd,true))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* using alternate argument vector */
 	ectx->argv    = depsmeta.altv;
@@ -876,15 +885,21 @@ static int slbt_exec_link_create_library(
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
-			return slbt_exec_link_exit(&depsmeta,-1);
+			return slbt_exec_link_exit(
+				&depsmeta,
+				SLBT_NESTED_ERROR(dctx));
 
 	/* .deps */
-	if (slbt_exec_link_create_dep_file(ectx,ectx->argv,dsofilename))
-		return slbt_exec_link_exit(&depsmeta,-1);
+	if (slbt_exec_link_create_dep_file(dctx,ectx,ectx->argv,dsofilename))
+		return slbt_exec_link_exit(
+			&depsmeta,
+			SLBT_NESTED_ERROR(dctx));
 
 	/* spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
-		return slbt_exec_link_exit(&depsmeta,-1);
+		return slbt_exec_link_exit(
+			&depsmeta,
+			SLBT_SPAWN_ERROR(dctx));
 
 	return slbt_exec_link_exit(&depsmeta,0);
 }
@@ -921,11 +936,12 @@ static int slbt_exec_link_create_executable(
 	/* linker argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
 		if (slbt_adjust_linker_argument(
+				dctx,
 				*parg,true,
 				dctx->cctx->settings.dsosuffix,
 				dctx->cctx->settings.arsuffix,
 				&depsmeta) < 0)
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 	/* --no-undefined */
 	if (dctx->cctx->drvflags & SLBT_DRIVER_NO_UNDEFINED)
@@ -935,10 +951,10 @@ static int slbt_exec_link_create_executable(
 	if ((size_t)snprintf(wrapper,sizeof(wrapper),"%s.wrapper.tmp",
 				dctx->cctx->output)
 			>= sizeof(wrapper))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	if (!(ectx->fwrapper = fopen(wrapper,"w")))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	verinfo = slbt_source_version();
 
@@ -962,25 +978,25 @@ static int slbt_exec_link_create_executable(
 			verinfo->major,verinfo->minor,verinfo->revision,
 			verinfo->commit,
 			dctx->cctx->settings.ldpathenv) < 0)
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	/* output */
 	if ((size_t)snprintf(output,sizeof(output),"%s",
 				exefilename)
 			>= sizeof(output))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	*ectx->lout[0] = "-o";
 	*ectx->lout[1] = output;
 
 	/* cwd */
 	if (!getcwd(cwd,sizeof(cwd)))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	/* .libs/libfoo.so --> -L.libs -lfoo */
 	if (slbt_exec_link_adjust_argument_vector(
 			dctx,ectx,&depsmeta,cwd,false))
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 
 	/* using alternate argument vector */
 	ectx->argv    = depsmeta.altv;
@@ -989,7 +1005,9 @@ static int slbt_exec_link_create_executable(
 	/* executable wrapper symlink */
 	if ((size_t)snprintf(wraplnk,sizeof(wraplnk),"%s.exe.wrapper",
 			dctx->cctx->output) >= sizeof(wraplnk))
-		return slbt_exec_link_exit(&depsmeta,-1);
+		return slbt_exec_link_exit(
+			&depsmeta,
+			SLBT_BUFFER_ERROR(dctx));
 
 	/* executable wrapper: base name */
 	if ((base = strrchr(wraplnk,'/')))
@@ -1013,16 +1031,22 @@ static int slbt_exec_link_create_executable(
 			base,
 			fabspath ? "" : cwd,
 			fabspath ? &exefilename[1] : exefilename) < 0)
-		return slbt_exec_link_exit(&depsmeta,-1);
+		return slbt_exec_link_exit(
+			&depsmeta,
+			SLBT_SYSTEM_ERROR(dctx));
 
 	/* step output */
 	if (!(dctx->cctx->drvflags & SLBT_DRIVER_SILENT))
 		if (slbt_output_link(dctx,ectx))
-			return slbt_exec_link_exit(&depsmeta,-1);
+			return slbt_exec_link_exit(
+				&depsmeta,
+				SLBT_NESTED_ERROR(dctx));
 
 	/* spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
-		return slbt_exec_link_exit(&depsmeta,-1);
+		return slbt_exec_link_exit(
+			&depsmeta,
+			SLBT_SPAWN_ERROR(dctx));
 
 	/* executable wrapper: finalize */
 	fclose(ectx->fwrapper);
@@ -1032,13 +1056,19 @@ static int slbt_exec_link_create_executable(
 			dctx,ectx,
 			dctx->cctx->output,wraplnk,
 			false))
-		return slbt_exec_link_exit(&depsmeta,-1);
+		return slbt_exec_link_exit(
+			&depsmeta,
+			SLBT_NESTED_ERROR(dctx));
 
 	if (rename(wrapper,dctx->cctx->output))
-		return slbt_exec_link_exit(&depsmeta,-1);
+		return slbt_exec_link_exit(
+			&depsmeta,
+			SLBT_SYSTEM_ERROR(dctx));
 
 	if (chmod(dctx->cctx->output,0755))
-		return slbt_exec_link_exit(&depsmeta,-1);
+		return slbt_exec_link_exit(
+			&depsmeta,
+			SLBT_SYSTEM_ERROR(dctx));
 
 	return slbt_exec_link_exit(&depsmeta,0);
 }
@@ -1059,7 +1089,7 @@ static int slbt_exec_link_create_library_symlink(
 				dctx,ectx,
 				target,lnkname,
 				false))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 	} else
 		sprintf(target,"%s.%d.%d.%d",
 			ectx->dsofilename,
@@ -1114,7 +1144,7 @@ int slbt_exec_link(
 				dctx->cctx->verinfo.minor,
 				dctx->cctx->verinfo.revision)
 			>= sizeof(soxyz))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	/* libfoo.so.x */
 	sprintf(soname,"%s%s%s.%d",
@@ -1141,7 +1171,7 @@ int slbt_exec_link(
 	if (ectx)
 		actx = 0;
 	else if ((ret = slbt_get_exec_ctx(dctx,&ectx)))
-		return ret;
+		return SLBT_NESTED_ERROR(dctx);
 	else
 		actx = ectx;
 
@@ -1152,14 +1182,14 @@ int slbt_exec_link(
 	/* .libs directory */
 	if (slbt_mkdir(ectx->ldirname)) {
 		slbt_free_exec_ctx(actx);
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 	}
 
 	/* non-pic libfoo.a */
 	if (dot && !strcmp(dot,".a"))
 		if (slbt_exec_link_create_archive(dctx,ectx,output,false,false)) {
 			slbt_free_exec_ctx(actx);
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 		}
 
 	/* fpic, fstaticonly */
@@ -1184,7 +1214,7 @@ int slbt_exec_link(
 				ectx->arfilename,
 				fpic,true)) {
 			slbt_free_exec_ctx(actx);
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 		}
 
 	/* -all-static library */
@@ -1194,7 +1224,7 @@ int slbt_exec_link(
 				"/dev/null",
 				ectx->dsofilename,
 				false))
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 
 	/* dynamic library */
 	if (dot && !strcmp(dot,".la") && dctx->cctx->rpath && !fstaticonly) {
@@ -1204,7 +1234,7 @@ int slbt_exec_link(
 				ectx->dsofilename,
 				ectx->relfilename)) {
 			slbt_free_exec_ctx(actx);
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 		}
 
 		if (!(dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION)) {
@@ -1213,7 +1243,7 @@ int slbt_exec_link(
 					dctx,ectx,
 					true)) {
 				slbt_free_exec_ctx(actx);
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 			}
 
 			/* symlink: libfoo.so --> libfoo.so.x.y.z */
@@ -1221,7 +1251,7 @@ int slbt_exec_link(
 					dctx,ectx,
 					false)) {
 				slbt_free_exec_ctx(actx);
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 			}
 		} else if (ectx->relfilename) {
 			/* symlink: libfoo.so --> libfoo-x.y.z.so */
@@ -1229,7 +1259,7 @@ int slbt_exec_link(
 					dctx,ectx,
 					false)) {
 				slbt_free_exec_ctx(actx);
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 			}
 		}
 
@@ -1242,7 +1272,7 @@ int slbt_exec_link(
 					ectx->deffilename,
 					soname,
 					true))
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 
 			/* symlink: libfoo.lib.a --> libfoo.x.lib.a */
 			if (slbt_create_symlink(
@@ -1250,7 +1280,7 @@ int slbt_exec_link(
 					ectx->pimpfilename,
 					ectx->dimpfilename,
 					false))
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 
 			/* libfoo.x.y.z.lib.a */
 			if (slbt_exec_link_create_import_library(
@@ -1259,7 +1289,7 @@ int slbt_exec_link(
 					ectx->deffilename,
 					soxyz,
 					false))
-				return -1;
+				return SLBT_NESTED_ERROR(dctx);
 		}
 	}
 
@@ -1270,7 +1300,7 @@ int slbt_exec_link(
 				dctx,ectx,
 				ectx->exefilename)) {
 			slbt_free_exec_ctx(actx);
-			return -1;
+			return SLBT_NESTED_ERROR(dctx);
 		}
 	}
 
@@ -1285,23 +1315,25 @@ int slbt_exec_link(
 			dctx,ectx,
 			arname,soname,soxyz,solnk)) {
 		slbt_free_exec_ctx(actx);
-		return -1;
+		return SLBT_NESTED_ERROR(dctx);
 	}
 
 	/* wrapper symlink */
-	ret = (slbt_create_symlink(
+	if ((ret = slbt_create_symlink(
 			dctx,ectx,
 			output,
 			ectx->lafilename,
-			true));
+			true)))
+		SLBT_NESTED_ERROR(dctx);
 
 	/* .lai wrapper symlink */
 	if (ret == 0)
-		ret = (slbt_create_symlink(
+		if ((ret = slbt_create_symlink(
 				dctx,ectx,
 				output,
 				ectx->laifilename,
-				true));
+				true)))
+			SLBT_NESTED_ERROR(dctx);
 
 	/* all done */
 	slbt_free_exec_ctx(actx);
