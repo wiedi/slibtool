@@ -225,8 +225,6 @@ struct slbt_driver_ctx {
 	const struct slbt_common_ctx *	cctx;
 	struct slbt_error_info **	errv;
 	void *				any;
-	int				status;
-	int				nerrors;
 };
 
 struct slbt_unit_ctx {
