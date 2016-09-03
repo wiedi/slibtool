@@ -14,6 +14,7 @@
 
 #include <slibtool/slibtool.h>
 #include "slibtool_spawn_impl.h"
+#include "slibtool_errinfo_impl.h"
 
 static char * slbt_mri_argument(
 	char *	arg,
@@ -90,15 +91,15 @@ int slbt_archive_import(
 
 	if ((size_t)snprintf(program,sizeof(program),"%s",
 			dctx->cctx->host.ar) >= sizeof(program))
-		return -1;
+		return SLBT_BUFFER_ERROR(dctx);
 
 	if (pipe(fd))
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 
 	if ((pid = fork()) < 0) {
 		close(fd[0]);
 		close(fd[1]);
-		return -1;
+		return SLBT_SYSTEM_ERROR(dctx);
 	}
 
 	if (pid == 0)
@@ -120,12 +121,13 @@ int slbt_archive_import(
 				"END\n",
 				dst,
 				src) < 0)
-			? -1 : 0;
+			? SLBT_SYSTEM_ERROR(dctx)
+			: 0;
 
 		fclose(fout);
 		close(fd[0]);
 	} else {
-		ret = -1;
+		ret = SLBT_SYSTEM_ERROR(dctx);
 		close(fd[0]);
 		close(fd[1]);
 	}
@@ -142,5 +144,5 @@ int slbt_archive_import(
 		unlink(src);
 
 	return ret || (rpid != pid) || ectx->exitcode
-		? -1 : 0;
+		? SLBT_CUSTOM_ERROR(dctx,0) : 0;
 }
