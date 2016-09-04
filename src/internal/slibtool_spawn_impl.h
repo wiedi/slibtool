@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <errno.h>
 #include <sys/wait.h>
 
 #ifndef PATH_MAX
@@ -32,7 +33,6 @@ static inline int slbt_spawn(
 	bool			fwait)
 {
 	pid_t	pid;
-
 
 #ifdef SLBT_USE_POSIX_SPAWN
 
@@ -62,6 +62,7 @@ static inline int slbt_spawn(
 			ectx->program,
 			ectx->argv);
 
+	errno     = 0;
 	ectx->pid = pid;
 
 	if (fwait)
