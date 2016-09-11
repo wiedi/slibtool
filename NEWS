@@ -1,3 +1,15 @@
+0.5.8:
+
+This patch release follows several important bug-fixes, as well as the
+addition and integration of error trace support.
+
+- install mode: support the -f (force copy) command line argument.
+- link mode: properly use dependency information associated with .la wrappers.
+- link mode: ignore -rpath when deciding whether to create an executable.
+- utility: added error trace support, integration, and annotated output.
+- library: added public error trace interfaces.
+- argv.h: error message formatting: handle lonely long options.
+
 0.5.7:
 
 This patch release contains one future-looking change in the project's
