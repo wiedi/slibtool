@@ -92,6 +92,8 @@ static int slbt_get_deps_meta(
 	char *		deplib;
 	char		depfile[4*PATH_MAX];
 	char *		deplibs = depfile;
+	char *		base;
+	size_t		libexlen;
 
 	(void)dctx;
 
@@ -132,7 +134,16 @@ static int slbt_get_deps_meta(
 		? fgets(deplibs,st.st_size+1,fdeps)
 		: 0;
 
+	if ((base = strrchr(libfilename,'/')))
+		libexlen = base - libfilename + 2;
+	else
+		libexlen = 2;
+
 	for (; deplib; ) {
+		if ((deplib[0] == '-') && (deplib[1] == 'L'))
+			if (deplib[2] == '.')
+				depsmeta->infolen += libexlen;
+
 		depsmeta->depscnt++;
 		deplib = fgets(deplibs,st.st_size+1,fdeps);
 	}
@@ -255,12 +266,14 @@ static int slbt_exec_link_adjust_argument_vector(
 	char *	darg;
 	char *	dot;
 	char *	dep;
+	char *	base;
 	FILE *	fdeps;
 	char *	dpath;
 	bool	freqd;
 	int	argc;
 	char	arg[PATH_MAX];
 	char	lib[PATH_MAX];
+	char	depdir  [PATH_MAX];
 	char	rpathdir[PATH_MAX];
 	char	rpathlnk[PATH_MAX];
 	bool	fwholearchive = false;
@@ -411,14 +424,41 @@ static int slbt_exec_link_adjust_argument_vector(
 					? fgets(darg,st.st_size+1,fdeps)
 					: 0;
 
+				if ((base = strrchr(lib,'/'))) {
+					if (base - lib >= 6)
+						if (!(strncmp(&base[-6],"/.libs/",7)))
+							base -= 6;
+
+					*base = 0;
+				} else {
+					lib[0] = '.';
+					lib[1] = 0;
+				}
+
 				for (; dep; ) {
 					*aarg++ = darg;
+					mark    = darg;
 					darg   += strlen(dep);
 
 					if (darg[-1] == '\n')
 						darg[-1] = 0;
 					else
 						darg++;
+
+					/* handle -L... as needed */
+					if ((mark[0] == '-')
+							&& (mark[1] == 'L')
+							&& (mark[2] == '.')) {
+						if (strlen(mark) >= sizeof(depdir) - 1)
+							return SLBT_BUFFER_ERROR(dctx);
+
+						darg = mark;
+						strcpy(depdir,&mark[2]);
+						sprintf(darg,"-L%s/%s",lib,depdir);
+
+						darg += strlen(darg);
+						darg++;
+					}
 
 					dep = fgets(darg,st.st_size+1,fdeps);
 				}
@@ -473,6 +513,7 @@ static int slbt_exec_link_create_dep_file(
 	size_t	size;
 	FILE *	fdeps;
 	char *	deplib;
+	char	reladir[PATH_MAX];
 	char	deplibs[PATH_MAX];
 	char	depfile[PATH_MAX];
 	struct  stat st;
@@ -515,6 +556,31 @@ static int slbt_exec_link_create_dep_file(
 			else
 				base = *parg;
 
+			/* [relative .la directory] */
+			if (base > *parg) {
+				if ((size_t)snprintf(reladir,
+							sizeof(reladir),
+							"%s",*parg)
+						>= sizeof(reladir)) {
+					fclose(fdeps);
+					return SLBT_SYSTEM_ERROR(dctx);
+				}
+
+				reladir[base - *parg - 1] = 0;
+			} else {
+				reladir[0] = '.';
+				reladir[1] = 0;
+			}
+
+			/* [-L... as needed] */
+			if (base > *parg) {
+				if (fprintf(ectx->fdeps,"-L%s/.libs\n",reladir) < 0) {
+					fclose(fdeps);
+					return SLBT_SYSTEM_ERROR(dctx);
+				}
+			}
+
+			/* [open dependency list] */
 			strcpy(depfile,*parg);
 			mark = depfile + (base - *parg);
 			size = sizeof(depfile) - (base - *parg);
@@ -536,14 +602,24 @@ static int slbt_exec_link_create_dep_file(
 			if (!(fdeps = fopen(depfile,"r")))
 				return SLBT_SYSTEM_ERROR(dctx);
 
+			/* [-l... as needed] */
 			deplib = st.st_size
 				? fgets(deplibs,st.st_size+1,fdeps)
 				: 0;
 
 			for (; deplib; ) {
-				if (fprintf(ectx->fdeps,"%s",deplib) < 0) {
-					fclose(fdeps);
-					return SLBT_SYSTEM_ERROR(dctx);
+				if ((deplib[0] == '-') && (deplib[1] == 'L')
+						&& (deplib[2] == '.')) {
+					if (fprintf(ectx->fdeps,"-L%s/%s",
+							reladir,&deplib[2]) < 0) {
+						fclose(fdeps);
+						return SLBT_SYSTEM_ERROR(dctx);
+					}
+				} else {
+					if (fprintf(ectx->fdeps,"%s",deplib) < 0) {
+						fclose(fdeps);
+						return SLBT_SYSTEM_ERROR(dctx);
+					}
 				}
 
 				deplib = fgets(deplibs,st.st_size+1,fdeps);
@@ -782,6 +858,12 @@ static int slbt_exec_link_create_library(
 	for (parg=ectx->cargv; *parg; parg++)
 		slbt_adjust_input_argument(*parg,".lo",".o",true);
 
+	/* .deps */
+	if (slbt_exec_link_create_dep_file(dctx,ectx,ectx->cargv,dsofilename))
+		return slbt_exec_link_exit(
+			&depsmeta,
+			SLBT_NESTED_ERROR(dctx));
+
 	/* linker argument adjustment */
 	for (parg=ectx->cargv; *parg; parg++)
 		if (slbt_adjust_linker_argument(
@@ -888,12 +970,6 @@ static int slbt_exec_link_create_library(
 			return slbt_exec_link_exit(
 				&depsmeta,
 				SLBT_NESTED_ERROR(dctx));
-
-	/* .deps */
-	if (slbt_exec_link_create_dep_file(dctx,ectx,ectx->argv,dsofilename))
-		return slbt_exec_link_exit(
-			&depsmeta,
-			SLBT_NESTED_ERROR(dctx));
 
 	/* spawn */
 	if ((slbt_spawn(ectx,true) < 0) || ectx->exitcode)
