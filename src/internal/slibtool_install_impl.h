@@ -8,6 +8,7 @@ extern const struct argv_option slbt_install_options[];
 enum install_tags {
 	TAG_INSTALL_HELP,
 	TAG_INSTALL_COPY,
+	TAG_INSTALL_FORCE,
 	TAG_INSTALL_MKDIR,
 	TAG_INSTALL_TARGET_MKDIR,
 	TAG_INSTALL_STRIP,

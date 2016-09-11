@@ -8,6 +8,9 @@ const struct argv_option slbt_install_options[] = {
 	{0,		'c',TAG_INSTALL_COPY,ARGV_OPTARG_NONE,0,0,0,
 			"copy"},
 
+	{0,		'f',TAG_INSTALL_FORCE,ARGV_OPTARG_NONE,0,0,0,
+			"force copy"},
+
 	{0,		'd',TAG_INSTALL_MKDIR,ARGV_OPTARG_NONE,0,0,0,
 			"create directories"},
 

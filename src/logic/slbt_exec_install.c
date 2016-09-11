@@ -599,6 +599,10 @@ int slbt_exec_install(
 					copy = entry;
 					break;
 
+				case TAG_INSTALL_FORCE:
+					*argv++ = "-f";
+					break;
+
 				case TAG_INSTALL_MKDIR:
 					*argv++ = "-d";
 					copy = 0;
