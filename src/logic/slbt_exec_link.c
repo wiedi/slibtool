@@ -585,6 +585,18 @@ static int slbt_exec_link_create_dep_file(
 				}
 			}
 
+			/* -ldeplib */
+			*popt = 0;
+			mark  = base;
+			mark += strlen(dctx->cctx->settings.dsoprefix);
+
+			if (fprintf(ectx->fdeps,"-l%s\n",mark) < 0) {
+				fclose(fdeps);
+				return SLBT_SYSTEM_ERROR(dctx);
+			}
+
+			*popt = '.';
+
 			/* [open dependency list] */
 			strcpy(depfile,*parg);
 			mark = depfile + (base - *parg);
