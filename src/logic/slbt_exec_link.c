@@ -141,7 +141,7 @@ static int slbt_get_deps_meta(
 
 	for (; deplib; ) {
 		if ((deplib[0] == '-') && (deplib[1] == 'L'))
-			if (deplib[2] == '.')
+			if (deplib[2] != '/')
 				depsmeta->infolen += libexlen;
 
 		depsmeta->depscnt++;
@@ -453,7 +453,7 @@ static int slbt_exec_link_adjust_argument_vector(
 					/* handle -L... as needed */
 					if ((mark[0] == '-')
 							&& (mark[1] == 'L')
-							&& (mark[2] == '.')) {
+							&& (mark[2] != '/')) {
 						if (strlen(mark) >= sizeof(depdir) - 1)
 							return SLBT_BUFFER_ERROR(dctx);
 
@@ -626,7 +626,7 @@ static int slbt_exec_link_create_dep_file(
 
 			for (; deplib; ) {
 				if ((deplib[0] == '-') && (deplib[1] == 'L')
-						&& (deplib[2] == '.')) {
+						&& (deplib[2] != '/')) {
 					if (fprintf(ectx->fdeps,"-L%s/%s",
 							reladir,&deplib[2]) < 0) {
 						fclose(fdeps);
