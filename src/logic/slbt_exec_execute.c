@@ -25,6 +25,7 @@ int  slbt_exec_execute(
 	char *			mark;
 	char			exeref [PATH_MAX];
 	char			wrapper[PATH_MAX];
+	struct stat		st;
 	struct slbt_exec_ctx *	actx = 0;
 
 	/* dry run */
@@ -65,9 +66,13 @@ int  slbt_exec_execute(
 	sprintf(mark,".libs/%s",base);
 
 	/* swap vector */
-	ectx->cargv[0] = wrapper;
-	ectx->cargv[1] = program;
-	ectx->cargv[2] = exeref;
+	if (!(stat(script,&st)) && !(stat(wrapper,&st))) {
+		ectx->cargv[0] = wrapper;
+		ectx->cargv[1] = program;
+		ectx->cargv[2] = exeref;
+	} else {
+		script = program;
+	}
 
 	/* execute mode */
 	ectx->program = script;
@@ -80,7 +85,7 @@ int  slbt_exec_execute(
 			return SLBT_NESTED_ERROR(dctx);
 		}
 
-	execvp(wrapper,ectx->argv);
+	execvp(ectx->cargv[0],ectx->argv);
 
 	slbt_free_exec_ctx(actx);
 	return SLBT_SYSTEM_ERROR(dctx);
