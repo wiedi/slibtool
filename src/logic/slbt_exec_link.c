@@ -425,9 +425,14 @@ static int slbt_exec_link_adjust_argument_vector(
 					: 0;
 
 				if ((base = strrchr(lib,'/'))) {
-					if (base - lib >= 6)
+					if (base - lib == 5) {
+						if (!(strncmp(&base[-5],".libs/",6)))
+							base -= 4;
+
+					} else if (base - lib >= 6) {
 						if (!(strncmp(&base[-6],"/.libs/",7)))
 							base -= 6;
+					}
 
 					*base = 0;
 				} else {
