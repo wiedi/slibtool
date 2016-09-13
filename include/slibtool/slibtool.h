@@ -132,6 +132,7 @@ struct slbt_exec_ctx {
 	FILE *	fwrapper;
 	FILE *	fdeps;
 	char *	csrc;
+	int	ldirdepth;
 	char *	ldirname;
 	char *	lbasename;
 	char *	lobjname;

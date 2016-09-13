@@ -522,6 +522,7 @@ static int slbt_exec_link_create_dep_file(
 	char	deplibs[PATH_MAX];
 	char	depfile[PATH_MAX];
 	struct  stat st;
+	int	ldepth;
 
 	(void)dctx;
 
@@ -578,8 +579,19 @@ static int slbt_exec_link_create_dep_file(
 			}
 
 			/* [-L... as needed] */
-			if (base > *parg) {
-				if (fprintf(ectx->fdeps,"-L%s/.libs\n",reladir) < 0) {
+			if ((base > *parg) && (ectx->ldirdepth >= 0)) {
+				if (fputs("-L",ectx->fdeps) < 0) {
+					fclose(fdeps);
+					return SLBT_SYSTEM_ERROR(dctx);
+				}
+
+				for (ldepth=ectx->ldirdepth; ldepth; ldepth--)
+					if (fputs("../",ectx->fdeps) < 0) {
+						fclose(fdeps);
+						return SLBT_SYSTEM_ERROR(dctx);
+					}
+
+				if (fprintf(ectx->fdeps,"%s/.libs\n",reladir) < 0) {
 					fclose(fdeps);
 					return SLBT_SYSTEM_ERROR(dctx);
 				}

@@ -147,6 +147,7 @@ int  slbt_get_exec_ctx(
 	char **				parg;
 	char *				ch;
 	char *				mark;
+	const char *			dmark;
 	char *				slash;
 	const char *			arprefix;
 	const char *			dsoprefix;
@@ -172,6 +173,28 @@ int  slbt_get_exec_ctx(
 		: ictx->ctx.csrc;
 
 	if (ref && !ictx->ctx.csrc && (mark = strrchr(ref,'/'))) {
+		if (!(strncmp(ref,"../",3)))
+			dmark = 0;
+		else if (!(strncmp(ref,"./",2)))
+			dmark = &ref[1];
+		else
+			dmark = strchr(ref,'/');
+
+		for (; dmark; ) {
+			if (!(strncmp(dmark,"/./",3))) {
+				dmark = strchr(&dmark[2],'/');
+			} else if (!(strncmp(dmark,"/../",4))) {
+				ictx->ctx.ldirdepth = -1;
+				dmark = 0;
+			} else {
+				for (; *dmark=='/'; )
+					dmark++;
+
+				ictx->ctx.ldirdepth++;
+				dmark = strchr(dmark,'/');
+			}
+		}
+
 		ictx->ctx.ldirname = ch;
 		strcpy(ch,ref);
 		ch += mark - ref;
