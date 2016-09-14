@@ -18,6 +18,7 @@ struct slbt_exec_ctx_impl {
 	int			argc;
 	char *			args;
 	char *			shadow;
+	char *			dsoprefix;
 	size_t			size;
 	struct slbt_exec_ctx	ctx;
 	char *			vbuffer[];
@@ -104,6 +105,7 @@ static struct slbt_exec_ctx_impl * slbt_exec_ctx_alloc(
 			+ strlen(dctx->cctx->settings.arsuffix) + 1
 			+ strlen(dctx->cctx->settings.dsoprefix) + 1
 			+ strlen(dctx->cctx->settings.dsoprefix) + 1
+			+ strlen(dctx->cctx->settings.dsoprefix) + 1
 			+ strlen(dctx->cctx->settings.exeprefix) + 1
 			+ strlen(dctx->cctx->settings.exeprefix) + 1
 			+ strlen(dctx->cctx->settings.impprefix) + 1
@@ -151,6 +153,7 @@ int  slbt_get_exec_ctx(
 	char *				slash;
 	const char *			arprefix;
 	const char *			dsoprefix;
+	const char *			impprefix;
 	const char *			ref;
 	int				i;
 
@@ -270,6 +273,13 @@ int  slbt_get_exec_ctx(
 
 	slbt_reset_placeholders(&ictx->ctx);
 
+	/* dsoprefix */
+	if (dctx->cctx->settings.dsoprefix) {
+		ictx->dsoprefix = ch;
+		strcpy(ch,dctx->cctx->settings.dsoprefix);
+		ch += strlen(ch) + 1;
+	}
+
 	/* output file name */
 	if (ref && ((dctx->cctx->mode == SLBT_MODE_COMPILE))) {
 		*ictx->ctx.lout[0] = "-o";
@@ -301,11 +311,15 @@ int  slbt_get_exec_ctx(
 	if (dctx->cctx->mode == SLBT_MODE_LINK && dctx->cctx->libname) {
 		/* arprefix, dsoprefix */
 		if (dctx->cctx->drvflags & SLBT_DRIVER_MODULE) {
+			ictx->ctx.sonameprefix = "";
 			arprefix  = "";
 			dsoprefix = "";
+			impprefix = "";
 		} else {
+			ictx->ctx.sonameprefix = ictx->dsoprefix;
 			arprefix  = dctx->cctx->settings.arprefix;
 			dsoprefix = dctx->cctx->settings.dsoprefix;
+			impprefix = dctx->cctx->settings.impprefix;
 		}
 
 		/* arfilename */
@@ -368,7 +382,7 @@ int  slbt_get_exec_ctx(
 		ictx->ctx.dimpfilename = ch;
 		ch += sprintf(ch,"%s%s%s%s",
 				ictx->ctx.ldirname,
-				dctx->cctx->settings.impprefix,
+				impprefix,
 				dctx->cctx->libname,
 				dctx->cctx->settings.impsuffix);
 		ch++;
@@ -378,7 +392,7 @@ int  slbt_get_exec_ctx(
 		ictx->ctx.pimpfilename = ch;
 		ch += sprintf(ch,"%s%s%s.%d%s",
 				ictx->ctx.ldirname,
-				dctx->cctx->settings.impprefix,
+				impprefix,
 				dctx->cctx->libname,
 				dctx->cctx->verinfo.major,
 				dctx->cctx->settings.impsuffix);
@@ -388,7 +402,7 @@ int  slbt_get_exec_ctx(
 		ictx->ctx.vimpfilename = ch;
 		ch += sprintf(ch,"%s%s%s.%d.%d.%d%s",
 				ictx->ctx.ldirname,
-				dctx->cctx->settings.impprefix,
+				impprefix,
 				dctx->cctx->libname,
 				dctx->cctx->verinfo.major,
 				dctx->cctx->verinfo.minor,

@@ -149,6 +149,7 @@ struct slbt_exec_ctx {
 	char *	pimpfilename;
 	char *	vimpfilename;
 	char *	exefilename;
+	char *	sonameprefix;
 	pid_t	pid;
 	int	exitcode;
 };

@@ -912,7 +912,7 @@ static int slbt_exec_link_create_library(
 		(void)0;
 	} else if (!(dctx->cctx->drvflags & SLBT_DRIVER_AVOID_VERSION)) {
 		if ((size_t)snprintf(soname,sizeof(soname),"-Wl,%s%s%s.%d",
-					dctx->cctx->settings.dsoprefix,
+					ectx->sonameprefix,
 					dctx->cctx->libname,
 					dctx->cctx->settings.dsosuffix,
 					dctx->cctx->verinfo.major)
@@ -923,7 +923,7 @@ static int slbt_exec_link_create_library(
 		*ectx->lsoname = soname;
 	} else if (relfilename) {
 		if ((size_t)snprintf(soname,sizeof(soname),"-Wl,%s%s-%s%s",
-					dctx->cctx->settings.dsoprefix,
+					ectx->sonameprefix,
 					dctx->cctx->libname,
 					dctx->cctx->release,
 					dctx->cctx->settings.dsosuffix)
@@ -1240,29 +1240,37 @@ int slbt_exec_link(
 	if (dctx->cctx->drvflags & SLBT_DRIVER_DRY_RUN)
 		return 0;
 
+	/* context */
+	if (ectx)
+		actx = 0;
+	else if ((ret = slbt_get_exec_ctx(dctx,&ectx)))
+		return SLBT_NESTED_ERROR(dctx);
+	else
+		actx = ectx;
+
 	/* libfoo.so.x.y.z */
 	if ((size_t)snprintf(soxyz,sizeof(soxyz),"%s%s%s.%d.%d.%d",
-				dctx->cctx->settings.dsoprefix,
+				ectx->sonameprefix,
 				dctx->cctx->libname,
 				dctx->cctx->settings.dsosuffix,
 				dctx->cctx->verinfo.major,
 				dctx->cctx->verinfo.minor,
 				dctx->cctx->verinfo.revision)
-			>= sizeof(soxyz))
+			>= sizeof(soxyz)) {
+		slbt_free_exec_ctx(actx);
 		return SLBT_BUFFER_ERROR(dctx);
+	}
 
 	/* libfoo.so.x */
 	sprintf(soname,"%s%s%s.%d",
-		dctx->cctx->settings.dsoprefix,
+		ectx->sonameprefix,
 		dctx->cctx->libname,
 		dctx->cctx->settings.dsosuffix,
 		dctx->cctx->verinfo.major);
 
 	/* libfoo.so */
 	sprintf(solnk,"%s%s%s",
-		(dctx->cctx->drvflags & SLBT_DRIVER_MODULE)
-			? ""
-			: dctx->cctx->settings.dsoprefix,
+		ectx->sonameprefix,
 		dctx->cctx->libname,
 		dctx->cctx->settings.dsosuffix);
 
@@ -1271,14 +1279,6 @@ int slbt_exec_link(
 		dctx->cctx->settings.arprefix,
 		dctx->cctx->libname,
 		dctx->cctx->settings.arsuffix);
-
-	/* context */
-	if (ectx)
-		actx = 0;
-	else if ((ret = slbt_get_exec_ctx(dctx,&ectx)))
-		return SLBT_NESTED_ERROR(dctx);
-	else
-		actx = ectx;
 
 	/* output suffix */
 	output = dctx->cctx->output;
