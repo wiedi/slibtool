@@ -1,3 +1,14 @@
+0.5.9:
+
+This patch release enhances support of indirect dependencies, as well
+the handling of direct invocation of executables (as opposed to passing
+an executable to gdb or similar as an argument).
+
+- execute mode: properly handle direct program invocation.
+- link mode: account for directory depth when generating .deps for .la wrapper.
+- link mode: properly handle sub-directories in indirect .la wrapper dependency.
+- link mode: properly handle dependency information in current-dir .la wrappers.
+
 0.5.8:
 
 This patch release follows several important bug-fixes, as well as the
