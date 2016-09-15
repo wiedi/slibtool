@@ -1,3 +1,10 @@
+0.5.10:
+
+This patch release fixes the following subtle link-mode bugs:
+
+- link mode: archive creation: .la-associated objects are always under .libs/.
+- link mode: soname: properly handle -module when output begins with dso prefix.
+
 0.5.9:
 
 This patch release enhances support of indirect dependencies, as well
