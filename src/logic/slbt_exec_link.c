@@ -815,7 +815,7 @@ static int slbt_exec_link_create_archive(
 
 	/* input objects associated with .la archives */
 	for (parg=ectx->cargv; *parg; parg++)
-		if (slbt_adjust_input_argument(*parg,".la",".a",fpic))
+		if (slbt_adjust_input_argument(*parg,".la",".a",true))
 			if (slbt_archive_import(dctx,ectx,output,*parg))
 				return SLBT_NESTED_ERROR(dctx);
 
