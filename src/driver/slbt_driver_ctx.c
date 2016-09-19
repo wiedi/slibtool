@@ -374,6 +374,7 @@ static int slbt_init_host_params(
 	size_t		toollen;
 	char *		dash;
 	char *		base;
+	char *		mark;
 	const char *	machine;
 	bool		ftarget       = false;
 	bool		fhost         = false;
@@ -390,6 +391,13 @@ static int slbt_init_host_params(
 
 	if ((cctx->mode == SLBT_MODE_COMPILE) || (cctx->mode == SLBT_MODE_LINK))
 		fdumpmachine = true;
+
+	/* support the portbld <--> unknown synonym */
+	if (!(drvhost->machine = strdup(SLBT_MACHINE)))
+		return -1;
+
+	if ((mark = strstr(drvhost->machine,"-portbld-")))
+		memcpy(mark,"-unknown",8);
 
 	/* host */
 	if (host->host) {
@@ -416,10 +424,10 @@ static int slbt_init_host_params(
 
 		host->host    = drvhost->host;
 		fcompiler     = true;
-		fnative       = (!(strcmp(host->host,SLBT_MACHINE)));
+		fnative       = (!(strcmp(host->host,drvhost->machine)));
 		cfgmeta->host = fnative ? cfgnmachine : cfgxmachine;
 	} else {
-		host->host    = SLBT_MACHINE;
+		host->host    = drvhost->machine;
 		cfgmeta->host = cfgnmachine;
 		fnative       = true;
 	}
@@ -438,7 +446,7 @@ static int slbt_init_host_params(
 			machine         = drvhost->host;
 			cfgmeta->flavor = cfgcompiler;
 		} else {
-			machine         = SLBT_MACHINE;
+			machine         = drvhost->machine;
 			cfgmeta->flavor = cfgnmachine;
 		}
 
@@ -537,6 +545,9 @@ static int slbt_init_host_params(
 
 static void slbt_free_host_params(struct slbt_host_strs * host)
 {
+	if (host->machine)
+		free(host->machine);
+
 	if (host->host)
 		free(host->host);
 

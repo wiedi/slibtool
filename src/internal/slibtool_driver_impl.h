@@ -60,6 +60,7 @@ enum app_tags {
 };
 
 struct slbt_host_strs {
+	char *		machine;
 	char *		host;
 	char *		flavor;
 	char *		ar;

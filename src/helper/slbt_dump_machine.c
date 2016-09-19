@@ -56,6 +56,7 @@ int slbt_dump_machine(
 	int	fd[2];
 	FILE *	fmachine;
 	char *	newline;
+	char *	mark;
 	char	check[2];
 	char	program[PATH_MAX];
 
@@ -107,6 +108,11 @@ int slbt_dump_machine(
 		close(fd[0]);
 		close(fd[1]);
 	}
+
+	/* support the portbld <--> unknown synonym */
+	if (newline)
+		if ((mark = strstr(machine,"-portbld-")))
+			memcpy(mark,"-unknown",8);
 
 	return newline ? 0 : -1;
 }
