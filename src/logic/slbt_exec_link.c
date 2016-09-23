@@ -424,7 +424,9 @@ static int slbt_exec_link_adjust_argument_vector(
 					? fgets(darg,st.st_size+1,fdeps)
 					: 0;
 
-				if ((base = strrchr(lib,'/'))) {
+				if (!(strncmp(lib,".libs/",6))) {
+					*aarg++ = "-L.libs";
+				} else if ((base = strrchr(lib,'/'))) {
 					if (base - lib == 5) {
 						if (!(strncmp(&base[-5],".libs/",6)))
 							base -= 4;
