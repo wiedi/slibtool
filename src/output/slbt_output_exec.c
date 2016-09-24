@@ -125,3 +125,10 @@ int slbt_output_link(
 {
 	return slbt_output_exec(dctx,ectx,"link");
 }
+
+int slbt_output_uninstall(
+	const struct slbt_driver_ctx *	dctx,
+	const struct slbt_exec_ctx *	ectx)
+{
+	return slbt_output_exec(dctx,ectx,"uninstall");
+}

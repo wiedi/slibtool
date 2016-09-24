@@ -67,6 +67,9 @@ static void slbt_perform_driver_actions(struct slbt_driver_ctx * dctx)
 
 	if (dctx->cctx->mode == SLBT_MODE_LINK)
 		slbt_exec_link(dctx,0);
+
+	if (dctx->cctx->mode == SLBT_MODE_UNINSTALL)
+		slbt_exec_uninstall(dctx,0);
 }
 
 static void slbt_perform_unit_actions(struct slbt_unit_ctx * uctx)

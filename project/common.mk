@@ -14,12 +14,14 @@ COMMON_SRCS = \
 	src/logic/slbt_exec_execute.c \
 	src/logic/slbt_exec_install.c \
 	src/logic/slbt_exec_link.c \
+	src/logic/slbt_exec_uninstall.c \
 	src/logic/slbt_map_input.c \
 	src/output/slbt_output_config.c \
 	src/output/slbt_output_error.c \
 	src/output/slbt_output_exec.c \
 	src/skin/slbt_skin_default.c \
 	src/skin/slbt_skin_install.c \
+	src/skin/slbt_skin_uninstall.c \
 
 APP_SRCS = \
 	src/slibtool.c

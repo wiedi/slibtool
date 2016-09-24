@@ -12,5 +12,6 @@ INTERNAL_HEADERS = \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_readlink_impl.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_spawn_impl.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_symlink_impl.h \
+	$(PROJECT_DIR)/src/internal/$(PACKAGE)_uninstall_impl.h \
 
 ALL_HEADERS = $(API_HEADERS) $(INTERNAL_HEADERS)
