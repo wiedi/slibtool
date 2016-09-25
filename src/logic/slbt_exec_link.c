@@ -1096,6 +1096,10 @@ static int slbt_exec_link_create_executable(
 	*ectx->lout[0] = "-o";
 	*ectx->lout[1] = output;
 
+	/* static? */
+	if (dctx->cctx->drvflags & SLBT_DRIVER_ALL_STATIC)
+		*ectx->dpic = "-static";
+
 	/* cwd */
 	if (!getcwd(cwd,sizeof(cwd)))
 		return SLBT_SYSTEM_ERROR(dctx);
