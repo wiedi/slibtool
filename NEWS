@@ -1,3 +1,16 @@
+0.5.11:
+
+This patch release provides -portbld- support for systems that still need
+it, as well as an initial implementation of the --uninstall mode. In addition,
+this release includes a few important bug fixes, as well as adds --source-dir
+support to slibtool's own build system.
+
+- driver: accommodate hosts that occasionally use '-portbld-' in their triple.
+- link mode: properly handle -all-static when creating an executable image.
+- link mode: add -L.libs for current-directory .la input arguments.
+- uninstall mode: initial implementation.
+- build system: support setting an external folder as the source directory.
+
 0.5.10:
 
 This patch release fixes the following subtle link-mode bugs:
