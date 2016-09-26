@@ -135,15 +135,12 @@ static int slbt_get_deps_meta(
 		: 0;
 
 	if ((base = strrchr(libfilename,'/')))
-		libexlen = base - libfilename + 2;
+		libexlen = strlen(depfile) + base - libfilename + 2;
 	else
-		libexlen = 2;
+		libexlen = strlen(depfile) + 2;
 
 	for (; deplib; ) {
-		if ((deplib[0] == '-') && (deplib[1] == 'L'))
-			if (deplib[2] != '/')
-				depsmeta->infolen += libexlen;
-
+		depsmeta->infolen += libexlen;
 		depsmeta->depscnt++;
 		deplib = fgets(deplibs,st.st_size+1,fdeps);
 	}
