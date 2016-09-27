@@ -508,7 +508,8 @@ static int slbt_exec_link_create_dep_file(
 	const struct slbt_driver_ctx *	dctx,
 	struct slbt_exec_ctx *	ectx,
 	char **			altv,
-	const char *		libfilename)
+	const char *		libfilename,
+	bool			farchive)
 {
 	char **	parg;
 	char *	popt;
@@ -554,6 +555,8 @@ static int slbt_exec_link_create_dep_file(
 			popt = *parg;
 			plib = popt + 10;
 		} else if (!strncmp(*parg,"-f",2)) {
+			(void)0;
+		} else if (farchive) {
 			(void)0;
 		} else if ((popt = strrchr(*parg,'.')) && !strcmp(popt,".la")) {
 			/* import dependency list */
@@ -806,7 +809,9 @@ static int slbt_exec_link_create_archive(
 		return SLBT_NESTED_ERROR(dctx);
 
 	/* .deps */
-	if (slbt_exec_link_create_dep_file(dctx,ectx,ectx->cargv,arfilename))
+	if (slbt_exec_link_create_dep_file(
+			dctx,ectx,ectx->cargv,
+			arfilename,true))
 		return SLBT_NESTED_ERROR(dctx);
 
 	/* ar spawn */
@@ -888,7 +893,9 @@ static int slbt_exec_link_create_library(
 		slbt_adjust_input_argument(*parg,".lo",".o",true);
 
 	/* .deps */
-	if (slbt_exec_link_create_dep_file(dctx,ectx,ectx->cargv,dsofilename))
+	if (slbt_exec_link_create_dep_file(
+			dctx,ectx,ectx->cargv,
+			dsofilename,false))
 		return slbt_exec_link_exit(
 			&depsmeta,
 			SLBT_NESTED_ERROR(dctx));
