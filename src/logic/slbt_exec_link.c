@@ -556,8 +556,6 @@ static int slbt_exec_link_create_dep_file(
 			plib = popt + 10;
 		} else if (!strncmp(*parg,"-f",2)) {
 			(void)0;
-		} else if (farchive) {
-			(void)0;
 		} else if ((popt = strrchr(*parg,'.')) && !strcmp(popt,".la")) {
 			/* import dependency list */
 			if ((base = strrchr(*parg,'/')))
@@ -582,7 +580,7 @@ static int slbt_exec_link_create_dep_file(
 			}
 
 			/* [-L... as needed] */
-			if ((base > *parg) && (ectx->ldirdepth >= 0)) {
+			if (!farchive && (base > *parg) && (ectx->ldirdepth >= 0)) {
 				if (fputs("-L",ectx->fdeps) < 0) {
 					fclose(fdeps);
 					return SLBT_SYSTEM_ERROR(dctx);
@@ -601,16 +599,18 @@ static int slbt_exec_link_create_dep_file(
 			}
 
 			/* -ldeplib */
-			*popt = 0;
-			mark  = base;
-			mark += strlen(dctx->cctx->settings.dsoprefix);
+			if (!farchive) {
+				*popt = 0;
+				mark  = base;
+				mark += strlen(dctx->cctx->settings.dsoprefix);
 
-			if (fprintf(ectx->fdeps,"-l%s\n",mark) < 0) {
-				fclose(fdeps);
-				return SLBT_SYSTEM_ERROR(dctx);
+				if (fprintf(ectx->fdeps,"-l%s\n",mark) < 0) {
+					fclose(fdeps);
+					return SLBT_SYSTEM_ERROR(dctx);
+				}
+
+				*popt = '.';
 			}
-
-			*popt = '.';
 
 			/* [open dependency list] */
 			strcpy(depfile,*parg);
@@ -624,15 +624,36 @@ static int slbt_exec_link_create_dep_file(
 			mark = strrchr(mark,'.');
 			size = sizeof(depfile) - (mark - depfile);
 
-			if ((size_t)snprintf(mark,size,".a.slibtool.deps")
-					>= size)
-				return SLBT_BUFFER_ERROR(dctx);
+			if (!farchive) {
+				if ((size_t)snprintf(
+						mark,size,
+						".%s.slibtool.deps",
+						dctx->cctx->settings.dsoprefix)
+						>= size)
+					return SLBT_BUFFER_ERROR(dctx);
 
-			if (stat(depfile,&st))
-				return SLBT_SYSTEM_ERROR(dctx);
+				if (stat(depfile,&st)) {
+					if (errno == ENOENT)
+						fdeps = 0;
+					else
+						return SLBT_SYSTEM_ERROR(dctx);
+				} else {
+					if (!(fdeps = fopen(depfile,"r")))
+						return SLBT_SYSTEM_ERROR(dctx);
+				}
+			}
 
-			if (!(fdeps = fopen(depfile,"r")))
-				return SLBT_SYSTEM_ERROR(dctx);
+			if (farchive || !fdeps) {
+				if ((size_t)snprintf(mark,size,".a.slibtool.deps")
+						>= size)
+					return SLBT_BUFFER_ERROR(dctx);
+
+				if (stat(depfile,&st))
+					return SLBT_SYSTEM_ERROR(dctx);
+
+				if (!(fdeps = fopen(depfile,"r")))
+					return SLBT_SYSTEM_ERROR(dctx);
+			}
 
 			/* [-l... as needed] */
 			deplib = st.st_size
